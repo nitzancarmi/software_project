@@ -21,6 +21,8 @@ struct kd_array_t {
 
 	SPPoint* pointArray;
 	int** mat;
+	int cols;
+	int rows;
 };
 /****************************/
 
@@ -110,6 +112,11 @@ int* sortByAxis(const SPPoint* pts, int size, int axis, const SPConfig config,
 	for (int i = 0; i < size; i++)
 		ret[i] = ptsAx[i]->indexInPntArray;
 
+	for (int i = size - 1; i >= 0; i--) {
+		free(ptsAx[i]);
+	}
+	free(ptsAx);
+
 	return ret;
 }
 
@@ -135,13 +142,20 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
 
 	/*create new struct SPKDArray*/
 	SPKDArray kd = (SPKDArray) malloc(sizeof(*kd));
+
 	if (!kd) {
 //TODO add logger message
 		return NULL;
 	}
 
 	int dims = spConfigGetPCADim(attr, conf_msg);
-
+	if (dims < 0) {
+//TODO add logger message
+		SPKDArrayDestroy(kd, size, dims);
+		return NULL;
+	}
+	kd->cols = size;
+	kd->rows = dims;
 	/*copy array into struct*/
 	kd->pointArray = copyPointArray(arr, size);
 	if (!kd->pointArray) {
@@ -151,11 +165,6 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
 	}
 
 	/*create initialized matrix of size dims X size */
-	if (dims < 0) {
-//TODO add logger message
-		SPKDArrayDestroy(kd, size, dims);
-		return NULL;
-	}
 
 	int axis;
 	int *M[dims];
@@ -171,7 +180,52 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
 	return kd;
 }
 
-int split(SPKDArray kd, int coor) {
+int split(SPKDArray kd, int coor, SPLogger logger, SP_LOGGER_MSG *log_msg,
+		SP_CONFIG_MSG *conf_msg) {
+	int n = kd->cols, splitSize = (int) (ceil(kd->cols) + 0.5), i, indexP1 = -1,
+			indexP2 = -1, *map1 = NULL, *map2 = NULL;
+	SPPoint *P1 = NULL, *P2 = NULL;
+	*log_msg = 0;												///TODO DELETE
+	*conf_msg = 0;												///TODO DELETE
+	printf("%p", &logger);								///TODO DELETE
+	/** boolean array for belonging to splits **/
+	bool* halfs = (bool*) malloc(n * sizeof(bool));
+	if (!halfs) {
+		//TODO add logger message
+		return -1;
+	}
+	for (i = 0; i < splitSize; i++) {
+		halfs[kd->mat[coor][i]] = false;
+	}
+	for (; i < n; i++) {
+		halfs[kd->mat[coor][i]] = true;
+	}
+
+	/** two point arrays to contain sorted points according to belonging **/
+	P1 = (SPPoint*) malloc(splitSize);
+	P2 = (SPPoint*) malloc(n - splitSize);
+	map1 = (int*) malloc(n);
+	map2 = (int*) malloc(n);
+	if (!P1 || !P2 || !map1 || !map2) {
+		//TODO add logger message
+		free(map1);
+		free(map2);
+		free(P1);
+		free(P2);
+		free(halfs);
+		return -1;
+	}
+	for (i = 0; i < n; i++) {
+		if (!halfs[i]) {
+			P1[++indexP1] = kd->pointArray[i];
+			map1[i] = indexP1;
+			map2[i] = -1;
+		} else {
+			P2[++indexP2] = kd->pointArray[i];
+			map2[i] = indexP2;
+			map1[i] = -1;
+		}
+	}
 
 	return 0;
 }
