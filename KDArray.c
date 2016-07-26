@@ -34,6 +34,39 @@ struct pointAxis_t {
 	int axis;
 	int indexInPntArray;
 };
+
+SPPoint* getKDPointArray(SPKDArray kd){
+	SPPint* cpy = (SPPint*)malloc(kd->cols * sizeof(SPPoint));
+	int i;
+	for(i=0;i<kd->cols;i++)
+	    cpy[i] = spPointCopy(kd->pointArray[i]);
+	return cpy;
+}
+
+int** getKDMat(SPKDArray kd) {
+	int i,j;
+	int** cpy = (int**)malloc(kd->rows * sizeof(int*));
+	if(!cpy)
+		return NULL;
+
+	for(i=0; i<kd->cols;i++)
+	    cpy[i] = (int*)malloc(kd->cols * sizeof(int));
+	    if(!cpy[i])
+		return NULL;
+
+	for(i=0;i<kd->rows;i++)
+	    for(j=0;j<kd->rows;j++)
+		cpy[i][j] = kd->mat[i][j];
+	return cpy;
+}
+
+int getKDCols(SPKDArray kd) {
+	return kd->cols;
+}
+
+int getKDRows(SPKDArray kd) {
+	return kd->rows;
+}
 typedef struct pointAxis_t* PointAxis;
 
 SPPoint* copyPointArray(SPPoint* arr, int size) {
