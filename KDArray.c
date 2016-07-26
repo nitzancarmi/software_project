@@ -12,6 +12,9 @@
 										free(array); \
 										return NULL; \
 										}
+#define frees()							SPKDArrayDestroy(KD1); SPKDArrayDestroy(KD2); \
+										free(map1); free(map2); \
+										free(halfs)
 //TODO add logger message
 
 #define EPS 0.00000000001
@@ -120,19 +123,23 @@ int* sortByAxis(const SPPoint* pts, int size, int axis, const SPConfig config,
 	return ret;
 }
 
-void SPKDArrayDestroy(SPKDArray kd, int arrsize, int rows) {
+void SPKDArrayDestroy(SPKDArray kd) {
 	int i;
 	/* frees kd->pointArray */
-	for (i = 0; i < arrsize; i++)
-		spPointDestroy(kd->pointArray[i]);
-
-	/* Frees kd->Mat */
-	for (i = 0; i < rows; i++)
-		free(kd->mat[i]);
-
-	free(kd);
+	if (kd->pointArray) {
+		for (i = kd->cols - 1; i >= 0; i--)
+			spPointDestroy(*(kd->pointArray + i));
+	}
+	if (kd->mat) {
+		/* Frees kd->Mat */
+		for (i = kd->rows - 1; i >= 0; i--) {
+			if (*(kd->mat + i)) {
+				free(*(kd->mat + i));
+			}
+		}
+		free(kd);
+	}
 }
-
 SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
 		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
@@ -151,7 +158,7 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
 	int dims = spConfigGetPCADim(attr, conf_msg);
 	if (dims < 0) {
 //TODO add logger message
-		SPKDArrayDestroy(kd, size, dims);
+		SPKDArrayDestroy(kd);
 		return NULL;
 	}
 	kd->cols = size;
@@ -160,7 +167,7 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
 	kd->pointArray = copyPointArray(arr, size);
 	if (!kd->pointArray) {
 //TODO add logger message
-		SPKDArrayDestroy(kd, size, dims);
+		SPKDArrayDestroy(kd);
 		return NULL;
 	}
 
@@ -173,21 +180,36 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
 		M[axis] = sortByAxis(arr, size, axis, attr, logger, log_msg);
 		if (!M[axis]) {
 			//TODO add logger message
-			SPKDArrayDestroy(kd, size, dims);
+			SPKDArrayDestroy(kd);
 			return NULL;
 		}
 	}
 	return kd;
 }
 
-int split(SPKDArray kd, int coor, SPLogger logger, SP_LOGGER_MSG *log_msg,
-		SP_CONFIG_MSG *conf_msg) {
-	int n = kd->cols, splitSize = (int) (ceil(kd->cols) + 0.5), i, indexP1 = -1,
-			indexP2 = -1, *map1 = NULL, *map2 = NULL;
+int split(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
+		SPLogger logger, SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
+	int n = kd->cols, i, indexP1 = -1, indexP2 = -1;
+	int *map1 = NULL, *map2 = NULL, **A1 = NULL, **A2 = NULL;
+
 	SPPoint *P1 = NULL, *P2 = NULL;
-	*log_msg = 0;												///TODO DELETE
-	*conf_msg = 0;												///TODO DELETE
+	double half = kd->cols;
+	half /= 2;
+	int splitSize = (int) (ceil(half) + 0.5);
+	SPKDArray KD1 = NULL, KD2 = NULL;
+	KD1 = (SPKDArray) malloc(sizeof(*KD1));
+	KD2 = (SPKDArray) malloc(sizeof(*KD2));
+	if (!KD1 || !KD2) {
+		free(KD1);
+		free(KD2);
+	}
+	memset(KD1, 0, sizeof(*KD1));
+	memset(KD2, 0, sizeof(*KD2));
+
+	*log_msg = 0;											///TODO DELETE
+	*conf_msg = 0;											///TODO DELETE
 	printf("%p", &logger);								///TODO DELETE
+
 	/** boolean array for belonging to splits **/
 	bool* halfs = (bool*) malloc(n * sizeof(bool));
 	if (!halfs) {
@@ -203,16 +225,15 @@ int split(SPKDArray kd, int coor, SPLogger logger, SP_LOGGER_MSG *log_msg,
 
 	/** two point arrays to contain sorted points according to belonging **/
 	P1 = (SPPoint*) malloc(splitSize);
+	KD1->pointArray = P1;
 	P2 = (SPPoint*) malloc(n - splitSize);
+	KD2->pointArray = P2;
 	map1 = (int*) malloc(n);
 	map2 = (int*) malloc(n);
 	if (!P1 || !P2 || !map1 || !map2) {
 		//TODO add logger message
-		free(map1);
-		free(map2);
-		free(P1);
-		free(P2);
-		free(halfs);
+		frees()
+		;
 		return -1;
 	}
 	for (i = 0; i < n; i++) {
@@ -226,6 +247,57 @@ int split(SPKDArray kd, int coor, SPLogger logger, SP_LOGGER_MSG *log_msg,
 			map1[i] = -1;
 		}
 	}
+
+	/***** ALLOCATION *****/
+	A1 = (int**) calloc(splitSize * kd->rows, sizeof(int));
+	KD1->mat = A1;
+	A2 = (int**) calloc((n - splitSize) * kd->rows, sizeof(int));
+	KD2->mat = A2;
+	if (!A1 || !A2) {
+		//TODO add logger message
+		frees()
+		;
+		return -1;
+	}
+	for (int i = 0; i < splitSize; i++) {
+		A1[i] = (int*) malloc(splitSize * sizeof(int));
+
+		/*Malloc fail */
+		if (!A1[i]) {
+			//TODO add logger message
+			frees()
+			;
+			return -1;
+		}
+	}
+
+	for (int i = 0; i < (n - splitSize); i++) {
+		A2[i] = (int*) malloc((n - splitSize) * sizeof(int));
+
+		/*Malloc fail */
+		if (!A2[i]) {
+			frees()
+			;
+			return -1;
+		}
+	}
+	/**********************/
+
+	for (int i = 0; i < n; i++) {		//for on columns of halfs
+		for (int j = 0; j < kd->rows; j++) {
+			if (i < splitSize) {
+				int cell = kd->mat[i][j];
+				A1[i][j] = map1[cell];
+				assert(A1[i][j] != -1);					//TODO DELETE
+			} else {
+				int cell = kd->mat[i][j];
+				A2[i - splitSize][j] = map2[cell];
+				assert(A2[i][j] != -1);					//TODO DELETE
+			}
+		}
+	}
+	*KDpntr1 = KD1;
+	*KDpntr2 = KD2;
 
 	return 0;
 }
