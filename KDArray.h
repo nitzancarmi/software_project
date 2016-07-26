@@ -16,7 +16,7 @@ SPKDArray init(SPConfig attr,
 	       SP_CONFIG_MSG *conf_msg);
 
 /* Returns two kd-arrays (kdLeft,kdRight) such that the first /ceil[n/2] are in left, rest in right */
-int Split(SPKDArray kdarr,int coor);
+int split(SPKDArray kdarr,int coor);
 
 
 #endif /* KDARRAY_H_ */

@@ -10,7 +10,8 @@
 											free(array[j]); \
 										}\
 										free(array); \
-										return NULL
+										return NULL; \
+										}
 //TODO add logger message
 
 #define EPS 0.00000000001
@@ -24,7 +25,7 @@ struct kd_array_t {
 /****************************/
 
 struct pointAxis_t {
-	SPPoint* pnt;
+	SPPoint pnt;
 	int axis;
 	int indexInPntArray;
 };
@@ -39,12 +40,18 @@ SPPoint* copyPointArray(SPPoint* arr, int size) {
 		ret[i] = spPointCopy(arr[i]);
 
 		/* frees in case of inner malloc fail */
-		arrayMallocFail(ret,i);
-	}
-		return ret;
-	}
-}
+		if (!ret[i]) {
+			for (i--; i >= 0; i--) {
+				free(ret[i]);
+			}
 
+			free(ret);
+			return NULL;
+		}
+
+	}
+	return ret;
+}
 int pointComparator(const void *p, const void *q) {
 	PointAxis p1 = *(const PointAxis *) p;
 	PointAxis p2 = *(const PointAxis *) q;
@@ -63,6 +70,7 @@ int pointComparator(const void *p, const void *q) {
 /* assumes all pts same dimension */
 int* sortByAxis(const SPPoint* pts, int size, int axis, const SPConfig config,
 		SPLogger logger, SP_LOGGER_MSG* msg) {
+	*msg = 0; //TODO
 	if (!pts || axis < 0 || !config || !logger) {
 		spLoggerPrintError("Invalid Argument to sortByAxis", __FILE__, __func__,
 		__LINE__);
@@ -78,99 +86,93 @@ int* sortByAxis(const SPPoint* pts, int size, int axis, const SPConfig config,
 		ptsAx[i] = (PointAxis) malloc(sizeof(*ptsAx[i]));
 
 		/*Malloc fail */
-		arrayMallocFail(ptsAx,i);
 
+		if (!ptsAx[i]) {
+			for (i--; i >= 0; i--) {
+				free(ptsAx[i]);
+			}
+
+			free(ptsAx);
+			return NULL;
+		}
 		ptsAx[i]->pnt = pts[i];
 		ptsAx[i]->axis = axis;
 		ptsAx[i]->indexInPntArray = i;
 
-		}
-
 	}
+
 	qsort(ptsAx, size, sizeof(*ptsAx), pointComparator);
 	int* ret = (int*) malloc(size * sizeof(int));
-	if (!ret)
+	if (!ret) {
 		//TODO add logger message
 		return NULL;
-
+	}
 	for (int i = 0; i < size; i++)
 		ret[i] = ptsAx[i]->indexInPntArray;
 
 	return ret;
 }
 
-void SPKDArrayDestroy(SPKDArray kd,
-		      int arrsize,
-                      int rows) {
-    int i;
-    /* frees kd->pointArray */
-    for(i=0;i<arrsize;i++)
-        spPointDestroy(kd->pointArray[i]);
+void SPKDArrayDestroy(SPKDArray kd, int arrsize, int rows) {
+	int i;
+	/* frees kd->pointArray */
+	for (i = 0; i < arrsize; i++)
+		spPointDestroy(kd->pointArray[i]);
 
-    /* Frees kd->Mat */
-    for(i=0; i<rows; i++)
-        free(kd->mat[i]);
+	/* Frees kd->Mat */
+	for (i = 0; i < rows; i++)
+		free(kd->mat[i]);
 
-    free(kd);
+	free(kd);
 }
 
-SPKDArray init(SPConfig attr,
-                SPPoint *arr,
-                int size,
-                SPLogger logger,
-                SP_LOGGER_MSG *log_msg,
-		SP_CONFIG_MSG *conf_msg)
-{
-    
-    if(!arr || size<1)
-	//TODO add logger message
-        return NULL;
+SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
+		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
-    /*create new struct SPKDArray*/
-    SPKDArray kd = (SPKDArray)malloc(sizeof(*kd));
-    if(!kd) {
-	//TODO add logger message
-        return NULL;
-    } 
+	if (!arr || size < 1)
+//TODO add logger message
+		return NULL;
 
-    int dims = spConfigGetPCADim(attr, conf_msg);
-   
-    /*copy array into struct*/
-    kd->pointArray = copyPointArray(arr, size);
-    if(!kd->pointArray){
-        //TODO add logger message
-	SPKDArrayDestroy(kd, size, dims);
-	return NULL;
-    }
-
-    /*create initialized matrix of size dims X size */
-    if(dims<0){
-        //TODO add logger message
-	SPKDArrayDestroy(kd, size, dims);
-	return NULL;
-    }
-
-    int axis;
-    int *M[dims];
-    memset(M, 0, sizeof(M));
-    for(axis=0; axis<dims; axis++) {
-        M[axis] = sortByAxis(arr, 
-                             size,
-                             axis,
-                             attr,
-                             logger,
-                             log_msg); 
-        if(!M[axis]) {
-            //TODO add logger message
-	    SPKDArrayDestroy(kd, size, dims);
-	    return NULL;
+	/*create new struct SPKDArray*/
+	SPKDArray kd = (SPKDArray) malloc(sizeof(*kd));
+	if (!kd) {
+//TODO add logger message
+		return NULL;
 	}
-    } 
-    return kd;
+
+	int dims = spConfigGetPCADim(attr, conf_msg);
+
+	/*copy array into struct*/
+	kd->pointArray = copyPointArray(arr, size);
+	if (!kd->pointArray) {
+//TODO add logger message
+		SPKDArrayDestroy(kd, size, dims);
+		return NULL;
+	}
+
+	/*create initialized matrix of size dims X size */
+	if (dims < 0) {
+//TODO add logger message
+		SPKDArrayDestroy(kd, size, dims);
+		return NULL;
+	}
+
+	int axis;
+	int *M[dims];
+	memset(M, 0, sizeof(M));
+	for (axis = 0; axis < dims; axis++) {
+		M[axis] = sortByAxis(arr, size, axis, attr, logger, log_msg);
+		if (!M[axis]) {
+			//TODO add logger message
+			SPKDArrayDestroy(kd, size, dims);
+			return NULL;
+		}
+	}
+	return kd;
 }
 
-int Split(SPKDArray kd, int coor) {
-    
-    return 0;
+int split(SPKDArray kd, int coor) {
+
+	return 0;
 }
 
