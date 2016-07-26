@@ -5,7 +5,6 @@
 
 //almog's comment
 
-
 int main(int argc, char* argv[]) {
 
 	SPConfig project; SP_CONFIG_MSG msg;
