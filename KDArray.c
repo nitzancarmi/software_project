@@ -1,4 +1,5 @@
 #include "KDArray.h"
+#include "SPPoint.h"
 #include "SPConfig.h"
 #include "SPLogger.h"
 #include "SPPoint.h"
@@ -19,9 +20,6 @@ struct kd_array_t {
 
 	SPPoint* pointArray;
 	int** mat;
-
-	int rows;
-	int cols;
 };
 /****************************/
 
@@ -101,36 +99,78 @@ int* sortByAxis(const SPPoint* pts, int size, int axis, const SPConfig config,
 	return ret;
 }
 
-SPKDArray init(SPConfig attr, SPPoint *arr, int size) {
-	int i;
+void SPKDArrayDestroy(SPKDArray kd,
+		      int arrsize,
+                      int rows) {
+    int i;
+    /* frees kd->pointArray */
+    for(i=0;i<arrsize;i++)
+        spPointDestroy(kd->pointArray[i]);
 
-	if (!arr || size < 1)
-		//TODO add logger message
-		return NULL;
+    /* Frees kd->Mat */
+    for(i=0; i<rows; i++)
+        free(kd->mat[i]);
 
-	/*create new struct SPKDArray*/
-	SPKDArray kd = (SPKDArray) malloc(sizeof(*kd));
-	if (!kd) {
-		//TODO add logger message
-		return NULL;
+    free(kd);
+}
+
+SPKDArray init(SPConfig attr,
+                SPPoint *arr,
+                int size,
+                SPLogger logger,
+                SP_LOGGER_MSG *log_msg,
+		SP_CONFIG_MSG *conf_msg)
+{
+    
+    if(!arr || size<1)
+	//TODO add logger message
+        return NULL;
+
+    /*create new struct SPKDArray*/
+    SPKDArray kd = (SPKDArray)malloc(sizeof(*kd));
+    if(!kd) {
+	//TODO add logger message
+        return NULL;
+    } 
+
+    int dims = spConfigGetPCADim(attr, conf_msg);
+   
+    /*copy array into struct*/
+    kd->pointArray = copyPointArray(arr, size);
+    if(!kd->pointArray){
+        //TODO add logger message
+	SPKDArrayDestroy(kd, size, dims);
+	return NULL;
+    }
+
+    /*create initialized matrix of size dims X size */
+    if(dims<0){
+        //TODO add logger message
+	SPKDArrayDestroy(kd, size, dims);
+	return NULL;
+    }
+
+    int axis;
+    int *M[dims];
+    memset(M, 0, sizeof(M));
+    for(axis=0; axis<dims; axis++) {
+        M[axis] = sortByAxis(arr, 
+                             size,
+                             axis,
+                             attr,
+                             logger,
+                             log_msg); 
+        if(!M[axis]) {
+            //TODO add logger message
+	    SPKDArrayDestroy(kd, size, dims);
+	    return NULL;
 	}
+    } 
+    return kd;
+}
 
-	/*copy array into struct*/
-	kd->pointArray = copyPointArray(arr, size);
-
-	/*create initialized matrix of size dims X size */
-	int** M;
-	SP_CONFIG_MSG msg;
-	int dims = spConfigGetPCADim(attr, &msg);
-	int* row;
-	for (i = 0; i < dims; i++) {
-		row = (int*) malloc(size * sizeof(int));
-
-	}
-
-	/*
-	 Cleanup:
-	 //TODO to be implemented
-	 */
+int Split(SPKDArray kd, int coor) {
+    
+    return 0;
 }
 
