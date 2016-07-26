@@ -74,9 +74,9 @@ int pointComparator(const void *p, const void *q) {
 
 /* assumes all pts same dimension */
 int* sortByAxis(const SPPoint* pts, int size, int axis, const SPConfig config,
-		SPLogger logger, SP_LOGGER_MSG* msg) {
+		SP_LOGGER_MSG* msg) {
 	*msg = 0; //TODO
-	if (!pts || axis < 0 || !config || !logger) {
+	if (!pts || axis < 0 || !config) {
 		spLoggerPrintError("Invalid Argument to sortByAxis", __FILE__, __func__,
 		__LINE__);
 		return NULL;
@@ -140,8 +140,8 @@ void SPKDArrayDestroy(SPKDArray kd) {
 		free(kd);
 	}
 }
-SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
-		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
+SPKDArray init(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *log_msg,
+		SP_CONFIG_MSG *conf_msg) {
 
 	if (!arr || size < 1)
 //TODO add logger message
@@ -177,7 +177,7 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
 	int *M[dims];
 	memset(M, 0, sizeof(M));
 	for (axis = 0; axis < dims; axis++) {
-		M[axis] = sortByAxis(arr, size, axis, attr, logger, log_msg);
+		M[axis] = sortByAxis(arr, size, axis, attr, log_msg);
 		if (!M[axis]) {
 			//TODO add logger message
 			SPKDArrayDestroy(kd);
@@ -188,7 +188,11 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SPLogger logger,
 }
 
 int split(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
-		SPLogger logger, SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
+		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
+
+	if (!kd || coor < 0 || !KDpntr1 || !KDpntr2 || !log_msg || !conf_msg)
+		return -1;
+
 	int n = kd->cols, i, indexP1 = -1, indexP2 = -1;
 	int *map1 = NULL, *map2 = NULL, **A1 = NULL, **A2 = NULL;
 
@@ -208,7 +212,6 @@ int split(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
 
 	*log_msg = 0;											///TODO DELETE
 	*conf_msg = 0;											///TODO DELETE
-	printf("%p", &logger);								///TODO DELETE
 
 	/** boolean array for belonging to splits **/
 	bool* halfs = (bool*) malloc(n * sizeof(bool));
