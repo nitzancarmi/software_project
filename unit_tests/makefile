@@ -1,9 +1,7 @@
 CC = gcc
-CPP = g++
-#put your object files here
-OBJS = main.o SPImageProc.o SPPoint.o SPConfig.o SPLogger.o SPBPriorityQueue.o SPList.o SPListElement.o
+OBJS = kdarray_unit_test.o SPPoint.o SPConfig.o SPLogger.o SPList.o SPListElement.o
 #The executabel filename
-EXEC = SPCBIR
+EXEC = TEST
 INCLUDEPATH=/usr/local/include/
 LIBPATH=/usr/local/lib/
 LIBS=-lopencv_xfeatures2d -lopencv_features2d \
@@ -16,13 +14,9 @@ C_COMP_FLAG = -std=c99 -Wall -Wextra \
 -pedantic-errors -DNDEBUG
 
 $(EXEC): $(OBJS)
-	$(CPP) $(OBJS) -L$(LIBPATH) $(LIBS) -o $@
-main.o: main.cpp SPImageProc.h SPConfig.h SPLogger.h SPPoint.h
-	$(CPP)  $(CPP_COMP_FLAG) -I$(INCLUDEPATH) -c $*.cpp
-SPImageProc.o: SPImageProc.cpp SPImageProc.h SPConfig.h SPPoint.h SPLogger.h
-	$(CPP)  $(CPP_COMP_FLAG) -I$(INCLUDEPATH) -c $*.cpp
-#a rule for building a simple c souorce file
-#use gcc -MM SPPoint.c to see the dependencies
+
+kdarray_unit_test.o: kdarray_unit_test.c ../SPLogger.h ../SPPoint.h ../SPConfig.h unit_test_util.h
+	$(CC) $(C_COMP_FLAG) -c $*.c
 
 SPPoint.o: SPPoint.c SPPoint.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
@@ -31,9 +25,6 @@ SPConfig.o: SPConfig.c SPConfig.h SPLogger.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
  
 SPLogger.o: SPLogger.c SPLogger.h
-	$(CC) $(C_COMP_FLAG) -c $*.c
-
-SPBPriorityQueue.o: SPBPriorityQueue.c SPList.h SPListElement.h SPBPriorityQueue.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
 
 SPList.o: SPList.c SPList.h SPListElement.h

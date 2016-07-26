@@ -213,4 +213,8 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config);
  */
 void spConfigDestroy(SPConfig config);
 
+/*
+* TODO - add documentation
+*/
+void printAttributes(SPConfig attr);
 #endif /* SPCONFIG_H_ */
