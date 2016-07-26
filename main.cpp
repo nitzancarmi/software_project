@@ -2,6 +2,9 @@
 #include "SPImageProc.h"
 
 
+// this is comment
+// nitzans comment
+
 int main(int argc, char* argv[]) {
 
 	SPConfig project; SP_CONFIG_MSG msg;

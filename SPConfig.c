@@ -41,6 +41,11 @@ struct sp_config_t {
 };
 /****************************/
 
+int nitzan() {
+	return 0;
+}
+
+
 void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 		char** varReturn, char** valueReturn) {
 
