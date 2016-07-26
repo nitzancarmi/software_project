@@ -577,3 +577,12 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	return SP_CONFIG_SUCCESS;
 }
 
+
+int almog1(){
+	return 1;
+}
+
+
+
+
+
