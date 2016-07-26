@@ -54,7 +54,7 @@ int main(int argc, char* argv[]) {
 	arr[3] = d;
 	arr[4] = e;
 
-	SPKDArray kd = init(config, arr, 5, &log_msg, &conf_msg), kd1, kd2;
+	SPKDArray kd = spKDArrayCreate(config, arr, 5, &log_msg, &conf_msg), kd1, kd2;
 
 	return OK;
 }

@@ -19,7 +19,7 @@
 
 #define EPS 0.00000000001
 
-/*** Struct Definition ***/
+/*** Struct DefspKDArrayCreateion ***/
 struct kd_array_t {
 
 	SPPoint* pointArray;
@@ -195,7 +195,7 @@ void printIntArray(int* a, int size) {
 	printf(")\n");
 }
 
-SPKDArray init(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *log_msg,
+SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *log_msg,
 		SP_CONFIG_MSG *conf_msg) {
 
 	if (!arr || size < 1)
@@ -247,7 +247,7 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *log_msg,
 	return kd;
 }
 
-int split(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
+int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
 		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
 	if (!kd || coor < 0 || !KDpntr1 || !KDpntr2 || !log_msg || !conf_msg)
