@@ -15,4 +15,6 @@ SPKDArray init(SPConfig attr, SPPoint* arr, int size, SP_LOGGER_MSG *log_msg,
 int split(SPKDArray kdarr, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
 		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg);
 
+void printKDArrayMatrix(SPKDArray kd);
+
 #endif /* KDARRAY_H_ */

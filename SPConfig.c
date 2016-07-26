@@ -169,7 +169,7 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 	/*spPCADimension*/
 	/*Constraint: integers in range [10,28]*/
 	if (!strcmp(var, "spPCADimension")) {
-		int val = updateValueInRange(value, 10, 28);
+		int val = updateValueInRange(value, 2, 28);				//TODO CHANGE TO 10
 		if (val) {
 			attr->spPCADimension = val;
 			return SP_CONFIG_SUCCESS;
@@ -556,24 +556,18 @@ SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
 	if (index >= config->spNumOfImages || index < 0)
 		return SP_CONFIG_INDEX_OUT_OF_RANGE;
 
-	int copy = index, digits = 0, length;
-
-	/* count number of digits in index */
-	while (copy > 0) {
-		copy /= 10;
-		digits++;
-	}
-
-	length = strlen(config->spImagesDirectory) + strlen(config->spImagesPrefix)
-			+ strlen(config->spImagesSuffix) + digits + 1;
-	imagePath = (char*) malloc(length);
 	sprintf(imagePath, "%s%s%d%s", config->spImagesDirectory,
 			config->spImagesPrefix, index, config->spImagesSuffix);
 
 	return SP_CONFIG_SUCCESS;
 }
+
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
-	printf("%s,%d", pcaPath, config->spKNN);
+	if (!pcaPath || !config)
+		return SP_CONFIG_INVALID_ARGUMENT;
+
+	sprintf(pcaPath, "%s%s", config->spImagesDirectory, config->spPCAFilename);
+
 	return SP_CONFIG_SUCCESS;
 }
 
