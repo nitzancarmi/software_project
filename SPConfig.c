@@ -41,11 +41,6 @@ struct sp_config_t {
 };
 /****************************/
 
-int nitzan() {
-	return 0;
-}
-
-
 void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 		char** varReturn, char** valueReturn) {
 
@@ -581,13 +576,4 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	printf("%s,%d", pcaPath, config->spKNN);
 	return SP_CONFIG_SUCCESS;
 }
-
-
-int almog1(){
-	return 1;
-}
-
-
-
-
 
