@@ -1,6 +1,7 @@
 
 #include "SPImageProc.h"
 
+// this is comment
 
 int main(int argc, char* argv[]) {
 
