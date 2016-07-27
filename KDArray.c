@@ -17,7 +17,7 @@
 										free(halfs);
 //TODO add logger message
 
-#define EPS 0.00000000001
+
 
 /*** Struct DefspKDArrayCreateion ***/
 struct kd_array_t {
