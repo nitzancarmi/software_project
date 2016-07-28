@@ -367,7 +367,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr
 	*KDpntr1 = KD1;
 	*KDpntr2 = KD2;
 
-
-	return 0;
+	//return the median
+	return kd->mat[splitSize][coor];
 }
 
