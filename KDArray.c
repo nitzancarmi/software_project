@@ -18,6 +18,8 @@
 //TODO add logger message
 
 
+#define EPS 0.00000000001
+
 
 /*** Struct DefspKDArrayCreateion ***/
 struct kd_array_t {
@@ -369,5 +371,8 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr
 
 	//return the median
 	return kd->mat[splitSize][coor];
+
+
+
 }
 
