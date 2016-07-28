@@ -524,7 +524,7 @@ int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg) {
 	getter(spPCADimension);
 }
 
-int spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg) {
+splitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg) {
 	getter(spKDTreeSplitMethod);
 }
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
