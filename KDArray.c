@@ -14,12 +14,14 @@
 										}
 #define frees()							SPKDArrayDestroy(KD1); SPKDArrayDestroy(KD2); \
 										free(map1); free(map2); \
-										free(halfs)
+										free(halfs);
 //TODO add logger message
+
 
 #define EPS 0.00000000001
 
-/*** Struct Definition ***/
+
+/*** Struct DefspKDArrayCreateion ***/
 struct kd_array_t {
 
 	SPPoint* pointArray;
@@ -170,10 +172,65 @@ void SPKDArrayDestroy(SPKDArray kd) {
 				free(*(kd->mat + i));
 			}
 		}
-		free(kd);
 	}
+	free(kd->mat);
+	free(kd);
 }
-SPKDArray init(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *log_msg,
+
+void printKDArrayMatrix(SPKDArray kd) {
+	printf("\n");
+	for (int i = 0; i < kd->rows; i++) {
+		printf("| ");
+		for (int j = 0; j < kd->cols; j++) {
+			printf((j == kd->cols - 1 ? "%d" : "%d\t"), kd->mat[i][j]);
+		}
+		printf(" |\n");
+	}
+
+}
+
+void print2DIntArray(int** a, int rows, int cols) {
+	printf("\n");
+	for (int i = 0; i < rows; i++) {
+		printf("| ");
+		for (int j = 0; j < cols; j++) {
+			printf((j == cols - 1 ? "%d" : "%d\t"), a[i][j]);
+		}
+		printf(" |\n");
+	}
+
+}
+
+void printKDPointArray(SPKDArray kd) {
+	if (!kd) {
+		printf("error");
+		return;
+	}
+	printf("\n=====Point Array:=====\n");
+	for (int j = 0; j < kd->cols; j++) {
+		printf("%d. (", j);
+		for (int i = 0; i < kd->rows; i++) {
+			printf((i == kd->rows - 1 ? "%d" : "%d, "),
+					(int) spPointGetAxisCoor(kd->pointArray[j], i));
+		}
+		printf(")\n");
+	}
+	printf("======================\n");
+
+}
+void printIntArray(int* a, int size) {
+	if (!a) {
+		printf("error");
+		return;
+	}
+	printf("axis: (");
+	for (int i = 0; i < size; i++) {
+		printf((i == size - 1 ? "%d" : "%d, "), a[i]);
+	}
+	printf(")\n");
+}
+
+SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *log_msg,
 		SP_CONFIG_MSG *conf_msg) {
 
 	if (!arr || size < 1)
@@ -189,6 +246,7 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *log_msg,
 	}
 
 	int dims = spConfigGetPCADim(attr, conf_msg);
+
 	if (dims < 0) {
 //TODO add logger message
 		SPKDArrayDestroy(kd);
@@ -196,6 +254,9 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *log_msg,
 	}
 	kd->cols = size;
 	kd->rows = dims;
+
+	printf("rows = %d\n", dims);
+	printf("cols = %d\n", size);
 	/*copy array into struct*/
 	kd->pointArray = copyPointArray(arr, size);
 	if (!kd->pointArray) {
@@ -203,24 +264,25 @@ SPKDArray init(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *log_msg,
 		SPKDArrayDestroy(kd);
 		return NULL;
 	}
-
 	/*create initialized matrix of size dims X size */
 
 	int axis;
-	int *M[dims];
-	memset(M, 0, sizeof(M));
+	int **M = (int**) malloc(dims * sizeof(int*));
 	for (axis = 0; axis < dims; axis++) {
 		M[axis] = sortByAxis(arr, size, axis, attr, log_msg);
+		printIntArray(M[axis], size);
 		if (!M[axis]) {
 			//TODO add logger message
 			SPKDArrayDestroy(kd);
 			return NULL;
 		}
+
 	}
+	kd->mat = M;
 	return kd;
 }
 
-int split(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
+int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
 		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
 	if (!kd || coor < 0 || !KDpntr1 || !KDpntr2 || !log_msg || !conf_msg)
@@ -260,18 +322,19 @@ int split(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
 	}
 
 	/** two point arrays to contain sorted points according to belonging **/
-	P1 = (SPPoint*) malloc(splitSize);
+	P1 = (SPPoint*) malloc(splitSize * sizeof(SPPoint));
 	KD1->pointArray = P1;
-	P2 = (SPPoint*) malloc(n - splitSize);
+	P2 = (SPPoint*) malloc((n - splitSize) * sizeof(SPPoint));
 	KD2->pointArray = P2;
-	map1 = (int*) malloc(n);
-	map2 = (int*) malloc(n);
+	map1 = (int*) malloc(n * sizeof(int));
+	map2 = (int*) malloc(n * sizeof(int));
 	if (!P1 || !P2 || !map1 || !map2) {
 		//TODO add logger message
 		frees()
-		;
+
 		return -1;
 	}
+
 	for (i = 0; i < n; i++) {
 		if (!halfs[i]) {
 			P1[++indexP1] = kd->pointArray[i];
@@ -287,12 +350,16 @@ int split(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
 	/***** ALLOCATION *****/
 	A1 = (int**) calloc(splitSize * kd->rows, sizeof(int));
 	KD1->mat = A1;
+	KD1->rows = kd->rows;
+	KD1->cols = splitSize;
 	A2 = (int**) calloc((n - splitSize) * kd->rows, sizeof(int));
 	KD2->mat = A2;
+	KD2->rows = kd->rows;
+	KD2->cols = n - splitSize;
 	if (!A1 || !A2) {
 		//TODO add logger message
 		frees()
-		;
+
 		return -1;
 	}
 	for (int i = 0; i < splitSize; i++) {
@@ -302,7 +369,7 @@ int split(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
 		if (!A1[i]) {
 			//TODO add logger message
 			frees()
-			;
+
 			return -1;
 		}
 	}
@@ -313,7 +380,7 @@ int split(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
 		/*Malloc fail */
 		if (!A2[i]) {
 			frees()
-			;
+
 			return -1;
 		}
 	}
@@ -322,19 +389,23 @@ int split(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
 	for (int i = 0; i < n; i++) {		//for on columns of halfs
 		for (int j = 0; j < kd->rows; j++) {
 			if (i < splitSize) {
-				int cell = kd->mat[i][j];
-				A1[i][j] = map1[cell];
-				assert(A1[i][j] != -1);					//TODO DELETE
+				int cell = kd->mat[j][i];
+				A1[j][i] = map1[cell];
+				assert(A1[j][i] != -1);					//TODO DELETE
 			} else {
-				int cell = kd->mat[i][j];
-				A2[i - splitSize][j] = map2[cell];
-				assert(A2[i][j] != -1);					//TODO DELETE
+				int cell = kd->mat[j][i];
+				A2[j][i- splitSize] = map2[cell];
+				assert(A2[j][i] != -1);					//TODO DELETE
 			}
 		}
 	}
 	*KDpntr1 = KD1;
 	*KDpntr2 = KD2;
 
-	return 0;
+	//return the median
+	return kd->mat[splitSize][coor];
+
+
+
 }
 
