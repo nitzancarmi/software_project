@@ -61,12 +61,15 @@ int init_test(SPConfig attr) {
     printf("finished Basic check.\n===%s===\n\n", BASIC_CHECK ? "FAILED" : "SUCCEES");
     rc |= BASIC_CHECK;
     rc <<=1;
+<<<<<<< 05cd8e61794cfcac6a24e6bb0c8fe51602f89383
     SPKDArrayDestroy(res);
     for(i = 4; i >= 0; i--)
         spPointDestroy(pa[i]);
     free(M[1]);
     free(M[0]);
     free(M);
+=======
+>>>>>>> kdarray_unit_test: finished basic test
     
     return rc;
 }
