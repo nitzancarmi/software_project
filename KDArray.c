@@ -1,9 +1,5 @@
 #include "KDArray.h"
-#include "SPPoint.h"
-#include "SPConfig.h"
-#include "SPLogger.h"
-#include "SPPoint.h"
-#include "math.h"
+#include <math.h>
 
 #define arrayMallocFail(array,j)	 if(!array[j]){ \
 										for(j--;j>=0;j--){ \
@@ -38,7 +34,7 @@ struct pointAxis_t {
 };
 
 SPPoint* getKDPointArray(SPKDArray kd){
-	SPPint* cpy = (SPPint*)malloc(kd->cols * sizeof(SPPoint));
+	SPPoint* cpy = (SPPoint*)malloc(kd->cols * sizeof(SPPoint));
 	int i;
 	for(i=0;i<kd->cols;i++)
 	    cpy[i] = spPointCopy(kd->pointArray[i]);
@@ -47,18 +43,21 @@ SPPoint* getKDPointArray(SPKDArray kd){
 
 int** getKDMat(SPKDArray kd) {
 	int i,j;
+
 	int** cpy = (int**)malloc(kd->rows * sizeof(int*));
 	if(!cpy)
 		return NULL;
-
-	for(i=0; i<kd->cols;i++)
+	for(i=0; i<kd->rows;i++){
 	    cpy[i] = (int*)malloc(kd->cols * sizeof(int));
 	    if(!cpy[i])
 		return NULL;
+        }
 
-	for(i=0;i<kd->rows;i++)
-	    for(j=0;j<kd->rows;j++)
-		cpy[i][j] = kd->mat[i][j];
+	for(i=0;i<kd->rows;i++){
+	    for(j=0;j<kd->cols;j++){
+		cpy[i][j] = (kd->mat)[i][j];
+            }
+        }
 	return cpy;
 }
 
@@ -255,8 +254,6 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *
 	kd->cols = size;
 	kd->rows = dims;
 
-	printf("rows = %d\n", dims);
-	printf("cols = %d\n", size);
 	/*copy array into struct*/
 	kd->pointArray = copyPointArray(arr, size);
 	if (!kd->pointArray) {
@@ -270,7 +267,6 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *
 	int **M = (int**) malloc(dims * sizeof(int*));
 	for (axis = 0; axis < dims; axis++) {
 		M[axis] = sortByAxis(arr, size, axis, attr, log_msg);
-		printIntArray(M[axis], size);
 		if (!M[axis]) {
 			//TODO add logger message
 			SPKDArrayDestroy(kd);
@@ -294,7 +290,8 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr
 	SPPoint *P1 = NULL, *P2 = NULL;
 	double half = kd->cols;
 	half /= 2;
-	int splitSize = (int) (ceil(half) + 0.5);
+	int splitSize = (int)half + 1;
+//	int splitSize = (int) (ceil(half) + 0.5); //TODO why do we need ceil? (nitzanc)
 	SPKDArray KD1 = NULL, KD2 = NULL;
 	KD1 = (SPKDArray) malloc(sizeof(*KD1));
 	KD2 = (SPKDArray) malloc(sizeof(*KD2));

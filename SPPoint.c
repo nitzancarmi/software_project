@@ -25,10 +25,10 @@ int spPointCompare(SPPoint a, SPPoint b) {
         dim = a->dim;
     int i;
     int cmp=0;
-    for (i=0;i<a->dim;i++){
-        cmp += ((a->data+i*sizeof(double)) - (b->data+i*sizeof(double)));
+    for (i=0;i<dim;i++){
+        cmp += (a->data[i] - b->data[i]);
     }
-    if (cmp > EPS)
+    if (abs(cmp) > EPS)
         return 1;
     return a->index - b->index;
 }

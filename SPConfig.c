@@ -356,7 +356,7 @@ void checkForDefaults(SPConfig attr) {
 }
 
 void printAttributes(SPConfig attr) { /** DELETE **/
-	fprintf(stdout, "=== Attributes: ===\n");
+	fprintf(stdout, "\n\n=== Attributes: ===\n");
 	fprintf(stdout, "%s\t= %s\n", "spImagesDirectory", attr->spImagesDirectory);
 	fprintf(stdout, "%s\t\t= %s\n", "spImagesPrefix", attr->spImagesPrefix);
 	fprintf(stdout, "%s\t\t= %s\n", "spImagesSuffix", attr->spImagesSuffix);
@@ -373,13 +373,15 @@ void printAttributes(SPConfig attr) { /** DELETE **/
 	fprintf(stdout, "%s\t\t= %d\n", "spMinimalGUI", attr->spMinimalGUI);
 	fprintf(stdout, "%s\t\t= %d\n", "spLoggerLevel", attr->spLoggerLevel);
 	fprintf(stdout, "%s\t= %s\n", "spLoggerFilename", attr->spLoggerFilename);
-	fprintf(stdout, "===================\n");
+	fprintf(stdout, "===================\n\n");
 }
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
-	assert(msg);
-
+	if(*msg !=SP_CONFIG_SUCCESS){
+            printf("got an unexpected message as initial parameter, changes msg to be SP_CONFIG_SUCCESS\n");
+            *msg = SP_CONFIG_SUCCESS;
+        }
 	/* vars init */
 	char line[MAX_LENGTH], *var, *value;
 	int lineNum = 0;
@@ -487,7 +489,6 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 		return NULL;
 	} else {
 		checkForDefaults(attr);
-		printAttributes(attr);
 		return attr;
 	}
 

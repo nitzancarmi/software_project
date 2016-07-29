@@ -4,7 +4,6 @@
 #include "SPPoint.h"
 #include "SPConfig.h"
 #include "SPLogger.h"
-
 #include <stdio.h>
 
 #define EPS 0.00000000001
@@ -21,7 +20,6 @@
 									InvalidError();\
 									return ret;	\
 								}
-
 typedef struct kd_array_t* SPKDArray;
 
 /* Initializes the kd-array with the data given by arr. Complexity: O(d*nlogn) */
@@ -43,7 +41,6 @@ int spKDArraySplit(SPKDArray kdarr, int coor, SPKDArray* KDpntr1, SPKDArray* KDp
 
 
 void printKDArrayMatrix(SPKDArray kd);
-
 
 
 /*

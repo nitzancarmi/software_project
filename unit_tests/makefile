@@ -1,5 +1,5 @@
 CC = gcc
-OBJS = kdarray_unit_test.o SPPoint.o SPConfig.o SPLogger.o SPList.o SPListElement.o
+OBJS = kdarray_unit_test.o ../SPPoint.o ../SPConfig.o ../SPLogger.o ../SPList.o ../SPListElement.o ../KDArray.o
 #The executabel filename
 EXEC = TEST
 INCLUDEPATH=/usr/local/include/
@@ -14,23 +14,25 @@ C_COMP_FLAG = -std=c99 -Wall -Wextra \
 -pedantic-errors -DNDEBUG
 
 $(EXEC): $(OBJS)
-
-kdarray_unit_test.o: kdarray_unit_test.c ../SPLogger.h ../SPPoint.h ../SPConfig.h unit_test_util.h
+	$(CC) $(OBJS) -L$(LIBPATH) $(LIBS) -o $@
+kdarray_unit_test.o: kdarray_unit_test.c ../SPLogger.h ../SPPoint.h ../SPConfig.h ../KDArray.h unit_test_util.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
 
-SPPoint.o: SPPoint.c SPPoint.h
+KDArray.o: ../KDArray.c ../KDArray.h ../SPPoint.h ../SPConfig.h ../SPLogger.h
+
+SPPoint.o: ../SPPoint.c ../SPPoint.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
 
-SPConfig.o: SPConfig.c SPConfig.h SPLogger.h
+SPConfig.o: ../SPConfig.c ../SPConfig.h ../SPLogger.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
  
-SPLogger.o: SPLogger.c SPLogger.h
+SPLogger.o: ../SPLogger.c ../SPLogger.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
 
-SPList.o: SPList.c SPList.h SPListElement.h
+SPList.o: ../SPList.c ../SPList.h ../SPListElement.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
 
-SPListElement.o: SPListElement.c SPListElement.h
+SPListElement.o: ../SPListElement.c ../SPListElement.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
 
 clean:
