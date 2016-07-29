@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #define EPS 0.00000000001
-#define ERR_ARGS	"%s - at file: %s, line: %s, func: %s"
+#define ERR_ARGS	"%s - at file: %s, line: %d, func: %s"
 #define INVALID 	"Invalid Argument Error"
 #define CONFIG_ERR 	"SPConfig Error"
 #define LOGGER_ERR 	"SPLogger Error"
