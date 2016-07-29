@@ -38,6 +38,16 @@ typedef struct sp_point_t* SPPoint;
  */
 SPPoint spPointCreate(double* data, int dim, int index);
 
+/*
+* The function compares between two SPPoint elements,
+* checks if:
+* - the ith element in data array is closely equal (differ by <EPS)
+* - the index is equal
+* @return
+* 0 for equality, another integer otherwise
+*/
+int spPointCompare(SPPoint a, SPPoint b);
+
 /**
  * Allocates a copy of the given point.
  *

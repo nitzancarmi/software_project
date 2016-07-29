@@ -9,13 +9,29 @@
 #include <stdlib.h>
 #include <assert.h>
 #include "SPPoint.h"
-
+#define EPS 0.0000001
 struct sp_point_t {
 	double* data;
 	int index;
 	int dim;
 };
 
+int spPointCompare(SPPoint a, SPPoint b) {
+    /*checks if has the sime dimension*/
+    int dim;
+    if(a->dim != b->dim)
+        return 1;
+    else
+        dim = a->dim;
+    int i;
+    int cmp=0;
+    for (i=0;i<a->dim;i++){
+        cmp += ((a->data+i*sizeof(double)) - (b->data+i*sizeof(double)));
+    }
+    if (cmp > EPS)
+        return 1;
+    return a->index - b->index;
+}
 SPPoint spPointCreate(double* data, int dim, int index) {
 
 	if (!data || dim <= 0 || index <= 0) {
