@@ -9,12 +9,15 @@
 #define EPS 0.00000000001
 #define ERR_ARGS	"%s - at file: %s, line: %d, func: %s"
 #define INVALID 	"Invalid Argument Error"
+#define MALLOC_ERR 	"Memory Allocation Failure"
 #define CONFIG_ERR 	"SPConfig Error"
 #define LOGGER_ERR 	"SPLogger Error"
 
 #define InvalidError()	if(spLoggerPrintError(INVALID,__FILE__,__func__,__LINE__)!= SP_LOGGER_SUCCESS){	\
 							fprintf(stderr,ERR_ARGS,LOGGER_ERR,__FILE__,__LINE__,__func__);}
 
+#define MallocError()	if(spLoggerPrintError(MALLOC_ERR,__FILE__,__func__,__LINE__)!= SP_LOGGER_SUCCESS){	\
+							fprintf(stderr,ERR_ARGS,LOGGER_ERR,__FILE__,__LINE__,__func__);}
 
 #define returnIfConfigMsg(ret) if (*conf_msg != SP_CONFIG_SUCCESS) {	\
 									printf("##CONF_MSG ERR = %d\n",*conf_msg); \
