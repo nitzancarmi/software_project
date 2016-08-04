@@ -386,9 +386,8 @@ void printAttributes(SPConfig attr) { /** DELETE **/
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
-	if (*msg != SP_CONFIG_SUCCESS) {//TODO is this necessary? or only for debugging (almogz)
-		printf(
-				"got an unexpected message as initial parameter, changes msg to be SP_CONFIG_SUCCESS\n");
+	if (*msg != SP_CONFIG_SUCCESS) {//TODO is the print necessary? or only for debugging (almogz)
+		//printf("got an unexpected message as initial parameter, changes msg to be SP_CONFIG_SUCCESS\n");
 		*msg = SP_CONFIG_SUCCESS;
 	}
 	/* vars init */
@@ -492,6 +491,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 		}
 	}
 
+	fclose(config);
 	/* Assign dafault values if not set */
 	if (checkForDefaults(attr) != SP_CONFIG_SUCCESS) {
 		printf(MEMORY_FAIL1);
@@ -501,7 +501,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	if (gotError) {
 		printAttributes(attr);
 		spConfigDestroy(attr);
-		fclose(config);
+
 		return NULL;
 	}
 
