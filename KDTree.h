@@ -3,9 +3,10 @@
 
 #include "KDArray.h"
 
-typedef struct kd_tree_node_t* KDTreeNode;
+typedef struct kd_tree_node_t* SPKDTreeNode;
 
-KDTreeNode spKDTreeCreate(SPKDArray kdarray,SPConfig config,SP_CONFIG_MSG* conf_msg, SP_LOGGER_MSG* log_msg);
+SPKDTreeNode spKDTreeCreate(SPKDArray kdarray,SPConfig config,SP_CONFIG_MSG* conf_msg, SP_LOGGER_MSG* log_msg);
 
+void spKDTreeDestroy(SPKDTreeNode kdtree);
 
 #endif /* KDTREE_H_ */
