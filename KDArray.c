@@ -219,12 +219,24 @@ void printKDPointArray(SPKDArray kd) {
 	printf("======================\n");
 
 }
-void printIntArray(int* a, int size) {
+void printIntArray(int* a, int size, const char* name) {
 	if (!a) {
 		printf("error");
 		return;
 	}
-	printf("axis: (");
+	printf("%s: (", name);
+	for (int i = 0; i < size; i++) {
+		printf((i == size - 1 ? "%d" : "%d, "), a[i]);
+	}
+	printf(")\n");
+}
+
+void printBoolArray(bool* a, int size, const char* name) {
+	if (!a) {
+		printf("error");
+		return;
+	}
+	printf("%s: (", name);
 	for (int i = 0; i < size; i++) {
 		printf((i == size - 1 ? "%d" : "%d, "), a[i]);
 	}
@@ -294,7 +306,7 @@ int** calloc2dInt(int rows, int cols) {
 }
 
 int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
-		SPKDArray* KDpntr2, SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
+		SPKDArray* KDpntr2,SPConfig config, SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
 	if (!kd || coor < 0 || !KDpntr1 || !KDpntr2 || !log_msg || !conf_msg) {
 		InvalidError()
@@ -309,6 +321,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 //	int splitSize = (int)half + 1;			  //TODO we must have ceil, even numbers will be incremented without it
 	//with ceil it always works (almogz)
 	int splitSize = (int) (ceil(half) + 0.5); //TODO why do we need ceil? (nitzanc)
+	printf("splitSize = %d\n", splitSize);
 	SPKDArray KD1 = NULL, KD2 = NULL;
 	KD1 = (SPKDArray) malloc(sizeof(*KD1));
 	KD2 = (SPKDArray) malloc(sizeof(*KD2));
@@ -333,7 +346,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	for (; i < n; i++) {
 		halfs[kd->mat[coor][i]] = true;
 	}
-
+	printBoolArray(halfs, n, "halfs");
 	/** two point arrays to contain sorted points according to belonging **/
 	P1 = (SPPoint*) malloc(splitSize * sizeof(SPPoint));
 	KD1->pointArray = P1;
@@ -359,6 +372,8 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 			map1[i] = -1;
 		}
 	}
+	printIntArray(map1, n, "map1");
+	printIntArray(map2, n, "map2");
 
 	/***** ALLOCATION *****/
 	A1 = calloc2dInt(kd->rows, splitSize);
@@ -403,27 +418,23 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 //	print2DIntArray(A1, 2, 1);
 	//printf("===\n");
 //	print2DIntArray(A2, 2, 1);
-	for (int i = 0; i < n; i++) {		//for on columns of halfs
-		for (int j = 0; j < kd->rows; j++) {
+
+//	KD1 = spKDArrayCreate(config,P1,indexP1,log_msg,conf_msg);
+//	KD2 = spKDArrayCreate(config,P2,indexP2,log_msg,conf_msg);
+	for (int j = 0; j < kd->rows; j++) {
+		for (int i = 0; i < n; i++) {		//for on columns of halfs
+
 			//	printf("(%d,%d) ", i, j);
 			if (i < splitSize) {
-				if (n == 1) {
-					A1[j][i] = 0;
-				} else {
-					int cell = kd->mat[j][i];
-					A1[j][i] = map1[cell];
-					if (A1[j][i] == -1)
-						printf("error1");
-				}
+				int cell = kd->mat[j][i];
+				A1[j][i] = map1[cell];
+				if (A1[j][i] == -1)
+					printf("error1");
 			} else {
-				if (n == 1) {
-					A2[j][i] = 0;
-				} else {
-					int cell = kd->mat[j][i];
-					A2[j][i - splitSize] = map2[cell];
-					if (A2[j][i - splitSize] == -1)				//TODO DELETE
-						printf("error2");
-				}
+				int cell = kd->mat[j][i];
+				A2[j][i - splitSize] = map2[cell];
+				if (A2[j][i - splitSize] == -1)				//TODO DELETE
+					printf("error2");
 			}
 		}
 	}
