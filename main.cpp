@@ -68,3 +68,37 @@ int main(int argc, char* argv[]) {
 	return OK;
 }
 
+//Deprecated Checks - to insert in the future to kdarray_unit_test
+
+//double data1[2] = { 1, 2 }, data2[2] = { 123, 70 }, data3[2] = { 2, 7 },
+//			data4[2] = { 9, 11 }, data5[2] = { 3, 4 };
+//	SPPoint a = spPointCreate(data1, 2, 1);
+//	SPPoint b = spPointCreate(data2, 2, 2);
+//	SPPoint c = spPointCreate(data3, 2, 3);
+//	SPPoint d = spPointCreate(data4, 2, 4);
+//	SPPoint e = spPointCreate(data5, 2, 5);
+//
+//	SPPoint* arr = (SPPoint*) malloc(5 * sizeof(SPPoint));
+//	arr[0] = a;
+//	arr[1] = b;
+//	arr[2] = c;
+//	arr[3] = d;
+//	arr[4] = e;
+//
+//	SPKDArray kd = spKDArrayCreate(config, arr, 5, &log_msg, &conf_msg), kd1,
+//			kd2;
+//	printKDArrayMatrix(kd);
+//	spKDArraySplit(kd, 0, &kd1, &kd2, &log_msg, &conf_msg);
+//
+//	printKDArrayMatrix(kd1);
+//	printKDArrayMatrix(kd2);
+//
+//	SPKDArrayDestroy(kd);
+//	SPKDArrayDestroy(kd1);
+//	SPKDArrayDestroy(kd2);
+//	for(int i=0;i<5;i++){
+//		spPointDestroy(arr[i]);
+//	}
+//	free(arr);
+//	spConfigDestroy(config);
+

@@ -12,16 +12,6 @@ struct kd_tree_node_t {
 	SPPoint data;
 };
 
-int getKDRows(SPKDArray arr) {	//TODO
-	printf("%d", arr == NULL);
-	return 0;
-}
-
-SPPoint* getKDPointArray(SPKDArray arr) { //TODO
-	printf("%d", arr == NULL);
-	return NULL;
-}
-
 bool doubleEquals(double a, double b) {  //TODO
 	if (fabs(a - b) < EPS)
 		return true;

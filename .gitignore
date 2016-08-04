@@ -1,9 +1,13 @@
-*.o
-*.exe
-/Debug/
+/*.o
+/*.exe
+/Debug/*.*
 /includes.txt
 /init.sh
 /makefile
 /SPCBIR
 /spcbir.config
 /stdio
+/*.gch
+unit_test
+/unit_test/TEST
+/unit_test/*.o

@@ -5,7 +5,7 @@
 
 #define errorInvalidLine() 					printf(INVALID_CONFLINE, filename, lineNum)
 
-#define assignString(configAttribute,xVal)	configAttribute = (char*) malloc(strlen(xVal)); \
+#define assignString(configAttribute,xVal)	configAttribute = (char*) malloc(strlen(xVal)+1); \
 											if(!configAttribute){							\
 												return SP_CONFIG_ALLOC_FAIL;				\
 											}												\
@@ -169,7 +169,7 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 	/*spPCADimension*/
 	/*Constraint: integers in range [10,28]*/
 	if (!strcmp(var, "spPCADimension")) {
-		int val = updateValueInRange(value, 2, 28);				//TODO CHANGE TO 10
+		int val = updateValueInRange(value, 2, 28);			//TODO CHANGE TO 10
 		if (val) {
 			attr->spPCADimension = val;
 			return SP_CONFIG_SUCCESS;
@@ -324,7 +324,7 @@ void printMissing(FILE* config, const char* filename, const char* parameter) {
 
 }
 
-void checkForDefaults(SPConfig attr) {
+SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 	/*
 	 int spPCADimension = 20;
 	 char* spPCAFilename = "pca.yml";
@@ -346,12 +346,20 @@ void checkForDefaults(SPConfig attr) {
 	checkAndAssign(spLoggerLevel, 3);
 	if (!attr->spPCAFilename) {
 		attr->spPCAFilename = (char*) malloc(8);
+		if (!attr->spPCAFilename) {
+			return SP_CONFIG_ALLOC_FAIL;
+		}
 		strcpy(attr->spPCAFilename, "pca.yml");
 	}
 	if (!attr->spLoggerFilename) {
 		attr->spLoggerFilename = (char*) malloc(7);
+		if (!attr->spLoggerFilename) {
+			return SP_CONFIG_ALLOC_FAIL;
+		}
 		strcpy(attr->spLoggerFilename, "stdout");
 	}
+
+	return SP_CONFIG_SUCCESS;
 
 }
 
@@ -378,10 +386,11 @@ void printAttributes(SPConfig attr) { /** DELETE **/
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
-	if(*msg !=SP_CONFIG_SUCCESS){
-            printf("got an unexpected message as initial parameter, changes msg to be SP_CONFIG_SUCCESS\n");
-            *msg = SP_CONFIG_SUCCESS;
-        }
+	if (*msg != SP_CONFIG_SUCCESS) {//TODO is this necessary? or only for debugging (almogz)
+		printf(
+				"got an unexpected message as initial parameter, changes msg to be SP_CONFIG_SUCCESS\n");
+		*msg = SP_CONFIG_SUCCESS;
+	}
 	/* vars init */
 	char line[MAX_LENGTH], *var, *value;
 	int lineNum = 0;
@@ -482,15 +491,21 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 			gotError = true;
 		}
 	}
+
+	/* Assign dafault values if not set */
+	if (checkForDefaults(attr) != SP_CONFIG_SUCCESS) {
+		printf(MEMORY_FAIL1);
+		gotError = true;
+	}
+
 	if (gotError) {
 		printAttributes(attr);
 		spConfigDestroy(attr);
 		fclose(config);
 		return NULL;
-	} else {
-		checkForDefaults(attr);
-		return attr;
 	}
+
+	return attr;
 
 }
 

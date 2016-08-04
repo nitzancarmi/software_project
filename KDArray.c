@@ -13,9 +13,7 @@
 										free(halfs);
 //TODO add logger message
 
-
 #define EPS 0.00000000001
-
 
 /*** Struct DefspKDArrayCreateion ***/
 struct kd_array_t {
@@ -33,31 +31,31 @@ struct pointAxis_t {
 	int indexInPntArray;
 };
 
-SPPoint* getKDPointArray(SPKDArray kd){
-	SPPoint* cpy = (SPPoint*)malloc(kd->cols * sizeof(SPPoint));
+SPPoint* getKDPointArray(SPKDArray kd) {
+	SPPoint* cpy = (SPPoint*) malloc(kd->cols * sizeof(SPPoint));
 	int i;
-	for(i=0;i<kd->cols;i++)
-	    cpy[i] = spPointCopy(kd->pointArray[i]);
+	for (i = 0; i < kd->cols; i++)
+		cpy[i] = spPointCopy(kd->pointArray[i]);
 	return cpy;
 }
 
 int** getKDMat(SPKDArray kd) {
-	int i,j;
+	int i, j;
 
-	int** cpy = (int**)malloc(kd->rows * sizeof(int*));
-	if(!cpy)
+	int** cpy = (int**) malloc(kd->rows * sizeof(int*));
+	if (!cpy)
 		return NULL;
-	for(i=0; i<kd->rows;i++){
-	    cpy[i] = (int*)malloc(kd->cols * sizeof(int));
-	    if(!cpy[i])
-		return NULL;
-        }
+	for (i = 0; i < kd->rows; i++) {
+		cpy[i] = (int*) malloc(kd->cols * sizeof(int));
+		if (!cpy[i])
+			return NULL;
+	}
 
-	for(i=0;i<kd->rows;i++){
-	    for(j=0;j<kd->cols;j++){
-		cpy[i][j] = (kd->mat)[i][j];
-            }
-        }
+	for (i = 0; i < kd->rows; i++) {
+		for (j = 0; j < kd->cols; j++) {
+			cpy[i][j] = (kd->mat)[i][j];
+		}
+	}
 	return cpy;
 }
 
@@ -162,14 +160,14 @@ void SPKDArrayDestroy(SPKDArray kd) {
 	/* frees kd->pointArray */
 	if (kd->pointArray) {
 		for (i = kd->cols - 1; i >= 0; i--)
-			spPointDestroy(*(kd->pointArray + i));
+			spPointDestroy(kd->pointArray[i]);
 	}
+	free(kd->pointArray);
+
 	if (kd->mat) {
 		/* Frees kd->Mat */
-		for (i = kd->rows - 1; i >= 0; i--) {
-			if (*(kd->mat + i)) {
-				free(*(kd->mat + i));
-			}
+		for (i = kd->rows-1; i >= 0; i--) {
+			free(kd->mat[i]);
 		}
 	}
 	free(kd->mat);
@@ -229,8 +227,8 @@ void printIntArray(int* a, int size) {
 	printf(")\n");
 }
 
-SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *log_msg,
-		SP_CONFIG_MSG *conf_msg) {
+SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
+		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
 	if (!arr || size < 1)
 //TODO add logger message
@@ -278,8 +276,8 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size, SP_LOGGER_MSG *
 	return kd;
 }
 
-int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr2,
-		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
+int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
+		SPKDArray* KDpntr2, SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
 	if (!kd || coor < 0 || !KDpntr1 || !KDpntr2 || !log_msg || !conf_msg)
 		return -1;
@@ -290,14 +288,16 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr
 	SPPoint *P1 = NULL, *P2 = NULL;
 	double half = kd->cols;
 	half /= 2;
-	int splitSize = (int)half + 1;
-//	int splitSize = (int) (ceil(half) + 0.5); //TODO why do we need ceil? (nitzanc)
+//	int splitSize = (int)half + 1;			  //TODO we must have ceil, even numbers will be incremented without it
+	//with ceil it always works (almogz)
+	int splitSize = (int) (ceil(half) + 0.5); //TODO why do we need ceil? (nitzanc)
 	SPKDArray KD1 = NULL, KD2 = NULL;
 	KD1 = (SPKDArray) malloc(sizeof(*KD1));
 	KD2 = (SPKDArray) malloc(sizeof(*KD2));
 	if (!KD1 || !KD2) {
 		free(KD1);
 		free(KD2);
+		return -1;
 	}
 	memset(KD1, 0, sizeof(*KD1));
 	memset(KD2, 0, sizeof(*KD2));
@@ -334,11 +334,11 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr
 
 	for (i = 0; i < n; i++) {
 		if (!halfs[i]) {
-			P1[++indexP1] = kd->pointArray[i];
+			P1[++indexP1] = spPointCopy(kd->pointArray[i]);
 			map1[i] = indexP1;
 			map2[i] = -1;
 		} else {
-			P2[++indexP2] = kd->pointArray[i];
+			P2[++indexP2] = spPointCopy(kd->pointArray[i]);
 			map2[i] = indexP2;
 			map1[i] = -1;
 		}
@@ -360,7 +360,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr
 		return -1;
 	}
 	for (int i = 0; i < splitSize; i++) {
-		A1[i] = (int*) malloc(splitSize * sizeof(int));
+		A1[i] = (int*) malloc(splitSize * sizeof(int));			//TODO Memory leak here according to valgrind
 
 		/*Malloc fail */
 		if (!A1[i]) {
@@ -391,7 +391,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr
 				assert(A1[j][i] != -1);					//TODO DELETE
 			} else {
 				int cell = kd->mat[j][i];
-				A2[j][i- splitSize] = map2[cell];
+				A2[j][i - splitSize] = map2[cell];
 				assert(A2[j][i] != -1);					//TODO DELETE
 			}
 		}
@@ -399,10 +399,11 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1, SPKDArray* KDpntr
 	*KDpntr1 = KD1;
 	*KDpntr2 = KD2;
 
+	free(halfs);
+	free(map1);
+	free(map2);
 	//return the median
-	return kd->mat[splitSize][coor];
-
-
+	return kd->mat[coor][splitSize];
 
 }
 
