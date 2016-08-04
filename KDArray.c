@@ -164,12 +164,12 @@ void SPKDArrayDestroy(SPKDArray kd) {
 	}
 	free(kd->pointArray);
 
-	if (kd->mat) {
-		/* Frees kd->Mat */
-		for (i = kd->rows - 1; i >= 0; i--) {
-			free(kd->mat[i]);
-		}
-	}
+//	if (kd->mat) {			//Replaced with calloc2dInt
+//		/* Frees kd->Mat */
+//		for (i = kd->rows - 1; i >= 0; i--) {
+//			free(kd->mat[i]);
+//		}
+//	}
 	free(kd->mat);
 	free(kd);
 }
@@ -280,12 +280,26 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 	return kd;
 }
 
+int** calloc2dInt(int rows, int cols) {
+	int header = rows * sizeof(int*);
+	int data = rows * cols * sizeof(int);
+	int** rowptr = (int**) calloc(header + data, sizeof(int));
+	if (!rowptr)
+		return NULL;
+	int* buf = (int*) (rowptr + rows);
+	for (int k = 0; k < rows; ++k) {
+		rowptr[k] = buf + k * cols;
+	}
+	return rowptr;
+}
+
 int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 		SPKDArray* KDpntr2, SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
-	if (!kd || coor < 0 || !KDpntr1 || !KDpntr2 || !log_msg || !conf_msg)
+	if (!kd || coor < 0 || !KDpntr1 || !KDpntr2 || !log_msg || !conf_msg) {
+		InvalidError()
 		return -1;
-
+	}
 	int n = kd->cols, i, indexP1 = -1, indexP2 = -1;
 	int *map1 = NULL, *map2 = NULL, **A1 = NULL, **A2 = NULL;
 
@@ -299,6 +313,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	KD1 = (SPKDArray) malloc(sizeof(*KD1));
 	KD2 = (SPKDArray) malloc(sizeof(*KD2));
 	if (!KD1 || !KD2) {
+		MallocError()
 		free(KD1);
 		free(KD2);
 		return -1;
@@ -309,7 +324,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	/** boolean array for belonging to splits **/
 	bool* halfs = (bool*) malloc(n * sizeof(bool));
 	if (!halfs) {
-		//TODO add logger message
+		MallocError()
 		return -1;
 	}
 	for (i = 0; i < splitSize; i++) {
@@ -327,7 +342,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	map1 = (int*) malloc(n * sizeof(int));
 	map2 = (int*) malloc(n * sizeof(int));
 	if (!P1 || !P2 || !map1 || !map2) {
-		//TODO add logger message
+		MallocError()
 		frees()
 
 		return -1;
@@ -346,57 +361,73 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	}
 
 	/***** ALLOCATION *****/
-	A1 = (int**) calloc(splitSize * kd->rows, sizeof(int));
+	A1 = calloc2dInt(kd->rows, splitSize);
+	printf("1. rows = %d, cols = %d\n", kd->rows, splitSize);
 	KD1->mat = A1;
 	KD1->rows = kd->rows;
 	KD1->cols = splitSize;
-	A2 = (int**) calloc((n - splitSize) * kd->rows, sizeof(int));
+	A2 = calloc2dInt(kd->rows, n - splitSize);
+	printf("2. rows = %d, cols = %d\n", kd->rows, n - splitSize);
 	KD2->mat = A2;
 	KD2->rows = kd->rows;
 	KD2->cols = n - splitSize;
 	if (!A1 || !A2) {
-		//TODO add logger message
+		MallocError()
 		frees()
 
 		return -1;
 	}
-	for (int i = 0; i < splitSize; i++) {
-		A1[i] = (int*) malloc(splitSize * sizeof(int));	//TODO Memory leak here according to valgrind
-
-		/*Malloc fail */
-		if (!A1[i]) {
-			//TODO add logger message
-			frees()
-
-			return -1;
-		}
-	}
-
-	for (int i = 0; i < (n - splitSize); i++) {
-		A2[i] = (int*) malloc((n - splitSize) * sizeof(int));
-
-		/*Malloc fail */
-		if (!A2[i]) {
-			frees()
-
-			return -1;
-		}
-	}
-	/**********************/
-
+//	/* Replaced with calloc2dInt */
+//	for (int i = 0; i < splitSize; i++) {
+//		A1[i] = (int*) malloc(splitSize * sizeof(int));	//TODO Memory leak here according to valgrind
+//
+//		/*Malloc fail */
+//		if (!A1[i]) {
+//			//TODO add logger message
+//			frees()
+//
+//			return -1;
+//		}
+//	}
+//
+//	for (int i = 0; i < (n - splitSize); i++) {
+//		A2[i] = (int*) malloc((n - splitSize) * sizeof(int));
+//
+//		/*Malloc fail */
+//		if (!A2[i]) {
+//			frees()
+//
+//			return -1;
+//		}
+//	}
+//	print2DIntArray(A1, 2, 1);
+	//printf("===\n");
+//	print2DIntArray(A2, 2, 1);
 	for (int i = 0; i < n; i++) {		//for on columns of halfs
 		for (int j = 0; j < kd->rows; j++) {
+			//	printf("(%d,%d) ", i, j);
 			if (i < splitSize) {
-				int cell = kd->mat[j][i];
-				A1[j][i] = map1[cell];
-				assert(A1[j][i] != -1);					//TODO DELETE
+				if (n == 1) {
+					A1[j][i] = 0;
+				} else {
+					int cell = kd->mat[j][i];
+					A1[j][i] = map1[cell];
+					if (A1[j][i] == -1)
+						printf("error1");
+				}
 			} else {
-				int cell = kd->mat[j][i];
-				A2[j][i - splitSize] = map2[cell];
-				assert(A2[j][i] != -1);					//TODO DELETE
+				if (n == 1) {
+					A2[j][i] = 0;
+				} else {
+					int cell = kd->mat[j][i];
+					A2[j][i - splitSize] = map2[cell];
+					if (A2[j][i - splitSize] == -1)				//TODO DELETE
+						printf("error2");
+				}
 			}
 		}
 	}
+	//printf("\n");
 	*KDpntr1 = KD1;
 	*KDpntr2 = KD2;
 
@@ -405,6 +436,6 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	free(map2);
 	//return the median
 	return kd->mat[coor][splitSize];
-
+//	return 0;
 }
 
