@@ -60,11 +60,11 @@ int** getKDMat(SPKDArray kd) {
 }
 
 int getKDCols(SPKDArray kd) {
-	return kd->cols;
+	return (!kd) ? -1 : kd->cols;
 }
 
 int getKDRows(SPKDArray kd) {
-	return kd->rows;
+	return (!kd) ? -1 : kd->rows;
 }
 typedef struct pointAxis_t* PointAxis;
 
@@ -166,7 +166,7 @@ void SPKDArrayDestroy(SPKDArray kd) {
 
 	if (kd->mat) {
 		/* Frees kd->Mat */
-		for (i = kd->rows-1; i >= 0; i--) {
+		for (i = kd->rows - 1; i >= 0; i--) {
 			free(kd->mat[i]);
 		}
 	}
@@ -175,6 +175,10 @@ void SPKDArrayDestroy(SPKDArray kd) {
 }
 
 void printKDArrayMatrix(SPKDArray kd) {
+	if (!kd) {
+		printf("kd matrix = NULL");
+		return;
+	}
 	printf("\n");
 	for (int i = 0; i < kd->rows; i++) {
 		printf("| ");
@@ -302,9 +306,6 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	memset(KD1, 0, sizeof(*KD1));
 	memset(KD2, 0, sizeof(*KD2));
 
-	*log_msg = 0;											///TODO DELETE
-	*conf_msg = 0;											///TODO DELETE
-
 	/** boolean array for belonging to splits **/
 	bool* halfs = (bool*) malloc(n * sizeof(bool));
 	if (!halfs) {
@@ -360,7 +361,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 		return -1;
 	}
 	for (int i = 0; i < splitSize; i++) {
-		A1[i] = (int*) malloc(splitSize * sizeof(int));			//TODO Memory leak here according to valgrind
+		A1[i] = (int*) malloc(splitSize * sizeof(int));	//TODO Memory leak here according to valgrind
 
 		/*Malloc fail */
 		if (!A1[i]) {
