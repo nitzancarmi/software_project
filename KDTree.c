@@ -149,10 +149,12 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 
 //	printf("**confmsg3 = %d\n",*conf_msg);
 	/* Left Recursion */
+	printf("\n******LEFT:*******\n");
 	nodeLeft = spKDTreeCreateRecursion(KDpntr1, config, conf_msg, log_msg,
 			splitIncrementalDim + 1);
 	returnIfConfigMsg(NULL)
 	/* Right Recursion */
+	printf("\n******RIGHT:*******\n");
 	nodeRight = spKDTreeCreateRecursion(KDpntr2, config, conf_msg, log_msg,
 			splitIncrementalDim + 1);
 	returnIfConfigMsg(NULL)
