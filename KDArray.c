@@ -8,9 +8,7 @@
 										free(array); \
 										return NULL; \
 										}
-#define frees()							SPKDArrayDestroy(KD1); SPKDArrayDestroy(KD2); \
-										free(map1); free(map2); \
-										free(halfs);
+#define frees()							free(map1); free(map2); free(halfs);
 //TODO add logger message
 
 #define EPS 0.00000000001
@@ -237,8 +235,12 @@ void printBoolArray(bool* a, int size, const char* name) {
 		return;
 	}
 	printf("%s: (", name);
-	for (int i = 0; i < size; i++) {
-		printf((i == size - 1 ? "%d" : "%d, "), a[i]);
+	int i;
+	for (i = 0; i < size; i++) {
+		if (i == size - 1)
+			printf("%d", a[i]);
+		else
+			printf("%d, ", a[i]);
 	}
 	printf(")\n");
 }
@@ -306,21 +308,30 @@ int** calloc2dInt(int rows, int cols) {
 }
 
 int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
-		SPKDArray* KDpntr2,SPConfig config, SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
+		SPKDArray* KDpntr2, SPConfig config, SP_LOGGER_MSG *log_msg,
+		SP_CONFIG_MSG *conf_msg) {
 
 	if (!kd || coor < 0 || !KDpntr1 || !KDpntr2 || !log_msg || !conf_msg) {
 		InvalidError()
 		return -1;
 	}
+	if (!kd->cols || !kd->rows || !kd->mat || !kd->pointArray) {
+		InvalidError()
+		return -1;
+	}
 	int n = kd->cols, i, indexP1 = -1, indexP2 = -1;
 	int *map1 = NULL, *map2 = NULL, **A1 = NULL, **A2 = NULL;
-
+	*KDpntr1 = NULL;
+	*KDpntr2 = NULL;
 	SPPoint *P1 = NULL, *P2 = NULL;
 	double half = kd->cols;
 	half /= 2;
 //	int splitSize = (int)half + 1;			  //TODO we must have ceil, even numbers will be incremented without it
 	//with ceil it always works (almogz)
 	int splitSize = (int) (ceil(half) + 0.5); //TODO why do we need ceil? (nitzanc)
+	if (!splitSize)
+		return 0;
+
 	printf("splitSize = %d\n", splitSize);
 	SPKDArray KD1 = NULL, KD2 = NULL;
 	KD1 = (SPKDArray) malloc(sizeof(*KD1));
@@ -335,7 +346,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	memset(KD2, 0, sizeof(*KD2));
 
 	/** boolean array for belonging to splits **/
-	bool* halfs = (bool*) malloc(n * sizeof(bool));
+	bool* halfs = (bool*) calloc(n, sizeof(bool));
 	if (!halfs) {
 		MallocError()
 		return -1;
@@ -348,9 +359,9 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	}
 	printBoolArray(halfs, n, "halfs");
 	/** two point arrays to contain sorted points according to belonging **/
-	P1 = (SPPoint*) malloc(splitSize * sizeof(SPPoint));
+	P1 = (SPPoint*) malloc(splitSize * sizeof(*P1));
 	KD1->pointArray = P1;
-	P2 = (SPPoint*) malloc((n - splitSize) * sizeof(SPPoint));
+	P2 = (SPPoint*) malloc((n - splitSize) * sizeof(*P2));
 	KD2->pointArray = P2;
 	map1 = (int*) malloc(n * sizeof(int));
 	map2 = (int*) malloc(n * sizeof(int));
@@ -429,12 +440,12 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 				int cell = kd->mat[j][i];
 				A1[j][i] = map1[cell];
 				if (A1[j][i] == -1)
-					printf("error1");
+					printf("error1\n");
 			} else {
 				int cell = kd->mat[j][i];
 				A2[j][i - splitSize] = map2[cell];
 				if (A2[j][i - splitSize] == -1)				//TODO DELETE
-					printf("error2");
+					printf("error2\n");
 			}
 		}
 	}
@@ -442,9 +453,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	*KDpntr1 = KD1;
 	*KDpntr2 = KD2;
 
-	free(halfs);
-	free(map1);
-	free(map2);
+	frees()
 	//return the median
 	return kd->mat[coor][splitSize];
 //	return 0;
