@@ -83,12 +83,13 @@ int main(int argc, char* argv[]) {
 //	printKDArrayMatrix(kd);
 //	spKDArraySplit(kd, 1, &kd1, &kd2, &log_msg, &conf_msg);
 
+	spKDTreeDestroy(kdtree);
+
 	SPKDArrayDestroy(kd);
 	for (int i = 0; i < 5; i++) {
 		spPointDestroy(arr[i]);
 	}
 	free(arr);
-	spConfigDestroy(config);
 
 	/***************************/
 	log_msg = spLoggerPrintInfo(
