@@ -162,12 +162,6 @@ void SPKDArrayDestroy(SPKDArray kd) {
 	}
 	free(kd->pointArray);
 
-//	if (kd->mat) {			//Replaced with calloc2dInt
-//		/* Frees kd->Mat */
-//		for (i = kd->rows - 1; i >= 0; i--) {
-//			free(kd->mat[i]);
-//		}
-//	}
 	free(kd->mat);
 	free(kd);
 }
@@ -178,6 +172,7 @@ void printKDArrayMatrix(SPKDArray kd) {
 		return;
 	}
 	printf("\n");
+	printf("KDArray Matrix is:\n");
 	for (int i = 0; i < kd->rows; i++) {
 		printf("| ");
 		for (int j = 0; j < kd->cols; j++) {
@@ -280,6 +275,13 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 	/*create initialized matrix of size dims X size */
 
 	int axis;
+/*        int **M = (int**) malloc( dims*sizeof(int*) + dims * size * sizeof(int));
+        int *offset = &M[dims];
+        for(axis=0; axis<dims; axis++, offset += size)
+            M[axis] = offset;
+*/
+
+
 	int **M = (int**) malloc(dims * sizeof(int*));
 	for (axis = 0; axis < dims; axis++) {
 		M[axis] = sortByAxis(arr, size, axis, attr, log_msg);
@@ -345,21 +347,24 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	memset(KD1, 0, sizeof(*KD1));
 	memset(KD2, 0, sizeof(*KD2));
 
-	/** boolean array for belonging to splits **/
-	bool* halfs = (bool*) calloc(n, sizeof(bool));
-	if (!halfs) {
-		MallocError()
+	*log_msg = 0;											///TODO DELETE
+	*conf_msg = 0;											///TODO DELETE
+
+	/** Creating boolean array X to help decide how to split KDArray with respect to given coor **/
+	bool* X = (bool*) malloc(n * sizeof(bool));
+	if (!X) {
+		//TODO add logger message
 		return -1;
 	}
 	for (i = 0; i < splitSize; i++) {
-		halfs[kd->mat[coor][i]] = false;
+		X[kd->mat[coor][i]] = false;
 	}
 	for (; i < n; i++) {
-		halfs[kd->mat[coor][i]] = true;
+		X[kd->mat[coor][i]] = true;
 	}
-	printBoolArray(halfs, n, "halfs");
-	/** two point arrays to contain sorted points according to belonging **/
-	P1 = (SPPoint*) malloc(splitSize * sizeof(*P1));
+
+	/** Creating two point arrays to contain sorted points according to needed partition **/
+	P1 = (SPPoint*) malloc(splitSize * sizeof(SPPoint));
 	KD1->pointArray = P1;
 	P2 = (SPPoint*) malloc((n - splitSize) * sizeof(*P2));
 	KD2->pointArray = P2;
@@ -368,12 +373,10 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	if (!P1 || !P2 || !map1 || !map2) {
 		MallocError()
 		frees()
-
 		return -1;
 	}
-
 	for (i = 0; i < n; i++) {
-		if (!halfs[i]) {
+		if (!X[i]) {
 			P1[++indexP1] = spPointCopy(kd->pointArray[i]);
 			map1[i] = indexP1;
 			map2[i] = -1;
@@ -387,75 +390,46 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	printIntArray(map2, n, "map2");
 
 	/***** ALLOCATION *****/
-	A1 = calloc2dInt(kd->rows, splitSize);
-	printf("1. rows = %d, cols = %d\n", kd->rows, splitSize);
+	A1 = (int**) malloc( kd->rows*sizeof(int*) + kd->rows * splitSize * sizeof(int));
+        int *offset = &A1[kd->rows];
+        for(i=0; i<kd->rows; i++, offset += splitSize)
+            A1[i] = offset;
 	KD1->mat = A1;
 	KD1->rows = kd->rows;
 	KD1->cols = splitSize;
-	A2 = calloc2dInt(kd->rows, n - splitSize);
-	printf("2. rows = %d, cols = %d\n", kd->rows, n - splitSize);
+	A2 = (int**) malloc( kd->rows*sizeof(int*) + kd->rows * (n-splitSize) * sizeof(int));
+        offset =  &A2[kd->rows];
+        for(i=0; i<kd->rows; i++, offset+=(n-splitSize))
+            A2[i] = offset;
 	KD2->mat = A2;
 	KD2->rows = kd->rows;
 	KD2->cols = n - splitSize;
 	if (!A1 || !A2) {
 		MallocError()
 		frees()
-
 		return -1;
 	}
-//	/* Replaced with calloc2dInt */
-//	for (int i = 0; i < splitSize; i++) {
-//		A1[i] = (int*) malloc(splitSize * sizeof(int));	//TODO Memory leak here according to valgrind
-//
-//		/*Malloc fail */
-//		if (!A1[i]) {
-//			//TODO add logger message
-//			frees()
-//
-//			return -1;
-//		}
-//	}
-//
-//	for (int i = 0; i < (n - splitSize); i++) {
-//		A2[i] = (int*) malloc((n - splitSize) * sizeof(int));
-//
-//		/*Malloc fail */
-//		if (!A2[i]) {
-//			frees()
-//
-//			return -1;
-//		}
-//	}
-//	print2DIntArray(A1, 2, 1);
-	//printf("===\n");
-//	print2DIntArray(A2, 2, 1);
 
-//	KD1 = spKDArrayCreate(config,P1,indexP1,log_msg,conf_msg);
-//	KD2 = spKDArrayCreate(config,P2,indexP2,log_msg,conf_msg);
-	for (int j = 0; j < kd->rows; j++) {
-		for (int i = 0; i < n; i++) {		//for on columns of halfs
-
-			//	printf("(%d,%d) ", i, j);
-			if (i < splitSize) {
-				int cell = kd->mat[j][i];
-				A1[j][i] = map1[cell];
-				if (A1[j][i] == -1)
-					printf("error1\n");
-			} else {
-				int cell = kd->mat[j][i];
-				A2[j][i - splitSize] = map2[cell];
-				if (A2[j][i - splitSize] == -1)				//TODO DELETE
-					printf("error2\n");
-			}
+        /* Going over original kd->mat, and mapping values to A1, A2, depending on X, map1, map2 values */
+        int cell, k1, k2;
+	for (int i = 0; i < kd->rows; i++) {		//for on columns of X
+                k1 = 0;
+                k2 = 0;
+		for (int j = 0; j < kd->cols; j++) { 
+                        cell = kd->mat[i][j];
+			if (!X[cell])
+				A1[i][k1++] = map1[cell];
+			else 
+				A2[i][k2++] = map2[cell];
 		}
 	}
 	//printf("\n");
 	*KDpntr1 = KD1;
 	*KDpntr2 = KD2;
 
-	frees()
+	free(X);
+	free(map1);
+	free(map2);
 	//return the median
 	return kd->mat[coor][splitSize];
-//	return 0;
 }
-
