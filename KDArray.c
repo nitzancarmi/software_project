@@ -214,8 +214,8 @@ void printKDPointArray(SPKDArray kd) {
 	for (int j = 0; j < kd->cols; j++) {
 		printf("%d. (", j);
 		for (int i = 0; i < kd->rows; i++) {
-			printf((i == kd->rows - 1 ? "%d" : "%d, "),
-					(int) spPointGetAxisCoor(kd->pointArray[j], i));
+			printf((i == kd->rows - 1 ? "%.0f" : "%.0f, "),
+					spPointGetAxisCoor(kd->pointArray[j], i));
 		}
 		printf(")\n");
 	}
@@ -331,6 +331,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	if (!splitSize)
 		return 0;
 
+	printf("Split Dimension = %d\n", coor);
 	printf("splitSize = %d\n", splitSize);
 	SPKDArray KD1 = NULL, KD2 = NULL;
 	KD1 = (SPKDArray) malloc(sizeof(*KD1));
