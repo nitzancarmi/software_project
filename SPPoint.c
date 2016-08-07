@@ -34,7 +34,7 @@ int spPointCompare(SPPoint a, SPPoint b) {
 }
 SPPoint spPointCreate(double* data, int dim, int index) {
 
-	if (!data || dim <= 0 || index <= 0) {
+	if (!data || dim <= 0 || index < 0) {
 		return NULL;
 	}
 
