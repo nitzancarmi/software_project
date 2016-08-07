@@ -25,20 +25,23 @@ int randomInRange(int min, int max) {  //TODO
 	return (rand() % range) + min;
 }
 
-void getMinMaxOfCoordinate(SPPoint* ptarr, int numOfPts, int coor, int* max,
-		int* min) {
+void getMinMaxOfCoordinate(SPPoint* ptarr, int numOfPts, int coor, double* max,
+		double* min) {
 	if (!ptarr || numOfPts < 0 || coor < 0 || !max || !min)
 		return;
-
+	//printf("		coor: %d -- ", coor);
 	*max = spPointGetAxisCoor(ptarr[0], coor);
+	//printf(" %.0f, ", *max);
 	*min = *max;
 	for (int i = 1; i < numOfPts; i++) {
 		double pnt = spPointGetAxisCoor(ptarr[i], coor);
+		//	printf(" %.0f, ", pnt);
 		if (!doubleEquals(pnt, *max))
 			*max = (pnt > *max) ? pnt : *max;
 		if (!doubleEquals(pnt, *min))
 			*min = (pnt < *min) ? pnt : *min;
 	}
+//	printf("\n");
 }
 
 int getMaxSpreadDimension(SPKDArray arr) {
@@ -49,24 +52,29 @@ int getMaxSpreadDimension(SPKDArray arr) {
 	if (!ptarr)
 		return -1;
 	int dims = spPointGetDimension(*ptarr);
-	int numOfPts = getKDRows(arr);
-	int max, min, maxSpread, dim = 0, tmpMaxSpread;
+	int numOfPts = getKDCols(arr), dim = 0;
+	double max, min, maxSpread, tmpMaxSpread;
 
 	/*The first coordinate is the first candidate*/
 	getMinMaxOfCoordinate(ptarr, numOfPts, 0, &max, &min);
+	//printf("MaxSpread:\n");
 	maxSpread = max - min;
-
+	//printf("	coor = %d, min = %.0f, max = %.0f, maxSpread = %.0f\n", 0, min,max, maxSpread);
 	for (int coor = 1; coor < dims; coor++) {
 		getMinMaxOfCoordinate(ptarr, numOfPts, coor, &max, &min);
 		tmpMaxSpread = max - min;
+		//printf("	coor = %d, min = %.0f, max = %.0f, maxSpread = %.0f\n", coor,
+		//		min, max, tmpMaxSpread);
 		if (!doubleEquals(tmpMaxSpread, maxSpread)) {
-			maxSpread = (tmpMaxSpread > maxSpread) ? tmpMaxSpread : maxSpread;
-			dim = coor;
+			if (tmpMaxSpread > maxSpread) {
+				maxSpread = tmpMaxSpread;
+				dim = coor;
+			}
 		}
 		// If they are equal then lower coordinate is still the candidate
 	}
 	for (int i = 0; i < numOfPts; i++) {
-		free(ptarr[i]);
+		spPointDestroy(ptarr[i]);
 	}
 	free(ptarr);
 	return dim;
@@ -91,6 +99,7 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 		SP_CONFIG_MSG* conf_msg, SP_LOGGER_MSG* log_msg,
 		int splitIncrementalDim) {
 	printKDArrayMatrix(kdarray);
+	printKDPointArray(kdarray);
 	printf("cols = %d\n", getKDCols(kdarray));
 	if (!config || !conf_msg || !log_msg || splitIncrementalDim < 0) {
 		InvalidError()
