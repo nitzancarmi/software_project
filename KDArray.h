@@ -13,10 +13,10 @@
 #define CONFIG_ERR 	"SPConfig Error"
 #define LOGGER_ERR 	"SPLogger Error"
 
-#define InvalidError()	if(spLoggerPrintError(INVALID,__FILE__,__func__,__LINE__)!= SP_LOGGER_SUCCESS){	\
+#define InvalidError()	if((*log_msg = spLoggerPrintError(INVALID,__FILE__,__func__,__LINE__))!= SP_LOGGER_SUCCESS){	\
 							fprintf(stderr,ERR_ARGS,LOGGER_ERR,__FILE__,__LINE__,__func__);}
 
-#define MallocError()	if(spLoggerPrintError(MALLOC_ERR,__FILE__,__func__,__LINE__)!= SP_LOGGER_SUCCESS){	\
+#define MallocError()	if((*log_msg = spLoggerPrintError(MALLOC_ERR,__FILE__,__func__,__LINE__))!= SP_LOGGER_SUCCESS){	\
 							fprintf(stderr,ERR_ARGS,LOGGER_ERR,__FILE__,__LINE__,__func__);}
 
 #define returnIfConfigMsg(ret) if (*conf_msg != SP_CONFIG_SUCCESS) {	\
@@ -32,20 +32,19 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint* arr, int size,
 
 /* Returns two kd-arrays (kdLeft,kdRight) such that the first /ceil[n/2] are in left, rest in right */
 int spKDArraySplit(SPKDArray kdarr, int coor, SPKDArray* KDpntr1,
-		SPKDArray* KDpntr2,SPConfig config, SP_LOGGER_MSG *log_msg,
+		SPKDArray* KDpntr2, SPConfig config, SP_LOGGER_MSG *log_msg,
 		SP_CONFIG_MSG *conf_msg);
 
 /* TODO Documentation
-*
-*/
+ *
+ */
 void SPKDArrayDestroy(SPKDArray kd);
 
 void printKDArrayMatrix(SPKDArray kd);
 
-
 /*
-* TODO DOCO!!!! it does malloc
-*/
+ * TODO DOCO!!!! it does malloc
+ */
 SPPoint* getKDPointArray(SPKDArray kd);
 int** getKDMat(SPKDArray kd);
 int getKDCols(SPKDArray kd);
