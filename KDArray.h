@@ -46,6 +46,7 @@ void printKDArrayMatrix(SPKDArray kd);
  * TODO DOCO!!!! it does malloc
  */
 SPPoint* getKDPointArray(SPKDArray kd);
+SPPoint getKDOnlyPoint(SPKDArray kd);
 int** getKDMat(SPKDArray kd);
 int getKDCols(SPKDArray kd);
 int getKDRows(SPKDArray kd);
