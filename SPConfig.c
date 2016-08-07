@@ -238,17 +238,21 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 	if (!strcmp(var, "spKDTreeSplitMethod")) {
 		const char *options[] = { "RANDOM", "MAX_SPREAD", "INCREMENTAL" };
 		int val = findValueInSet(options, value, 3);
-		if (val == -1) {
+		switch (val) {
+		case 0:
+			attr->spKDTreeSplitMethod = RANDOM;
+			break;
+		case 1:
+			attr->spKDTreeSplitMethod = MAX_SPREAD;
+			break;
+		case 2:
+			attr->spKDTreeSplitMethod = INCREMENTAL;
+			break;
+		default:
 			printf(CONSTRAINT, filename, line);
 			return SP_CONFIG_INVALID_STRING;
 		}
-		if (!strcmp(options[val], "RANDOM")) {
-			attr->spKDTreeSplitMethod = RANDOM;
-		} else if (!strcmp(options[val], "MAX_SPREAD")) {
-			attr->spKDTreeSplitMethod = MAX_SPREAD;
-		} else if (!strcmp(options[val], "INCREMENTAL")) {
-			attr->spKDTreeSplitMethod = INCREMENTAL;
-		}
+
 		return SP_CONFIG_SUCCESS;
 	}
 
@@ -372,13 +376,22 @@ void printAttributes(SPConfig attr) { /** DELETE **/
 	fprintf(stdout, "%s\t\t= %d\n", "spPCADimension", attr->spPCADimension);
 	fprintf(stdout, "%s\t\t= %s\n", "spPCAFilename", attr->spPCAFilename);
 	fprintf(stdout, "%s\t\t= %d\n", "spNumOfFeatures", attr->spNumOfFeatures);
-	fprintf(stdout, "%s\t= %d\n", "spExtractionMode", attr->spExtractionMode);
+	fprintf(stdout, "%s\t= %s\n", "spExtractionMode",
+			attr->spExtractionMode ? "true" : "false");
 	fprintf(stdout, "%s\t= %d\n", "spNumOfSimilarImages",
 			attr->spNumOfSimilarImages);
-	fprintf(stdout, "%s\t= %d\n", "spKDTreeSplitMethod",
-			attr->spKDTreeSplitMethod);
+
+	fprintf(stdout, "%s\t= %s\n", "spKDTreeSplitMethod",
+			(attr->spKDTreeSplitMethod == MAX_SPREAD) ?
+					"MAX_SPREAD" :
+					((attr->spKDTreeSplitMethod == RANDOM) ?
+							"RANDOM" : "INCREMENTAL"));
+	if (attr->spKDTreeSplitMethod == MAX_SPREAD) {
+		fprintf(stdout, "it is max_spreaddd\n");
+	}
 	fprintf(stdout, "%s\t\t\t= %d\n", "spKNN", attr->spKNN);
-	fprintf(stdout, "%s\t\t= %d\n", "spMinimalGUI", attr->spMinimalGUI);
+	fprintf(stdout, "%s\t\t= %s\n", "spMinimalGUI",
+			attr->spMinimalGUI ? "true" : "false");
 	fprintf(stdout, "%s\t\t= %d\n", "spLoggerLevel", attr->spLoggerLevel);
 	fprintf(stdout, "%s\t= %s\n", "spLoggerFilename", attr->spLoggerFilename);
 	fprintf(stdout, "===================\n\n");
