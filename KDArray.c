@@ -36,6 +36,10 @@ SPPoint* getKDPointArray(SPKDArray kd) {
 	return cpy;
 }
 
+SPPoint getKDOnlyPoint(SPKDArray kd) {
+	return (!kd) ? NULL : spPointCopy(kd->pointArray[0]);
+}
+
 int** calloc2dInt(int rows, int cols) {
 	int header = rows * sizeof(int*);
 	int data = rows * cols * sizeof(int);
