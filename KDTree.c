@@ -65,17 +65,20 @@ int getMaxSpreadDimension(SPKDArray arr) {
 		}
 		// If they are equal then lower coordinate is still the candidate
 	}
-
+	for (int i = 0; i < numOfPts; i++) {
+		free(ptarr[i]);
+	}
+	free(ptarr);
 	return dim;
 }
 
 SPKDTreeNode nodeAllocation(int dim, int val, SPKDTreeNode* left,
-		SPKDTreeNode* right, SPPoint* data) {
+		SPKDTreeNode* right, SPPoint* data, SP_LOGGER_MSG* log_msg) {
 	SPKDTreeNode node = (SPKDTreeNode) malloc(sizeof(*node));
-	if (!node)
-		//TODO logger
+	if (!node) {
+		MallocError()
 		return NULL;
-
+	}
 	node->dim = dim;
 	node->val = val;
 	node->left = (left) ? *left : NULL;
@@ -89,23 +92,22 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 		int splitIncrementalDim) {
 	printKDArrayMatrix(kdarray);
 	printf("cols = %d\n", getKDCols(kdarray));
-	if (!config || !conf_msg || !log_msg
-			|| splitIncrementalDim < 0) {
+	if (!config || !conf_msg || !log_msg || splitIncrementalDim < 0) {
 		InvalidError()
 		printf("NULL\n");
 		return NULL;
 	}
-	if(!kdarray)
+	if (!kdarray)
 		return NULL;
 
 	SPKDTreeNode nodeLeft = NULL, nodeRight = NULL;
 	SPKDArray KDpntr1 = NULL, KDpntr2 = NULL;
 	if (getKDCols(kdarray) == 1) { /*getKDCols(kdarray) == 1*/
-	//	printf("inside\n");
+		//	printf("inside\n");
 		//return NULL;
-		return nodeAllocation(-1, -1, NULL, NULL, getKDPointArray(kdarray));
+		SPPoint pnt = getKDOnlyPoint(kdarray);
+		return nodeAllocation(-1, -1, NULL, NULL, &pnt, log_msg);
 	}
-
 
 	returnIfConfigMsg(NULL)
 //	printf("**confmsg1 = %d\n",*conf_msg);
@@ -140,8 +142,8 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	}
 	int split;
 	/* Split */
-	if ((split = spKDArraySplit(kdarray, dim, &KDpntr1, &KDpntr2,config, log_msg,
-			conf_msg)) == -1) {
+	if ((split = spKDArraySplit(kdarray, dim, &KDpntr1, &KDpntr2, config,
+			log_msg, conf_msg)) == -1) {
 		printf("ERROR WITH SPLIT");		//TODO Remove
 		return NULL;
 
@@ -152,13 +154,15 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	printf("\n******LEFT:*******\n");
 	nodeLeft = spKDTreeCreateRecursion(KDpntr1, config, conf_msg, log_msg,
 			splitIncrementalDim + 1);
+	SPKDArrayDestroy(KDpntr1);
 	returnIfConfigMsg(NULL)
 	/* Right Recursion */
 	printf("\n******RIGHT:*******\n");
 	nodeRight = spKDTreeCreateRecursion(KDpntr2, config, conf_msg, log_msg,
 			splitIncrementalDim + 1);
+	SPKDArrayDestroy(KDpntr2);
 	returnIfConfigMsg(NULL)
-	return nodeAllocation(dim, split, &nodeLeft, &nodeRight, NULL);
+	return nodeAllocation(dim, split, &nodeLeft, &nodeRight, NULL, log_msg);
 	return NULL;
 }
 
