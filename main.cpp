@@ -5,6 +5,8 @@ extern "C" {
 #include "KDTree.h"
 }
 
+using namespace sp;
+
 void teardown(SPConfig config) {
 	spLoggerPrintInfo("cleaning allocated logger and configibutes");
 	spLoggerDestroy();
@@ -58,38 +60,31 @@ int main(int argc, char* argv[]) {
 			teardown(config);
 		}
 	}
+	printAttributes(config);
 
-	double data1[2] = { 1, 2 }, data2[2] = { 123, 70 }, data3[2] = { 2, 7 },
-			data4[2] = { 9, 11 }, data5[2] = { 3, 4 };
-	SPPoint a = spPointCreate(data1, 2, 1);
-	SPPoint b = spPointCreate(data2, 2, 2);
-	SPPoint c = spPointCreate(data3, 2, 3);
-	SPPoint d = spPointCreate(data4, 2, 4);
-	SPPoint e = spPointCreate(data5, 2, 5);
-
-	SPPoint* arr = (SPPoint*) malloc(5 * sizeof(SPPoint));
-	arr[0] = a;
-	arr[1] = b;
-	arr[2] = c;
-	arr[3] = d;
-	arr[4] = e;
-
-	SPKDArray kd = spKDArrayCreate(config, arr, 5, &log_msg, &conf_msg);
-//	printKDArrayMatrix(kd);
-//	printf("=========\n");
-	SPKDTreeNode kdtree = spKDTreeCreate(kd, config, &conf_msg, &log_msg);
-
-//	SPKDArray kd = spKDArrayCreate(config, arr, 2, &log_msg, &conf_msg), kd1 = NULL, kd2 =NULL;
-//	printKDArrayMatrix(kd);
-//	spKDArraySplit(kd, 1, &kd1, &kd2, &log_msg, &conf_msg);
-
-	spKDTreeDestroy(kdtree);
-
-	SPKDArrayDestroy(kd);
-	for (int i = 0; i < 5; i++) {
-		spPointDestroy(arr[i]);
+	int numOfFeats = -1;
+	char path[1024] = { '\0' };
+	conf_msg = spConfigGetImagePath(path, config, 0);
+	printf("******path = %s\n", path);
+	ImageProc* pc = new ImageProc(config);
+	SPPoint* pp = pc->getImageFeatures(path, 0, &numOfFeats);
+	if (!pp || !*pp) {
+		printf("NULL POINTER EXCEPTION");
+		exit(1);
 	}
-	free(arr);
+	//int dims = spConfigGetPCADim(config, &conf_msg);
+	//printf("rows = %d, cols = %d\n", dims, numOfFeats);
+//	for (int j = 0; j < numOfFeats; j++) {
+//		printf("%d. (", j);
+//		for (int i = 0; i < dims; i++) {
+//			printf((i == dims - 1 ? "%f" : "%f, "),
+//					spPointGetAxisCoor(pp[j], i));		}
+//		printf(")\n");
+//	}
+
+	SPKDArray arr = spKDArrayCreate(config, pp, numOfFeats, &log_msg,
+			&conf_msg);
+	SPKDTreeNode tree = spKDTreeCreate(arr, config, &conf_msg, &log_msg);
 
 	/***************************/
 	log_msg = spLoggerPrintInfo(
@@ -104,9 +99,9 @@ int main(int argc, char* argv[]) {
 	return OK;
 }
 
-//Deprecated Checks - to insert in the future to kdarray_unit_test
+//	printAttributes(config);
 
-//double data1[2] = { 1, 2 }, data2[2] = { 123, 70 }, data3[2] = { 2, 7 },
+//	double data1[2] = { 1, 2 }, data2[2] = { 123, 70 }, data3[2] = { 2, 7 },
 //			data4[2] = { 9, 11 }, data5[2] = { 3, 4 };
 //	SPPoint a = spPointCreate(data1, 2, 1);
 //	SPPoint b = spPointCreate(data2, 2, 2);
@@ -120,21 +115,21 @@ int main(int argc, char* argv[]) {
 //	arr[2] = c;
 //	arr[3] = d;
 //	arr[4] = e;
-//
-//	SPKDArray kd = spKDArrayCreate(config, arr, 5, &log_msg, &conf_msg), kd1,
-//			kd2;
+
+//	SPKDArray kd = spKDArrayCreate(config, arr, 5, &log_msg, &conf_msg);
 //	printKDArrayMatrix(kd);
-//	spKDArraySplit(kd, 0, &kd1, &kd2, &log_msg, &conf_msg);
-//
-//	printKDArrayMatrix(kd1);
-//	printKDArrayMatrix(kd2);
-//
+//	printf("=========\n");
+//	SPKDTreeNode kdtree = spKDTreeCreate(kd, config, &conf_msg, &log_msg);
+
+//	SPKDArray kd = spKDArrayCreate(config, arr, 2, &log_msg, &conf_msg), kd1 = NULL, kd2 =NULL;
+//	printKDArrayMatrix(kd);
+//	spKDArraySplit(kd, 1, &kd1, &kd2, &log_msg, &conf_msg);
+
+//	spKDTreeDestroy(kdtree);
+
 //	SPKDArrayDestroy(kd);
-//	SPKDArrayDestroy(kd1);
-//	SPKDArrayDestroy(kd2);
-//	for(int i=0;i<5;i++){
+//	for (int i = 0; i < 5; i++) {
 //		spPointDestroy(arr[i]);
 //	}
 //	free(arr);
-//	spConfigDestroy(config);
 
