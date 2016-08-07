@@ -61,7 +61,7 @@ typedef struct sp_config_t* SPConfig;
 
 
 typedef enum split_method_t {
-	RANDOM, MAX_SPREAD, INCREMENTAL
+	UNDEFINED, RANDOM, MAX_SPREAD, INCREMENTAL		//so it would not be confused with 0,1,2
 
 } splitMethod;
 
