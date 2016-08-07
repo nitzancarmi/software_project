@@ -4,6 +4,43 @@
 #include "../KDArray.h"
 #include "unit_test_util.h"
 
+int spKDArrayCompare(SPKDArray A, SPKDArray B) {
+    int i,j;
+    int rc = 0;
+
+    int rows = getKDRows(A);
+    if(rows != getKDRows(B))
+        return 1;
+    int cols = getKDCols(A);
+    if(cols != getKDCols(B))
+        return 1;
+
+    SPPoint *A_pa = getKDPointArray(A);
+    SPPoint *B_pa = getKDPointArray(B);
+    for (i=0;i<cols;i++) {
+        if(spPointCompare(A_pa[i],B_pa[i])){
+            rc = 1;
+        }
+        spPointDestroy(A_pa[i]);
+        spPointDestroy(B_pa[i]);
+    }
+    free(A_pa);
+    free(B_pa);
+    
+
+    int** AM = getKDMat(A);
+    int** BM = getKDMat(B);
+    for(i=0;i<rows;i++) {
+        for(j=0;j<cols;j++) {
+            if(AM[i][j] != BM[i][j])
+                rc=1;
+        }
+    }
+    free(AM);
+    free(BM);
+    return rc;
+}
+
 int init_test(SPConfig attr) {
 
     printf("Strating the init_test\n----------------------\n");    
@@ -65,8 +102,6 @@ int init_test(SPConfig attr) {
     SPKDArrayDestroy(res);
     for(i = 4; i >= 0; i--)
         spPointDestroy(pa[i]);
-    free(M[1]);
-    free(M[0]);
     free(M);
     return rc;
 }
@@ -81,11 +116,11 @@ int split_test(SPConfig attr) {
     SP_LOGGER_MSG log_msg = SP_LOGGER_SUCCESS;
 
     /*first check - given example*/
-    int BASIC_CHECK = 0;
+    int BASIC_CHECK=0;
     printf("\n===1===\n");
     printf("Starting a basic check\n");
     printf("creating a new KDArray\n");
-    double a[2] = {1.0,10.0};
+    double a[2] = {1.0,2.0};
     double b[2] = {123.0,70.0};
     double c[2] = {2.0,7.0};
     double d[2] = {9.0,11.0};
@@ -103,42 +138,84 @@ int split_test(SPConfig attr) {
                                     size,
                                     &log_msg,
                                     &conf_msg);
-    printf("finished creating KDArray (note: log and config msgs are left unchecked)\n");
+    printf("finished creating the KDArray (note: log and config msgs are left unchecked)\n");
 
     SPKDArray L=NULL,R=NULL;
     printf("Splitting the given KDArray\n");
     BASIC_CHECK = spKDArraySplit(res, 0, &L, &R, &log_msg, &conf_msg);
-    printf("\nL:\n---\n");
-    printKDArrayMatrix(L);
-    printf("\nR:\n---\n");
-    printKDArrayMatrix(R);
-    printf("freeing the initial KDArray, leaving only its splitted arrays\n");
+//    printf("\nL:\n---\n");
+//    printKDArrayMatrix(L);
+//    printf("\nR:\n---\n");
+//    printKDArrayMatrix(R);
     SPKDArrayDestroy(res);
-    rc |= BASIC_CHECK;
-    rc <<= 1;
 
-    /*starting a continous check*/
+    printf("Starting checkups.");
+    //Left KDArray
+    SPPoint leftArr[3] = {arr[0], arr[2],arr[4]}; 
+    size=3;
+    SPKDArray L_sol = spKDArrayCreate(attr,
+                                      leftArr,
+                                      size,
+                                      &log_msg,
+                                      &conf_msg);
+    BASIC_CHECK |= spKDArrayCompare(L,L_sol);
+    SPKDArrayDestroy(L_sol);
+    printf(".....");
+
+    //Right KDArray
+    SPPoint rightArr[2] = {arr[1], arr[3]}; 
+    size=2;
+    SPKDArray R_sol = spKDArrayCreate(attr,
+                                      rightArr,
+                                      size,
+                                      &log_msg,
+                                      &conf_msg);
+    BASIC_CHECK |= spKDArrayCompare(R,R_sol);
+    SPKDArrayDestroy(R_sol);
+    printf(".....");
+    printf("Complete!\n");
+    
+
+    printf("finished Basic check.\n===%s===\n\n", BASIC_CHECK ? "FAIL" : "SUCCESS");
+    rc |= BASIC_CHECK;
+    rc <<=1;
+
+
+    /*continous check*/
     int CONT_CHECK = 0;
     printf("using already created splitted arrays L,R - now splitting them again\n");
-    printf("by X coordinate:\n----------------\n");
+    printf("by X coordinate:");
     SPKDArray LR, LL, RL, RR;
     CONT_CHECK = spKDArraySplit(L, 0, &LL, &LR, &log_msg, &conf_msg);
-    printf("\nLL:\n---\n");
-    printKDArrayMatrix(LL);
-    printf("\nLR:\n---\n");
-    printKDArrayMatrix(LR);
     CONT_CHECK |= spKDArraySplit(R, 0, &RL, &RR, &log_msg, &conf_msg); 
-    printf("\nRLL:\n---\n");
-    printKDArrayMatrix(RL);
-    printf("\nRR:\n---\n");
-    printKDArrayMatrix(RR);
+    printf(".....");
 
-/*
+    SPPoint LL_arr[2] = {arr[0], arr[2]}; 
+    size=2;
+    SPKDArray LL_sol = spKDArrayCreate(attr,
+                                       LL_arr,
+                                       size,
+                                       &log_msg,
+                                       &conf_msg);
+    CONT_CHECK |= spKDArrayCompare(LL,LL_sol);
+    SPKDArrayDestroy(LL_sol);
+    printf(".....");
+
+    SPPoint LR_arr[1] = {arr[4]}; 
+    size=1;
+    SPKDArray LR_sol = spKDArrayCreate(attr,
+                                       LR_arr,
+                                       size,
+                                       &log_msg,
+                                       &conf_msg);
+    CONT_CHECK |= spKDArrayCompare(LR,LR_sol);
+    SPKDArrayDestroy(LR_sol);
+    printf(".....");
     SPKDArrayDestroy(LL);
     SPKDArrayDestroy(LR);
-    SPKDArrayDestroy(RL);
-    SPKDArrayDestroy(RR);
-*/
+    SPKDArrayDestroy(L);
+    printf("COMPLETE!\n");
+/*
     printf("\nby Y coordinate:\n----------------\n");
     SPKDArray YLR, YLL, YRL, YRR;
     CONT_CHECK = spKDArraySplit(L, 0, &YLL, &YLR, &log_msg, &conf_msg);
@@ -151,16 +228,16 @@ int split_test(SPConfig attr) {
     printKDArrayMatrix(YRL);
     printf("\nRR:\n---\n");
     printKDArrayMatrix(YRR);
-/*    SPKDArrayDestroy(YLL);
+    SPKDArrayDestroy(YLL);
     SPKDArrayDestroy(YLR);
     SPKDArrayDestroy(YRL);
     SPKDArrayDestroy(YRR);
 
     printf("freeing the splitted KD arrays R and L\n");
     SPKDArrayDestroy(L);
-    SPKDArrayDestroy(R);
+*/    SPKDArrayDestroy(R);
     rc |= CONT_CHECK;
-*/
+
     return rc;
        
 }

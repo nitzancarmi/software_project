@@ -40,20 +40,17 @@ SPPoint* getKDPointArray(SPKDArray kd) {
 int** getKDMat(SPKDArray kd) {
 	int i, j;
 
-	int** cpy = (int**) malloc(kd->rows * sizeof(int*));
+	int** cpy = (int**) malloc(kd->rows * sizeof(int*) + kd->rows * kd->cols * sizeof(int));
 	if (!cpy)
 		return NULL;
-	for (i = 0; i < kd->rows; i++) {
-		cpy[i] = (int*) malloc(kd->cols * sizeof(int));
-		if (!cpy[i])
-			return NULL;
-	}
-
-	for (i = 0; i < kd->rows; i++) {
-		for (j = 0; j < kd->cols; j++) {
+        int* offset = &cpy[kd->rows];
+	for (i = 0; i < kd->rows; i++, offset += kd->cols)
+		cpy[i] = offset;
+	
+	for (i = 0; i < kd->rows; i++)
+		for (j = 0; j < kd->cols; j++)
 			cpy[i][j] = (kd->mat)[i][j];
-		}
-	}
+
 	return cpy;
 }
 
@@ -103,19 +100,19 @@ int pointComparator(const void *p, const void *q) {
 }
 
 /* assumes all pts same dimension */
-int* sortByAxis(const SPPoint* pts, int size, int axis, const SPConfig config,
+int sortByAxis(int *ret, const SPPoint* pts, int size, int axis, const SPConfig config,
 		SP_LOGGER_MSG* msg) {
 	*msg = 0; //TODO
 	if (!pts || axis < 0 || !config) {
 		spLoggerPrintError("Invalid Argument to sortByAxis", __FILE__, __func__,
 		__LINE__);
-		return NULL;
+		return 1;
 	}
 	PointAxis* ptsAx = (PointAxis*) malloc(size * sizeof(*ptsAx));
 
 	if (!ptsAx)
 		//TODO add logger message
-		return NULL;
+		return 1;
 
 	for (int i = 0; i < size; i++) {
 		ptsAx[i] = (PointAxis) malloc(sizeof(*ptsAx[i]));
@@ -128,7 +125,7 @@ int* sortByAxis(const SPPoint* pts, int size, int axis, const SPConfig config,
 			}
 
 			free(ptsAx);
-			return NULL;
+			return 1;
 		}
 		ptsAx[i]->pnt = pts[i];
 		ptsAx[i]->axis = axis;
@@ -137,11 +134,6 @@ int* sortByAxis(const SPPoint* pts, int size, int axis, const SPConfig config,
 	}
 
 	qsort(ptsAx, size, sizeof(*ptsAx), pointComparator);
-	int* ret = (int*) malloc(size * sizeof(int));
-	if (!ret) {
-		//TODO add logger message
-		return NULL;
-	}
 	for (int i = 0; i < size; i++)
 		ret[i] = ptsAx[i]->indexInPntArray;
 
@@ -149,8 +141,7 @@ int* sortByAxis(const SPPoint* pts, int size, int axis, const SPConfig config,
 		free(ptsAx[i]);
 	}
 	free(ptsAx);
-
-	return ret;
+	return 0;
 }
 
 void SPKDArrayDestroy(SPKDArray kd) {
@@ -275,17 +266,13 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 	/*create initialized matrix of size dims X size */
 
 	int axis;
-/*        int **M = (int**) malloc( dims*sizeof(int*) + dims * size * sizeof(int));
+        int **M = (int**) malloc( dims*sizeof(int*) + dims * size * sizeof(int));
         int *offset = &M[dims];
         for(axis=0; axis<dims; axis++, offset += size)
             M[axis] = offset;
-*/
 
-
-	int **M = (int**) malloc(dims * sizeof(int*));
 	for (axis = 0; axis < dims; axis++) {
-		M[axis] = sortByAxis(arr, size, axis, attr, log_msg);
-		if (!M[axis]) {
+		if(sortByAxis(M[axis],arr, size, axis, attr, log_msg)) {
 			//TODO add logger message
 			SPKDArrayDestroy(kd);
 			return NULL;
