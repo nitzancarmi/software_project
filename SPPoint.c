@@ -17,7 +17,7 @@ struct sp_point_t {
 };
 
 int spPointCompare(SPPoint a, SPPoint b) {
-    /*checks if has the sime dimension*/
+    /*checks if has the same dimension*/
     int dim;
     if(a->dim != b->dim)
         return 1;
