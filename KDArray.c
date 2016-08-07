@@ -9,7 +9,6 @@
 										return NULL; \
 										}
 #define frees()							free(map1); free(map2); free(X);
-//TODO add logger message
 
 #define EPS 0.00000000001
 
@@ -53,13 +52,14 @@ int** calloc2dInt(int rows, int cols) {
 int** getKDMat(SPKDArray kd) {
 	int i, j;
 
-	int** cpy = (int**) malloc(
-			kd->rows * sizeof(int*) + kd->rows * kd->cols * sizeof(int));
+	int** cpy = calloc2dInt(kd->rows, kd->cols);
+//	int** cpy = (int**) malloc(
+//			kd->rows * sizeof(int*) + kd->rows * kd->cols * sizeof(int));
 	if (!cpy)
 		return NULL;
-	int* offset = cpy[kd->rows];
-	for (i = 0; i < kd->rows; i++, offset += kd->cols)
-		cpy[i] = offset;
+//	int* offset = cpy[kd->rows];
+//	for (i = 0; i < kd->rows; i++, offset += kd->cols)
+//		cpy[i] = offset;
 
 	for (i = 0; i < kd->rows; i++)
 		for (j = 0; j < kd->cols; j++)
@@ -115,8 +115,7 @@ int pointComparator(const void *p, const void *q) {
 
 /* assumes all pts same dimension */
 int sortByAxis(int *ret, const SPPoint* pts, int size, int axis,
-		const SPConfig config, SP_LOGGER_MSG* msg) {
-	*msg = 0; //TODO
+		const SPConfig config, SP_LOGGER_MSG* log_msg) {
 	if (!pts || axis < 0 || !config) {
 		spLoggerPrintError("Invalid Argument to sortByAxis", __FILE__, __func__,
 		__LINE__);
@@ -124,9 +123,10 @@ int sortByAxis(int *ret, const SPPoint* pts, int size, int axis,
 	}
 	PointAxis* ptsAx = (PointAxis*) malloc(size * sizeof(*ptsAx));
 
-	if (!ptsAx)
-		//TODO add logger message
+	if (!ptsAx) {
+		MallocError()
 		return 1;
+	}
 
 	for (int i = 0; i < size; i++) {
 		ptsAx[i] = (PointAxis) malloc(sizeof(*ptsAx[i]));
@@ -134,6 +134,7 @@ int sortByAxis(int *ret, const SPPoint* pts, int size, int axis,
 		/*Malloc fail */
 
 		if (!ptsAx[i]) {
+			MallocError()
 			for (i--; i >= 0; i--) {
 				free(ptsAx[i]);
 			}
@@ -248,24 +249,23 @@ void printBoolArray(bool* a, int size, const char* name) {
 SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
-	if (!arr || size < 1)
-//TODO add logger message
+	if (!arr || size < 1) {
+		InvalidError()
 		return NULL;
-
+	}
 	/*create new struct SPKDArray*/
 	SPKDArray kd = (SPKDArray) malloc(sizeof(*kd));
 
 	if (!kd) {
-//TODO add logger message
+		MallocError()
 		return NULL;
 	}
 
 	int dims = spConfigGetPCADim(attr, conf_msg);
 
-	if (dims < 0) {
-//TODO add logger message
+	if (dims < 1) {
 		SPKDArrayDestroy(kd);
-		return NULL;
+		returnIfConfigMsg(NULL);
 	}
 	kd->cols = size;
 	kd->rows = dims;
@@ -273,7 +273,7 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 	/*copy array into struct*/
 	kd->pointArray = copyPointArray(arr, size);
 	if (!kd->pointArray) {
-//TODO add logger message
+		MallocError()
 		SPKDArrayDestroy(kd);
 		return NULL;
 	}
@@ -281,6 +281,11 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 
 	int axis;
 	int **M = calloc2dInt(dims, size);
+	if (!M) {
+		MallocError();
+		free(kd);
+		return NULL;
+	}
 //	int **M = (int**) malloc(dims * sizeof(int*) + dims * size * sizeof(int));
 //	int *offset = M[dims];
 //	for (axis = 0; axis < dims; axis++, offset += size)
@@ -288,7 +293,6 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 
 	for (axis = 0; axis < dims; axis++) {
 		if (sortByAxis(M[axis], arr, size, axis, attr, log_msg)) {
-			//TODO add logger message
 			SPKDArrayDestroy(kd);
 			return NULL;
 		}
@@ -384,7 +388,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	KD1->mat = A1;
 	KD1->rows = kd->rows;
 	KD1->cols = splitSize;
-	A2 =  calloc2dInt(kd->rows, n-splitSize);
+	A2 = calloc2dInt(kd->rows, n - splitSize);
 //	A2 = (int**) malloc(kd->rows * sizeof(int*) + kd->rows * (n - splitSize) * sizeof(int));
 //	offset = A2[kd->rows];
 //	for (i = 0; i < kd->rows; i++, offset += (n - splitSize))
