@@ -148,12 +148,14 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 //			return NULL;
 //		}
 		break;
+	default:
+		InvalidError()
+		return NULL;
 	}
 	int split;
 	/* Split */
 	if ((split = spKDArraySplit(kdarray, dim, &KDpntr1, &KDpntr2, config,
 			log_msg, conf_msg)) == -1) {
-		printf("ERROR WITH SPLIT");		//TODO Remove
 		return NULL;
 
 	}
