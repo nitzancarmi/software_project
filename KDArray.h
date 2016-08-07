@@ -41,7 +41,7 @@ int spKDArraySplit(SPKDArray kdarr, int coor, SPKDArray* KDpntr1,
 void SPKDArrayDestroy(SPKDArray kd);
 
 void printKDArrayMatrix(SPKDArray kd);
-
+void printKDPointArray(SPKDArray kd);
 /*
  * TODO DOCO!!!! it does malloc
  */
