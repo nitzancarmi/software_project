@@ -543,8 +543,16 @@ bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg) {
 	getter(spMinimalGUI);
 }
 
+int spConfigGetKNN(const SPConfig config, SP_CONFIG_MSG* msg){
+	getter(spKNN);
+}
+
 int spConfigGetNumOfImages(const SPConfig config, SP_CONFIG_MSG* msg) {
 	getter(spNumOfImages);
+}
+
+int spConfigGetNumOfSimilarImages(const SPConfig config, SP_CONFIG_MSG* msg) {
+	getter(spNumOfSimilarImages);
 }
 
 int spConfigGetNumOfFeatures(const SPConfig config, SP_CONFIG_MSG* msg) {

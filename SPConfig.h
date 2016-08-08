@@ -134,6 +134,12 @@ bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg);
  */
 int spConfigGetNumOfImages(const SPConfig config, SP_CONFIG_MSG* msg);
 
+int spConfigGetNumOfSimilarImages(const SPConfig config, SP_CONFIG_MSG* msg);
+
+/* TODO docu!!!
+*/
+int spConfigGetKNN(const SPConfig config, SP_CONFIG_MSG* msg);
+
 /*
  * Returns the number of features to be extracted. i.e the value
  * of spNumOfFeatures.
