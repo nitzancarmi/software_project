@@ -169,7 +169,7 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 	/*spPCADimension*/
 	/*Constraint: integers in range [10,28]*/
 	if (!strcmp(var, "spPCADimension")) {
-		int val = updateValueInRange(value, 2, 28);			//TODO CHANGE TO 10
+		int val = updateValueInRange(value, 10, 28);
 		if (val) {
 			attr->spPCADimension = val;
 			return SP_CONFIG_SUCCESS;
