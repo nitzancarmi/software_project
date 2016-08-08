@@ -1,9 +1,12 @@
 #include "SPImageProc.h"
 #include <cstring>
 #include <cstdlib>
+
 extern "C" {
 #include "KDTree.h"
 #include "SPExtractor.h"
+#include <unistd.h>
+
 }
 
 #define FIRST_MSG "SPConfig file imported.\nLogger opened."
@@ -18,18 +21,12 @@ void finishProgram(SPConfig config) {
 
 }
 
-int exportSPPointsToFile(SPPoint* pa, int size, int image_index,
-		SPConfig config) {
-	printf("%p%d%d%p", &pa, size, image_index, &config);
-	return 0;
-}
-
 int main(int argc, char* argv[]) {
 
 	SPConfig config;
 	SP_CONFIG_MSG conf_msg = SP_CONFIG_SUCCESS;
 	SP_LOGGER_MSG log_msg = SP_LOGGER_SUCCESS;
-
+	fflush(stdout);
 	switch (argc) {
 
 	case 1:
@@ -94,8 +91,43 @@ int main(int argc, char* argv[]) {
 			/************************/
 		}
 	}
+	int totalNumOfFeatures = 0;
+	SPPoint* arr = extractImagesFeatures(&totalNumOfFeatures,config,&log_msg,&conf_msg);
 
 
+//	char q_path[1024];
+//	int q_numOfFeats;
+//	while (1) {
+//		fflush(stdout);
+//		//get get image path from user
+//		printf("Please enter an image path:\n");
+//		fflush(stdout);
+//		fgets(q_path, 1024, stdin);
+//		fflush(stdout);
+//		q_path[strlen(q_path) - 1] = '\0';
+//
+//		//check validity of output
+//		if (!strlen(q_path))
+//			break;
+//		if (access(q_path, F_OK) == -1) {
+//			printf("invalid path to image. Please try again.\n");
+//			continue;
+//		}
+//
+//		//getting image features
+//		SPPoint *q_pp = pc->getImageFeatures(q_path, 0, &q_numOfFeats);
+//		if (!q_pp || !*q_pp) {
+//			//TODO logger message
+//			printf("NULL POINTER EXCEPTION");
+//			exit(1);
+//		}
+//
+//		//freeing temporary resources
+//		spPointArrayDestroy(q_pp,q_numOfFeats); //TODO uncomment after pull
+//		q_pp = NULL;
+//	}
+
+	printf("Exiting...\n");
 
 	/***************************/
 	log_msg = spLoggerPrintInfo(FINISH_PRG);
