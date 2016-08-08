@@ -15,6 +15,8 @@
 #include "SPConfig.h"
 #include "KDArray.h"
 
+
+
 #define SYNTAX "Syntax Error while reading feature file. SKIPPING FILE."
 
 #define printError(msg)		if((*log_msg = spLoggerPrintError(msg,__FILE__,__func__,__LINE__))!= SP_LOGGER_SUCCESS){	\

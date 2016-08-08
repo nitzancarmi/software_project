@@ -422,4 +422,3 @@ int exportImageToFile(SPPoint* pa, int size, int image_index, SPConfig config) {
 	fclose(output);
 	return 0;
 }
-
