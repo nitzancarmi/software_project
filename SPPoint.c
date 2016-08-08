@@ -79,6 +79,7 @@ void spPointDestroy(SPPoint point) {
 }
 
 
+
 void spPointArrayDestroy(SPPoint* points, int size) {
 	if (!points || size < 0)
 		return;

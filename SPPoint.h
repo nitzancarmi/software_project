@@ -2,6 +2,7 @@
 #define SPPOINT_H_
 
 
+
 /**
  * SPPoint Summary
  * Encapsulates a point with variable length dimension. The coordinates
