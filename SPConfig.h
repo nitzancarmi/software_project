@@ -194,6 +194,7 @@ splitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg);
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
 		int index);
 
+char* spConfigGetImagesPrefix(const SPConfig config);
 /**
  * The function stores in pcaPath the full path of the pca file.
  * For example given the values of:
