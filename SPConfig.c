@@ -16,7 +16,7 @@
 
 #define getter(property)					assert(msg);									\
 	*msg = config ? SP_CONFIG_SUCCESS : SP_CONFIG_INVALID_ARGUMENT;							\
-	return config ? config->property : false
+	return config ? config->property : 0 //maybe error
 /****************************************************************************************************/
 
 /*** Struct Definition ***/
@@ -40,6 +40,8 @@ struct sp_config_t {
 	char* spLoggerFilename;
 };
 /****************************/
+
+int wasExtractionModeSet = 0;
 
 void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 		char** varReturn, char** valueReturn) {
@@ -207,10 +209,12 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 		const char *boolean[] = { "true", "false" };
 		int val = findValueInSet(boolean, value, 2);
 		if (val == 0) {
+			wasExtractionModeSet = 1;
 			attr->spExtractionMode = true;
 			return SP_CONFIG_SUCCESS;
 		}
 		if (val == 1) {
+			wasExtractionModeSet = 1;
 			attr->spExtractionMode = false;
 			return SP_CONFIG_SUCCESS;
 		}
@@ -343,7 +347,8 @@ SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 
 	checkAndAssign(spPCADimension, 20);
 	checkAndAssign(spNumOfFeatures, 100);
-	checkAndAssign(spExtractionMode, true);
+	if(!wasExtractionModeSet)
+		checkAndAssign(spExtractionMode, true);
 	checkAndAssign(spNumOfSimilarImages, 1);
 	checkAndAssign(spKDTreeSplitMethod, MAX_SPREAD);
 	checkAndAssign(spKNN, 1);
