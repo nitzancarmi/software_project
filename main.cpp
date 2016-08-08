@@ -3,6 +3,7 @@
 #include <cstdlib>
 extern "C" {
 #include "KDTree.h"
+#include "SPExtractor.h"
 }
 
 #define FIRST_MSG "SPConfig file imported.\nLogger opened."
@@ -59,6 +60,29 @@ int main(int argc, char* argv[]) {
 		finishProgram(config);
 	}
 	printAttributes(config);
+int numOfFeats = -1;
+char path[1024] = { '\0' };
+conf_msg = spConfigGetImagePath(path, config, 0);
+printf("******path = %s\n", path);
+ImageProc* pc = new ImageProc(config);
+SPPoint* pp = pc->getImageFeatures(path, 0, &numOfFeats);
+if (!pp || !*pp) {
+	printf("NULL POINTER EXCEPTION");
+	exit(1);
+}
+int i, rc = 0;
+int numOfImages = spConfigGetNumOfImages(config, &conf_msg);
+if(numOfImages < 0){
+    printf("ERROR IN NUM OF IMAGES\n");
+    exit(1);
+}
+for(i=0;i<numOfImages;i++) {
+    rc = exportImageToFile(pp, numOfFeats, i, config);
+    if(rc) {
+        printf("ERROR - in exportImagesToFile");
+        exit(1);
+    }
+}
 
 	/***************************/
 	log_msg = spLoggerPrintInfo(FINISH_PRG);
@@ -72,16 +96,6 @@ int main(int argc, char* argv[]) {
 
 /*** first imageProc run: **/
 
-//int numOfFeats = -1;
-//char path[1024] = { '\0' };
-//conf_msg = spConfigGetImagePath(path, config, 0);
-//printf("******path = %s\n", path);
-//ImageProc* pc = new ImageProc(config);
-//SPPoint* pp = pc->getImageFeatures(path, 0, &numOfFeats);
-//if (!pp || !*pp) {
-//	printf("NULL POINTER EXCEPTION");
-//	exit(1);
-//}
 ////int dims = spConfigGetPCADim(config, &conf_msg);
 ////printf("rows = %d, cols = %d\n", dims, numOfFeats);
 ////	for (int j = 0; j < numOfFeats; j++) {
