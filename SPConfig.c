@@ -368,7 +368,7 @@ SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 }
 
 void printAttributes(SPConfig attr) { /** DELETE **/
-	fprintf(stdout, "\n\n=== Attributes: ===\n");
+	fprintf(stdout, "=== Attributes: ===\n");
 	fprintf(stdout, "%s\t= %s\n", "spImagesDirectory", attr->spImagesDirectory);
 	fprintf(stdout, "%s\t\t= %s\n", "spImagesPrefix", attr->spImagesPrefix);
 	fprintf(stdout, "%s\t\t= %s\n", "spImagesSuffix", attr->spImagesSuffix);
@@ -386,9 +386,6 @@ void printAttributes(SPConfig attr) { /** DELETE **/
 					"MAX_SPREAD" :
 					((attr->spKDTreeSplitMethod == RANDOM) ?
 							"RANDOM" : "INCREMENTAL"));
-	if (attr->spKDTreeSplitMethod == MAX_SPREAD) {
-		fprintf(stdout, "it is max_spreaddd\n");
-	}
 	fprintf(stdout, "%s\t\t\t= %d\n", "spKNN", attr->spKNN);
 	fprintf(stdout, "%s\t\t= %s\n", "spMinimalGUI",
 			attr->spMinimalGUI ? "true" : "false");
