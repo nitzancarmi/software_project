@@ -3,6 +3,7 @@
 #include <cstdlib>
 extern "C" {
 #include "KDTree.h"
+#include "SPExtractor.h"
 }
 
 #define FIRST_MSG "SPConfig file imported.\nLogger opened."
@@ -15,6 +16,12 @@ void finishProgram(SPConfig config) {
 	spLoggerDestroy();
 	spConfigDestroy(config);
 
+}
+
+int exportSPPointsToFile(SPPoint* pa, int size, int image_index,
+		SPConfig config) {
+	printf("%p%d%d%p", &pa, size, image_index, &config);
+	return 0;
 }
 
 int main(int argc, char* argv[]) {
@@ -48,8 +55,9 @@ int main(int argc, char* argv[]) {
 		printf(INVALID_COMLINE);
 		break;
 	}
-	if ((log_msg = spLoggerCreate(NULL, SP_LOGGER_WARNING_ERROR_LEVEL))
-			!= SP_LOGGER_SUCCESS) {
+	if (!config
+			|| (log_msg = spLoggerCreate(NULL, SP_LOGGER_WARNING_ERROR_LEVEL))
+					!= SP_LOGGER_SUCCESS) {
 		finishProgram(config);
 		return ERROR;
 	}
@@ -59,6 +67,35 @@ int main(int argc, char* argv[]) {
 		finishProgram(config);
 	}
 	printAttributes(config);
+
+	ImageProc* pc = new ImageProc(config);
+	int numOfImages = spConfigGetNumOfImages(config, &conf_msg); //No need to read conf_msg, controlling all inputs myself
+
+	/*******************************************/
+	/*********   Extraction Mode    ************/
+	/*******************************************/
+
+	if (spConfigIsExtractionMode(config, &conf_msg)) {
+		for (int index = 0; index < numOfImages; index++) {
+			char path[1024] = { '\0' };
+			int numOfFeats = -1;
+			spConfigGetImagePath(path, config, index); //No need to read conf_msg, controlling all inputs myself
+			SPPoint* pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
+
+			/** Features Extraction **/
+			if (exportImageToFile(pointArray, numOfFeats, index, config)) {
+
+				/* Writing to File Error */
+				spPointArrayDestroy(pointArray, numOfFeats);
+				delete pc;
+				finishProgram(config);
+				return ERROR;
+			}
+			/************************/
+		}
+	}
+
+
 
 	/***************************/
 	log_msg = spLoggerPrintInfo(FINISH_PRG);
