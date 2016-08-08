@@ -99,10 +99,12 @@ int main(int argc, char* argv[]) {
 	char q_path[1024];
 	int q_numOfFeats;
 	while (1) {
-
+		fflush(stdout);
 		//get get image path from user
 		printf("Please enter an image path:\n");
+		fflush(stdout);
 		fgets(q_path, 1024, stdin);
+		fflush(stdout);
 		q_path[strlen(q_path) - 1] = '\0';
 
 		//check validity of output
@@ -126,67 +128,6 @@ int main(int argc, char* argv[]) {
 		q_pp = NULL;
 	}
 
-	printf("Exiting...\n");
-	return 0;
-
-//
-//int numOfFeats = -1;
-//char path[1024] = { '\0' };
-//conf_msg = spConfigGetImagePath(path, config, 0);
-//printf("******path = %s\n", path);
-//SPPoint* pp = pc->getImageFeatures(path, 0, &numOfFeats);
-//if (!pp || !*pp) {
-//	printf("NULL POINTER EXCEPTION");
-//	exit(1);
-//}
-//int i, rc = 0;
-//int numOfImages = spConfigGetNumOfImages(config, &conf_msg);
-//if(numOfImages < 0){
-//    printf("ERROR IN NUM OF IMAGES\n");
-//    exit(1);
-//}
-//for(i=0;i<numOfImages;i++) {
-//    rc = exportImageToFile(pp, numOfFeats, i, config);
-//    if(rc) {
-//        printf("ERROR - in exportImagesToFile");
-//        exit(1);
-//    }
-//}
-//
-//
-//
-
-//	char q_path[1024];
-//	int q_numOfFeats;
-//	while (1) {
-//		fflush(stdout);
-//		//get get image path from user
-//		printf("Please enter an image path:\n");
-//		fflush(stdout);
-//		fgets(q_path, 1024, stdin);
-//		fflush(stdout);
-//		q_path[strlen(q_path) - 1] = '\0';
-//
-//		//check validity of output
-//		if (!strlen(q_path))
-//			break;
-//		if (access(q_path, F_OK) == -1) {
-//			printf("invalid path to image. Please try again.\n");
-//			continue;
-//		}
-//
-//		//getting image features
-//		SPPoint *q_pp = pc->getImageFeatures(q_path, 0, &q_numOfFeats);
-//		if (!q_pp || !*q_pp) {
-//			//TODO logger message
-//			printf("NULL POINTER EXCEPTION");
-//			exit(1);
-//		}
-//
-//		//freeing temporary resources
-//		spPointArrayDestroy(q_pp,q_numOfFeats); //TODO uncomment after pull
-//		q_pp = NULL;
-//	}
 
 	printf("Exiting...\n");
 
