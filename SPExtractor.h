@@ -13,6 +13,15 @@
 #include <ctype.h>
 #include "SPPoint.h"
 #include "SPConfig.h"
+#include "KDArray.h"
+
+#define SYNTAX "Syntax Error while reading feature file. SKIPPING FILE."
+
+#define printError(msg)		if((*log_msg = spLoggerPrintError(msg,__FILE__,__func__,__LINE__))!= SP_LOGGER_SUCCESS){	\
+								fprintf(stderr,ERR_ARGS,LOGGER_ERR,__FILE__,__LINE__,__func__);}
+
+#define printWarning(msg)		if((*log_msg = spLoggerPrintWarning(msg,__FILE__,__func__,__LINE__))!= SP_LOGGER_SUCCESS){	\
+								fprintf(stderr,ERR_ARGS,LOGGER_ERR,__FILE__,__LINE__,__func__);}
 
 /*
  * exports image properties to a unique file
