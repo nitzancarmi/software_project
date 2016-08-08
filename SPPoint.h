@@ -117,4 +117,9 @@ double spPointGetAxisCoor(SPPoint point, int axis);
 double spPointL2SquaredDistance(SPPoint p, SPPoint q);
 
 
+void spPointArrayDestroy(SPPoint* points, int size); //TODO DOCO
+
+
+
+
 #endif /* SPPOINT_H_ */

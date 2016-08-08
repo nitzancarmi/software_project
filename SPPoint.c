@@ -17,20 +17,20 @@ struct sp_point_t {
 };
 
 int spPointCompare(SPPoint a, SPPoint b) {
-    /*checks if has the same dimension*/
-    int dim;
-    if(a->dim != b->dim)
-        return 1;
-    else
-        dim = a->dim;
-    int i;
-    int cmp=0;
-    for (i=0;i<dim;i++){
-        cmp += (a->data[i] - b->data[i]);
-    }
-    if (abs(cmp) > EPS)
-        return 1;
-    return a->index - b->index;
+	/*checks if has the same dimension*/
+	int dim;
+	if (a->dim != b->dim)
+		return 1;
+	else
+		dim = a->dim;
+	int i;
+	int cmp = 0;
+	for (i = 0; i < dim; i++) {
+		cmp += (a->data[i] - b->data[i]);
+	}
+	if (abs(cmp) > EPS)
+		return 1;
+	return a->index - b->index;
 }
 SPPoint spPointCreate(double* data, int dim, int index) {
 
@@ -78,6 +78,17 @@ void spPointDestroy(SPPoint point) {
 
 }
 
+void spPointArrayDestroy(SPPoint* points, int size) {
+	if (!points || size < 0)
+		return;
+
+	for(int i=0;i<size;i++){
+		free(points[i]->data);
+		free(points[i]);
+	}
+	free(points);
+
+}
 int spPointGetDimension(SPPoint point) {
 	assert(point != NULL);
 
@@ -92,7 +103,7 @@ int spPointGetIndex(SPPoint point) {
 
 double spPointGetAxisCoor(SPPoint point, int axis) {
 
-	assert(axis>=0);										//CHECK
+	assert(axis >= 0);										//CHECK
 
 	assert(point!=NULL);
 	assert(axis < point->dim);
@@ -101,8 +112,7 @@ double spPointGetAxisCoor(SPPoint point, int axis) {
 
 }
 
-
-double spPointL2SquaredDistance(SPPoint p, SPPoint q){
+double spPointL2SquaredDistance(SPPoint p, SPPoint q) {
 
 	assert(p!=NULL);
 	assert(q!=NULL);
@@ -112,13 +122,12 @@ double spPointL2SquaredDistance(SPPoint p, SPPoint q){
 	int j;
 
 	//O(dim)
-	for(j = 0; j < p->dim ; j++) {
-		localdist = (spPointGetAxisCoor(p,j)-spPointGetAxisCoor(q,j));
+	for (j = 0; j < p->dim; j++) {
+		localdist = (spPointGetAxisCoor(p, j) - spPointGetAxisCoor(q, j));
 		localdist *= localdist;
 		res += localdist;
 	}
 
 	return res;
 }
-
 
