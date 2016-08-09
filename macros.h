@@ -40,7 +40,8 @@
 #define LOGGER_ERR 		"SPLogger Error"
 #define SYNTAX 			"Syntax Error while reading feature file. SKIPPING FILE."
 #define CONFIG_MSG_ERR 	"Got SPConfig Error, MSG no. <%d>"
-
+#define FEATS_FILE		"Cannot create feats file"
+#define FEATS_PRNT		"Print to feats file error"
 
 #define errorWithLogger() 		fprintf(stderr,ERR_ARGS,LOGGER_ERR,__FILE__,__LINE__,__func__)
 
@@ -58,6 +59,10 @@
 
 #define MallocError() printError(MALLOC_ERR)
 
+#define warningWithArgs(MSG,...) 	char err[1024] = {'\0'}; \
+									sprintf(err,MSG,__VA_ARGS__); \
+									printWarning(err)
+
 #define loggerWithArgs(MSG,...) 	char err[1024] = {'\0'}; \
 									sprintf(err,MSG,__VA_ARGS__); \
 									printError(err)
@@ -69,6 +74,10 @@
 
 #define declareLogMsg() SP_LOGGER_MSG _log_msg = SP_LOGGER_SUCCESS, *log_msg = &_log_msg
 
+/***************************************************************/
+/************************ 	Extractor    ***********************/
+/***************************************************************/
+
 
 
 
@@ -77,7 +86,7 @@
 /********************************************************/
 
 
-#define EPS		0.00000000001
+#define EPS		0.000001
 #define arrayMallocFail(array,j)	 if(!array[j]){ \
 										for(j--;j>=0;j--){ \
 											free(array[j]); \
