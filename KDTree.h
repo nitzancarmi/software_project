@@ -28,7 +28,7 @@ typedef struct kd_tree_node_t* SPKDTreeNode;
 SPKDTreeNode spKDTreeCreate(SPKDArray KDArray,const SPConfig config,SP_CONFIG_MSG* conf_msg, SP_LOGGER_MSG* log_msg);
 
 /**
- * spKDTreeDestroy: Deallocates an existing KDTreeNode and all its descendants
+ * spKDTreeDestroy: Deallocates an existing KDTreeNode and all its descendants.
  *
  * @param KDTree Target KDTree to be deallocated. If KDTree is NULL nothing
  * will be done.
