@@ -1,6 +1,9 @@
 /*.o
 *.o
 /*.exe
+images
+makefile
+/images/*.feats
 /Debug/Project_NEW.exe
 /Debug/*.o
 /Debug/*.*
