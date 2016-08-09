@@ -9,6 +9,7 @@
 #include <limits.h>
 #include <assert.h>
 #include "SPLogger.h"
+#include "macros.h"
 
 /*******************/
 /**    CLASSES    **/
