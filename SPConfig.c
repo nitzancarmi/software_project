@@ -1,23 +1,5 @@
 #include "SPConfig.h"
 
-/************************************* MACROS *******************************************************/
-#define ignoreSpaces(x)						while(isspace(*x)){x++;}
-
-#define errorInvalidLine() 					printf(INVALID_CONFLINE, filename, lineNum)
-
-#define assignString(configAttribute,xVal)	configAttribute = (char*) malloc(strlen(xVal)+1); \
-											if(!configAttribute){							\
-												return SP_CONFIG_ALLOC_FAIL;				\
-											}												\
-											strcpy(configAttribute,xVal)
-
-#define checkAndAssign(property,x)			if(!attr->property)								\
-												attr->property = x;
-
-#define getter(property)					assert(msg);									\
-	*msg = config ? SP_CONFIG_SUCCESS : SP_CONFIG_INVALID_ARGUMENT;							\
-	return config ? config->property : 0 //maybe error
-/****************************************************************************************************/
 
 /*** Struct Definition ***/
 struct sp_config_t {
@@ -31,7 +13,10 @@ struct sp_config_t {
 	int spPCADimension;
 	char* spPCAFilename;
 	int spNumOfFeatures;
+
 	bool spExtractionMode;
+	bool wasExtractionModeSet;
+
 	int spNumOfSimilarImages;
 	splitMethod spKDTreeSplitMethod;
 	int spKNN;
@@ -41,7 +26,6 @@ struct sp_config_t {
 };
 /****************************/
 
-int wasExtractionModeSet = 0;
 
 void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 		char** varReturn, char** valueReturn) {
@@ -209,16 +193,16 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 		const char *boolean[] = { "true", "false" };
 		int val = findValueInSet(boolean, value, 2);
 		if (val == 0) {
-			wasExtractionModeSet = 1;
 			attr->spExtractionMode = true;
+			attr->wasExtractionModeSet = true;
 			return SP_CONFIG_SUCCESS;
 		}
 		if (val == 1) {
-			wasExtractionModeSet = 1;
 			attr->spExtractionMode = false;
+			attr->wasExtractionModeSet = true;
 			return SP_CONFIG_SUCCESS;
 		}
-
+		attr->wasExtractionModeSet = false;
 		printf(CONSTRAINT, filename, line);
 		return SP_CONFIG_INVALID_STRING;
 	}
@@ -347,7 +331,7 @@ SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 
 	checkAndAssign(spPCADimension, 20);
 	checkAndAssign(spNumOfFeatures, 100);
-	if(!wasExtractionModeSet)
+	if (!attr->wasExtractionModeSet)
 		checkAndAssign(spExtractionMode, true);
 	checkAndAssign(spNumOfSimilarImages, 1);
 	checkAndAssign(spKDTreeSplitMethod, MAX_SPREAD);
@@ -401,10 +385,8 @@ void printAttributes(SPConfig attr) { /** DELETE **/
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
-	if (*msg != SP_CONFIG_SUCCESS) {//TODO is the print necessary? or only for debugging (almogz)
-		//printf("got an unexpected message as initial parameter, changes msg to be SP_CONFIG_SUCCESS\n");
-		*msg = SP_CONFIG_SUCCESS;
-	}
+	*msg = SP_CONFIG_SUCCESS;
+
 	/* vars init */
 	char line[MAX_LENGTH], *var, *value;
 	int lineNum = 0;
@@ -543,7 +525,7 @@ bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg) {
 	getter(spMinimalGUI);
 }
 
-int spConfigGetKNN(const SPConfig config, SP_CONFIG_MSG* msg){
+int spConfigGetKNN(const SPConfig config, SP_CONFIG_MSG* msg) {
 	getter(spKNN);
 }
 
