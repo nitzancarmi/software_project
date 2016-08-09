@@ -120,12 +120,12 @@ double spPointL2SquaredDistance(SPPoint p, SPPoint q) {
 	assert(q!=NULL);
 	assert(p->dim == q->dim);
 
-	double res = 0, localdist = 0;
-	int j;
+	register double res = 0, localdist = 0;	//Going to be used A LOT in the program
+	register int j, dim = p->dim;
 
 	//O(dim)
-	for (j = 0; j < p->dim; j++) {
-		localdist = (spPointGetAxisCoor(p, j) - spPointGetAxisCoor(q, j));
+	for (j = 0; j < dim; j++) {
+		localdist = (p->data[j] - q->data[j]);		//Optimization not using function
 		localdist *= localdist;
 		res += localdist;
 	}
