@@ -9,30 +9,7 @@
 #include <limits.h>
 #include <assert.h>
 #include "SPLogger.h"
-
-/*******************/
-/**    MACROS     **/
-/*******************/
-
-#define MAX_LENGTH 1025
-
-#define OK 0
-#define ERROR 1
-#define COMMENT_BLANK 2
-
-#define DEFAULT_CANT_OPEN 			"The default configuration file spcbir.config couldn’t be open\n"
-#define CANT_OPEN					"The configuration file %s couldn’t be ope\n"
-#define MEMORY_FAIL1 				"Memory Allocation Failure - createAttributes\n"
-#define UNDECLARED 					"Configuartion file must contain all of the following declerations:\n"\
-									" - spImagesDirectory\n"\
-									" - spImagesPrefix\n"\
-									" - spImagesSuffix\n"\
-									" - spNumOfImages\n"
-#define INVALID_CONFLINE 			"File: %s\nLine: %d\nMessage: Invalid configuration line\n"
-
-#define CONSTRAINT 					"File: %s\nLine: %d\nMessage: Invalid value - constraint not met"
-#define INVALID_COMLINE 			"Invalid command line : use -c <config_filename>\n"
-#define PARAMETER_NOTSET 			"File: %s\nLine: %d\nMessage: Parameter %s is not set"
+#include "macros.h"
 
 /*******************/
 /**    CLASSES    **/
