@@ -74,11 +74,26 @@
 
 #define declareLogMsg() SP_LOGGER_MSG _log_msg = SP_LOGGER_SUCCESS, *log_msg = &_log_msg
 
-/***************************************************************/
-/************************ 	Extractor    ***********************/
-/***************************************************************/
+/**************************************************************/
+/************************ 	SPConfig    ***********************/
+/**************************************************************/
 
+#define ignoreSpaces(x)						while(isspace(*x)){x++;}
 
+#define errorInvalidLine() 					printf(INVALID_CONFLINE, filename, lineNum)
+
+#define assignString(configAttribute,xVal)	configAttribute = (char*) malloc(strlen(xVal)+1); \
+											if(!configAttribute){							\
+												return SP_CONFIG_ALLOC_FAIL;				\
+											}												\
+											strcpy(configAttribute,xVal)
+
+#define checkAndAssign(property,x)			if(!attr->property)								\
+												attr->property = x;
+
+#define getter(property)					assert(msg);									\
+	*msg = config ? SP_CONFIG_SUCCESS : SP_CONFIG_INVALID_ARGUMENT;							\
+	return config ? config->property : 0 //maybe error
 
 
 /********************************************************/
