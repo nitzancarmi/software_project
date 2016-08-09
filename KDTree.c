@@ -98,9 +98,9 @@ SPKDTreeNode nodeAllocation(int dim, int val, SPKDTreeNode* left,
 SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 		SP_CONFIG_MSG* conf_msg, SP_LOGGER_MSG* log_msg,
 		int splitIncrementalDim) {
-	printKDArrayMatrix(kdarray);
-	printKDPointArray(kdarray);
-	printf("cols = %d\n", getKDCols(kdarray));
+	//printKDArrayMatrix(kdarray);
+	//printKDPointArray(kdarray);
+	//printf("cols = %d\n", getKDCols(kdarray));
 	if (!config || !conf_msg || !log_msg || splitIncrementalDim < 0) {
 		InvalidError()
 		printf("NULL\n");
@@ -162,13 +162,13 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 
 //	printf("**confmsg3 = %d\n",*conf_msg);
 	/* Left Recursion */
-	printf("\n******LEFT:*******\n");
+	//printf("\n******LEFT:*******\n");
 	nodeLeft = spKDTreeCreateRecursion(KDpntr1, config, conf_msg, log_msg,
 			splitIncrementalDim + 1);
 	SPKDArrayDestroy(KDpntr1);
 	returnIfConfigMsg(NULL)
 	/* Right Recursion */
-	printf("\n******RIGHT:*******\n");
+	//printf("\n******RIGHT:*******\n");
 	nodeRight = spKDTreeCreateRecursion(KDpntr2, config, conf_msg, log_msg,
 			splitIncrementalDim + 1);
 	SPKDArrayDestroy(KDpntr2);

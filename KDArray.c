@@ -331,8 +331,8 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	if (!splitSize)
 		return 0;
 
-	printf("Split Dimension = %d\n", coor);
-	printf("splitSize = %d\n", splitSize);
+	//printf("Split Dimension = %d\n", coor);
+	//printf("splitSize = %d\n", splitSize);
 	SPKDArray KD1 = NULL, KD2 = NULL;
 	KD1 = (SPKDArray) malloc(sizeof(*KD1));
 	KD2 = (SPKDArray) malloc(sizeof(*KD2));
@@ -381,8 +381,8 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 			map1[i] = -1;
 		}
 	}
-	printIntArray(map1, n, "map1");
-	printIntArray(map2, n, "map2");
+	//printIntArray(map1, n, "map1");
+	//printIntArray(map2, n, "map2");
 
 	/***** ALLOCATION *****/
 	A1 = calloc2dInt(kd->rows, splitSize);
