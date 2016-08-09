@@ -214,4 +214,16 @@ SP_LOGGER_MSG spLoggerPrintDebug(const char* msg, const char* file,
  */
 SP_LOGGER_MSG spLoggerPrintMsg(const char* msg);
 
+/**
+ * Stores the logger level in the address given by the argument.
+ * If logger is not defined than nothing is done.
+ *
+ * @param levelAddress		    - The address of the logger level
+ * @return
+ * SP_LOGGER_UNDIFINED 			- If the logger is undefined
+ * SP_LOGGER_SUCCESS			- otherwise
+ */
+SP_LOGGER_MSG getLoggerLevel(SP_LOGGER_LEVEL* levelAddress);
+
+
 #endif

@@ -61,6 +61,7 @@ SP_LOGGER_MSG spLoggerCreate(const char* filename, SP_LOGGER_LEVEL level) {
 	return SP_LOGGER_SUCCESS;
 }
 
+
 void spLoggerDestroy() {
 	if (!logger) {
 		return;
@@ -134,4 +135,14 @@ SP_LOGGER_MSG spLoggerPrintMsg(const char* msg) {
 
 	return SP_LOGGER_SUCCESS;
 }
+
+SP_LOGGER_MSG getLoggerLevel(SP_LOGGER_LEVEL* levelAddress){
+	if(!logger)
+		return SP_LOGGER_UNDIFINED;
+
+	*levelAddress = logger->level;
+	return SP_LOGGER_SUCCESS;
+}
+
+
 
