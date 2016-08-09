@@ -1,16 +1,6 @@
 #include "KDArray.h"
 #include <math.h>
 
-#define arrayMallocFail(array,j)	 if(!array[j]){ \
-										for(j--;j>=0;j--){ \
-											free(array[j]); \
-										}\
-										free(array); \
-										return NULL; \
-										}
-#define frees()							free(map1); free(map2); free(X);
-
-#define EPS 0.00000000001
 
 /*** Struct DefspKDArrayCreateion ***/
 struct kd_array_t {
@@ -29,23 +19,49 @@ struct pointAxis_t {
 };
 
 SPPoint* getKDPointArray(SPKDArray kd) {
-	SPPoint* cpy = (SPPoint*) malloc(kd->cols * sizeof(SPPoint));
+	declareLogMsg();
+	SPPoint* cpy = (SPPoint*) calloc(kd->cols, sizeof(SPPoint));
+	if (!cpy) {
+		MallocError()
+		return NULL;
+	}
 	int i;
-	for (i = 0; i < kd->cols; i++)
+	for (i = 0; i < kd->cols; i++) {
 		cpy[i] = spPointCopy(kd->pointArray[i]);
+		if (!cpy[i]) {
+			MallocError()
+			spPointArrayDestroy(cpy, kd->cols);
+			return NULL;
+		}
+
+	}
 	return cpy;
 }
 
 SPPoint getKDOnlyPoint(SPKDArray kd) {
-	return (!kd) ? NULL : spPointCopy(kd->pointArray[0]);
+	declareLogMsg();
+	if (!kd) {
+		InvalidError()
+		return NULL;
+	}
+
+	SPPoint ret = spPointCopy(kd->pointArray[0]);
+	if (!ret) {
+		MallocError()
+		return NULL;
+	}
+	return ret;
 }
 
 int** calloc2dInt(int rows, int cols) {
+	declareLogMsg();
 	int header = rows * sizeof(int*);
 	int data = rows * cols * sizeof(int);
 	int** rowptr = (int**) calloc(header + data, sizeof(int));
-	if (!rowptr)
+	if (!rowptr) {
+		MallocError()
 		return NULL;
+	}
 	int* buf = (int*) (rowptr + rows);
 	for (int k = 0; k < rows; ++k) {
 		rowptr[k] = buf + k * cols;
@@ -54,16 +70,14 @@ int** calloc2dInt(int rows, int cols) {
 }
 
 int** getKDMat(SPKDArray kd) {
+	declareLogMsg();
 	int i, j;
 
 	int** cpy = calloc2dInt(kd->rows, kd->cols);
-//	int** cpy = (int**) malloc(
-//			kd->rows * sizeof(int*) + kd->rows * kd->cols * sizeof(int));
-	if (!cpy)
+	if (!cpy) {
+		MallocError()
 		return NULL;
-//	int* offset = cpy[kd->rows];
-//	for (i = 0; i < kd->rows; i++, offset += kd->cols)
-//		cpy[i] = offset;
+	}
 
 	for (i = 0; i < kd->rows; i++)
 		for (j = 0; j < kd->cols; j++)
@@ -73,17 +87,32 @@ int** getKDMat(SPKDArray kd) {
 }
 
 int getKDCols(SPKDArray kd) {
-	return (!kd) ? -1 : kd->cols;
+	if(!kd){
+		declareLogMsg();
+		InvalidError()
+		return -1;
+	}
+
+	return kd->cols;
 }
 
 int getKDRows(SPKDArray kd) {
-	return (!kd) ? -1 : kd->rows;
+	if(!kd){
+		declareLogMsg();
+		InvalidError()
+		return -1;
+	}
+
+	return kd->rows;
 }
+
 typedef struct pointAxis_t* PointAxis;
 
 SPPoint* copyPointArray(SPPoint* arr, int size) {
+	declareLogMsg();
 	SPPoint* ret = (SPPoint*) malloc(sizeof(SPPoint) * size);
 	if (!ret) {
+		MallocError()
 		return NULL;
 	}
 	for (int i = 0; i < size; i++) {
@@ -91,6 +120,7 @@ SPPoint* copyPointArray(SPPoint* arr, int size) {
 
 		/* frees in case of inner malloc fail */
 		if (!ret[i]) {
+			MallocError()
 			for (i--; i >= 0; i--) {
 				free(ret[i]);
 			}
@@ -106,8 +136,8 @@ int pointComparator(const void *p, const void *q) {
 	PointAxis p1 = *(const PointAxis *) p;
 	PointAxis p2 = *(const PointAxis *) q;
 
-	double p1ax = spPointGetAxisCoor(p1->pnt, p1->axis);
-	double p2ax = spPointGetAxisCoor(p2->pnt, p2->axis);
+	register double p1ax = spPointGetAxisCoor(p1->pnt, p1->axis);
+	register double p2ax = spPointGetAxisCoor(p2->pnt, p2->axis);
 
 	if (fabs(p1ax - p2ax) < EPS)
 		return 0;
@@ -121,8 +151,7 @@ int pointComparator(const void *p, const void *q) {
 int sortByAxis(int *ret, const SPPoint* pts, int size, int axis,
 		const SPConfig config, SP_LOGGER_MSG* log_msg) {
 	if (!pts || axis < 0 || !config) {
-		spLoggerPrintError("Invalid Argument to sortByAxis", __FILE__, __func__,
-		__LINE__);
+		InvalidError()
 		return 1;
 	}
 	PointAxis* ptsAx = (PointAxis*) malloc(size * sizeof(*ptsAx));
@@ -178,7 +207,8 @@ void SPKDArrayDestroy(SPKDArray kd) {
 
 void printKDArrayMatrix(SPKDArray kd) {
 	if (!kd) {
-		printf("kd matrix = NULL");
+		if(spLoggerPrintWarning(INVALID_WRN,__FILE__,__func__,__LINE__)!=SP_LOGGER_SUCCESS)
+
 		return;
 	}
 	printf("\n");
@@ -194,6 +224,10 @@ void printKDArrayMatrix(SPKDArray kd) {
 }
 
 void print2DIntArray(int** a, int rows, int cols) {
+	if (!a) {
+			printf("2DIntArray = NULL");
+			return;
+		}
 	printf("\n");
 	for (int i = 0; i < rows; i++) {
 		printf("| ");
@@ -307,7 +341,7 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 }
 
 int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
-		SPKDArray* KDpntr2, SPConfig config, SP_LOGGER_MSG *log_msg,
+		SPKDArray* KDpntr2, SP_LOGGER_MSG *log_msg,
 		SP_CONFIG_MSG *conf_msg) {
 
 	if (!kd || coor < 0 || !KDpntr1 || !KDpntr2 || !log_msg || !conf_msg) {
@@ -325,9 +359,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	SPPoint *P1 = NULL, *P2 = NULL;
 	double half = kd->cols;
 	half /= 2;
-//	int splitSize = (int)half + 1;			  //TODO we must have ceil, even numbers will be incremented without it
-	//with ceil it always works (almogz)
-	int splitSize = (int) (ceil(half) + 0.5); //TODO why do we need ceil? (nitzanc)
+	int splitSize = (int) (ceil(half) + 0.5);
 	if (!splitSize)
 		return 0;
 
