@@ -101,14 +101,11 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	//printKDArrayMatrix(kdarray);
 	//printKDPointArray(kdarray);
 	//printf("cols = %d\n", getKDCols(kdarray));
-	if (!config || !conf_msg || !log_msg || splitIncrementalDim < 0) {
+	if (!kdarray || !config || !conf_msg || !log_msg
+			|| splitIncrementalDim < 0) {
 		InvalidError()
-		printf("NULL\n");
 		return NULL;
 	}
-	if (!kdarray)
-		return NULL;
-
 	SPKDTreeNode nodeLeft = NULL, nodeRight = NULL;
 	SPKDArray KDpntr1 = NULL, KDpntr2 = NULL;
 	if (getKDCols(kdarray) == 1) { /*getKDCols(kdarray) == 1*/
@@ -154,8 +151,8 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	}
 	int split;
 	/* Split */
-	if ((split = spKDArraySplit(kdarray, dim, &KDpntr1, &KDpntr2, config,
-			log_msg, conf_msg)) == -1) {
+	if ((split = spKDArraySplit(kdarray, dim, &KDpntr1, &KDpntr2, log_msg,
+			conf_msg)) == -1) {
 		return NULL;
 
 	}
@@ -174,7 +171,6 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	SPKDArrayDestroy(KDpntr2);
 	returnIfConfigMsg(NULL)
 	return nodeAllocation(dim, split, &nodeLeft, &nodeRight, NULL, log_msg);
-	return NULL;
 }
 
 SPKDTreeNode spKDTreeCreate(SPKDArray kdarray, SPConfig config,
