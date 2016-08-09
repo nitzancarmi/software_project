@@ -15,7 +15,8 @@ struct sp_config_t {
 	int spNumOfFeatures;
 
 	bool spExtractionMode;
-	bool wasExtractionModeSet;
+	bool wasExtractionModeSet;	//No other way to know if spExtractionMode was set, because initial value is false
+								//which can be set as false, but the default value is true.
 
 	int spNumOfSimilarImages;
 	splitMethod spKDTreeSplitMethod;
