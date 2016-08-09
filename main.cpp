@@ -154,7 +154,7 @@ int main(int argc, char* argv[]) {
 
 	/**** execute queries ****/
 	char q_path[1024] = { '\0' };
-	;
+
 	int q_numOfFeats, i, j;
 	SPPoint* knn = NULL;
 	SPPoint curr_pnt = NULL;
@@ -184,7 +184,7 @@ int main(int argc, char* argv[]) {
 		q_features = pc->getImageFeatures(q_path, 0, &q_numOfFeats);
 		if (!q_features || !(*q_features)) {
 			//TODO logger message
-			printf("NULL POINTER EXCEPTION");
+			printf("NULL POINTER EXCEPTION1");
 			exit(1);								//TODO CHANGE
 		}
 
@@ -193,7 +193,7 @@ int main(int argc, char* argv[]) {
 			spBPQueueClear(bpq);
 			knn = findKNearestNeighbors(kdtree, bpq, q_features[i]);
 			if (!knn) {
-				printf("NULL POINTER EXCEPTION");				//TODO CHANGE
+				printf("NULL POINTER EXCEPTION2");				//TODO CHANGE
 				exit(1);
 			}
 			//count image indices related to neighbors just found
