@@ -57,21 +57,12 @@ int exportImageToFile(SPPoint* pointArray, int pointArray_size, int image_index,
  * If an image exists but the file cannot be opened (read error or file does not exist),
  * the .feats file is IGNORED and the function skips to the next index.
  *
- * Format of the file is expected to be exactly as created by the function exportImageToFile,
- * which is the following format (for simplicity assume that
- * pointArray[i][j] = i'th double of the j'th point):
- *
- * image_index
- * pointArray_size
- * pointArray[0][0] pointArray[0][1] pointArray[0][2] ... pointArray[0][m]
- * ...
- * pointArray[n][0] pointArray[n][1] pointArray[n][2] ... pointArray[n][m]
- *
- * (END OF FILE)
+ * Format of the file is expected to be exactly as created by the function exportImageToFile.
+ * @see exportImageToFile
  *
  * Expecting points to be separated with exactly one space (no space after the last point in each line).
  * No empty lines are permitted in the file.
- * The file must contain pointArray_size features exactly, and each feature has to be
+ * The file must contain pointArray_size features exactly, and each feature's size has to be
  * exactly as defined in spCADimension in the configuration object.
  *
  * If one of the mentioned constraints were not met than the .feats file is
