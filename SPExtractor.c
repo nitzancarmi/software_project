@@ -3,7 +3,6 @@
 #include <string.h>
 #include "SPExtractor.h"
 
-#define declareLogMsg() SP_LOGGER_MSG _log_msg = SP_LOGGER_SUCCESS, *log_msg = &_log_msg
 
 /******************************************************************************************************/
 /*************************************** Import from Files ********************************************/
