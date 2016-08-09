@@ -14,6 +14,7 @@
 #include "SPPoint.h"
 #include "SPConfig.h"
 #include "KDArray.h"
+#include "macros.h"
 
 
 /*
