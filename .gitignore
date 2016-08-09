@@ -1,5 +1,8 @@
 /*.o
+*.o
 /*.exe
+/Debug/Project_NEW.exe
+/Debug/*.o
 /Debug/*.*
 /includes.txt
 /init.sh
