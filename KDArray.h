@@ -4,6 +4,7 @@
 #include "SPPoint.h"
 #include "SPConfig.h"
 #include "SPLogger.h"
+#include "macros.h"
 #include <stdio.h>
 
 

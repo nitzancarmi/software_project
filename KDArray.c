@@ -1,4 +1,5 @@
 #include "KDArray.h"
+#include "macros.h"
 #include <math.h>
 
 
