@@ -142,7 +142,7 @@ int split_test(SPConfig attr) {
 
     SPKDArray L=NULL,R=NULL;
     printf("Splitting the given KDArray\n");
-    BASIC_CHECK = spKDArraySplit(res, 0, &L, &R, attr, &log_msg, &conf_msg);
+    BASIC_CHECK = spKDArraySplit(res, 0, &L, &R, &log_msg, &conf_msg);
 //    printf("\nL:\n---\n");
 //    printKDArrayMatrix(L);
 //    printf("\nR:\n---\n");
@@ -186,8 +186,8 @@ int split_test(SPConfig attr) {
     printf("using already created splitted arrays L,R - now splitting them again\n");
     printf("by X coordinate:");
     SPKDArray LR, LL, RL, RR;
-    CONT_CHECK = spKDArraySplit(L, 0, &LL, &LR, attr,&log_msg, &conf_msg);
-    CONT_CHECK |= spKDArraySplit(R, 0, &RL, &RR, attr, &log_msg, &conf_msg);
+    CONT_CHECK = spKDArraySplit(L, 0, &LL, &LR, &log_msg, &conf_msg);
+    CONT_CHECK |= spKDArraySplit(R, 0, &RL, &RR, &log_msg, &conf_msg);
     printf(".....");
 
     SPPoint LL_arr[2] = {arr[0], arr[2]}; 
