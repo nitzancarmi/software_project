@@ -182,7 +182,7 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 		int splitIncrementalDim) {
 
 	SP_LOGGER_LEVEL lvl;
-	int printChk = (getLoggerLevel(&lvl) == SP_LOGGER_SUCCESS
+	int printChk = (spLoggerGetLevel(&lvl) == SP_LOGGER_SUCCESS
 			&& lvl == SP_LOGGER_DEBUG_INFO_WARNING_ERROR_LEVEL);
 	if (printChk) {
 		printKDArrayMatrix(kdarray);

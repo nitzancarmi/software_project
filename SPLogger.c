@@ -136,7 +136,7 @@ SP_LOGGER_MSG spLoggerPrintMsg(const char* msg) {
 	return SP_LOGGER_SUCCESS;
 }
 
-SP_LOGGER_MSG getLoggerLevel(SP_LOGGER_LEVEL* levelAddress){
+SP_LOGGER_MSG spLoggerGetLevel(SP_LOGGER_LEVEL* levelAddress){
 	if(!logger)
 		return SP_LOGGER_UNDIFINED;
 

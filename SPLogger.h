@@ -223,7 +223,7 @@ SP_LOGGER_MSG spLoggerPrintMsg(const char* msg);
  * SP_LOGGER_UNDIFINED 			- If the logger is undefined
  * SP_LOGGER_SUCCESS			- otherwise
  */
-SP_LOGGER_MSG getLoggerLevel(SP_LOGGER_LEVEL* levelAddress);
+SP_LOGGER_MSG spLoggerGetLevel(SP_LOGGER_LEVEL* levelAddress);
 
 
 #endif
