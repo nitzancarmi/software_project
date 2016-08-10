@@ -123,12 +123,12 @@ double* getDataFromLine(char* line, int dim, int lineNumber) {
 	int count = 0,
 	i;
 
-	while (*c != '\0' && c != EOF) {
+	while (*c != '\0' && *c != EOF) {
 		i = 0;
 		char buffer[1024] = { '\0' };
 
 		/** Read one double **/
-		while (*c != ' ' && *c != '\0' && *c != '\n' && c != EOF) {
+		while (*c != ' ' && *c != '\0' && *c != '\n' && *c != EOF) {
 			if (!isdigit(*c) && *c != '.' && *c != '-') {
 				warningWithArgs(
 						"%s\n feature = %d, line = %d, char = <%d>\nline is:\n%s",
@@ -362,10 +362,12 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 
 int exportImageToFile(SPPoint* pa, int size, int image_index, SPConfig config) {
 	declareLogMsg();
+	SP_CONFIG_MSG _conf_msg = SP_CONFIG_SUCCESS,
+	*conf_msg = &_conf_msg;
+
 	int rc = 0;
-	char filepath[1024] = {'\0'};
-	SP_CONFIG_MSG conf_msg = spConfigGetImagePath(filepath, config,
-			image_index);
+	char filepath[1024] = { '\0' };
+	*conf_msg = spConfigGetImagePath(filepath, config, image_index);
 	returnIfConfigMsg(1)
 
 	/*** Change filepath to .feats ***/
@@ -376,25 +378,24 @@ int exportImageToFile(SPPoint* pa, int size, int image_index, SPConfig config) {
 	}
 	sprintf(ptr, ".feats");
 	//printf("%s\n", filepath);
-			/*********************************/
+	/*********************************/
 
-			FILE *output = fopen(filepath, "w");
-			if (!output) {
-				printError(FEATS_FILE)
-				return 1;
-			}
+	FILE *output = fopen(filepath, "w");
+	if (!output) {
+		printError(FEATS_FILE)
+		return 1;
+	}
 
-			/*writes image index and num of points at the beginning of file*/
-			rc = fprintf(output, "%d\n%d\n", image_index, size);
-			if (rc < 1) {
-				printError(FEATS_PRNT)
-				fclose(output);
-				return 1;
-			}
+	/*writes image index and num of points at the beginning of file*/
+	rc = fprintf(output, "%d\n%d\n", image_index, size);
+	if (rc < 1) {
+		printError(FEATS_PRNT)
+		fclose(output);
+		return 1;
+	}
 
-			/*writes double array inside points*/
-			int i,
-	j, dims;
+	/*writes double array inside points*/
+	int i, j, dims;
 	SPPoint curr;
 	for (i = 0; i < size; i++) {
 		curr = pa[i];
