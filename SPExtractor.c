@@ -114,19 +114,6 @@ int getIntFromLine(FILE* feats) {
 	return imageIndex;
 }
 
-//TODO
-void printDoubleArray(double* a, int size, const char* name) {
-	if (!a) {
-		printf("error");
-		return;
-	}
-	printf("%s: (", name);
-	for (int i = 0; i < size; i++) {
-		printf((i == size - 1 ? "%.6f" : "%.6f, "), a[i]);
-	}
-	printf(")\n");
-}
-
 /**
  * This function reads an array of doubles from a string, each one can be separated by space characters
  * beforehand and afterhand. The doubles are then parsed by the @strtod function. No other characters
@@ -150,21 +137,23 @@ void printDoubleArray(double* a, int size, const char* name) {
  */
 double* getDataFromLine(char* line, int dim, int lineNumber) {
 
-	/* Init */
-	char *c = line;
-	char *tail = NULL;
-	int count = 0, i, lineCnt = 0;
-	double singleNumber = 0;
-	int lineLength = strlen(line) + 1;
-
 	declareLogMsg();
+
 	if (!line || dim <= 0) {
 		InvalidError()
 		return NULL;
 	}
 
+	/* Init */
+	char *c = line;
+	char *tail = NULL;
+	int count = 0,
+	i, lineCnt = 0;
+	double singleNumber = 0, *ret;
+	int lineLength = strlen(line) + 1;
+
 	/* allocated double array exactly the size of dim (spCADimension) */
-	double* ret = (double*) calloc(dim, sizeof(double));
+	ret = (double*) calloc(dim, sizeof(double));
 	if (!ret) {
 		MallocError()
 		return NULL;
@@ -181,7 +170,7 @@ double* getDataFromLine(char* line, int dim, int lineNumber) {
 		char buffer[1024] = { '\0' }; //must be declared here to be nulled every time
 
 		/* Read one double, until the next space (' ') found */
-		while (!isspace(*c) && *c != '\0' && *c != EOF && lineCnt != lineLength) { //new line or EOF shouldn't happen
+		while (lineCnt != lineLength && !isspace(*c) && *c != '\0' && *c != EOF) { //new line or EOF shouldn't happen
 
 			/* Contains other characters than the valid double ones */
 			if (!isdigit(*c) && *c != '.' && *c != '-') {
@@ -270,14 +259,13 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 	}
 	/*** Initializations ***/
 	char *ptr,
-	*line = NULL;
+	*line = NULL, filepath[1024] = { '\0' };
 	FILE* feats;
 	int imageIndex, countOfFeatures, dim, lineChk;
 	double* data;
 	SPPoint currentPoint, *pntsArray;
 
 	/*** Change filepath to .feats ***/
-	char filepath[1024] = { '\0' };
 	SP_CONFIG_MSG _conf_msg = spConfigGetImagePath(filepath, config, imgIndex),
 			*conf_msg = &_conf_msg;
 	returnIfConfigMsg(NULL);
@@ -309,61 +297,68 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 		warningWithArgs(INDEX_ERR, imageIndex, filepath)
 		return NULL;
 	} else if (imageIndex < 0) {
-		extractError()
+		errorReturn()
 	}
 
 	/** get the number of features in the second line **/
 	*numOfFeatures = getIntFromLine(feats);
 	if (*numOfFeatures < 0) {
-		extractError()
+		errorReturn()
 	}
 
 	countOfFeatures = 0;
 	dim = spConfigGetPCADim(config, conf_msg);
 	pntsArray = (SPPoint*) calloc(*numOfFeatures, sizeof(*pntsArray)); //Returned array
 
+	/** Iterating through lines 3 and above of the feats file **/
 	while (!feof(feats)) {
 
 		data = NULL;
 		line = NULL;
-		lineChk = SPgetLine(&line, feats);
+		lineChk = SPgetLine(&line, feats);		//The line itself
 
-		if (lineChk == -1) {
+		if (lineChk == -1) {	//some kind of error while getting line
 			//Error message printed inside
-			extractError()
+			errorReturn()
 		}
 
+		/** Get double array from lines 3 and above **/
 		data = getDataFromLine(line, dim, countOfFeatures + 3);
 		if (data == NULL) {
 			//Error message printed inside
-			extractError()
+			errorReturn()
 		}
 
+		/** Create a point from the data extracted from the line **/
 		currentPoint = spPointCreate(data, dim, imageIndex);
 
 		/*** ERRORS ***/
 		if (!currentPoint || countOfFeatures > *numOfFeatures) {
-			if (!currentPoint) {
+			if (!currentPoint) { //error creating the point
 				MallocError()
 				free(data);
 			} else {
+				/** Got more features than written in the file -
+				 * this is a warning, skipping to next file
+				 * while ignoring this one **/
 				spPointDestroy(currentPoint);
 				warningWithArgs(FEATS_QNTTY, countOfFeatures, *numOfFeatures);
 			}
+			/** freeing the resources that were ignored **/
 			spPointArrayDestroy(pntsArray, *numOfFeatures);
-
-			extractError()
+			errorReturn()
 		}
 		/************/
 
+		/** inserting point to returned array **/
 		pntsArray[countOfFeatures++] = currentPoint;
 	}
-
+	/** now can be less than within in the file. again - warning and skipping **/
 	if (countOfFeatures != *numOfFeatures) {
 		warningWithArgs(FEATS_QNTTY, countOfFeatures, *numOfFeatures);
 		spPointArrayDestroy(pntsArray, *numOfFeatures);
 		free(pntsArray);
-		extractError()
+		errorReturn()
 	}
 
 	return pntsArray;
@@ -380,52 +375,68 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 	int numOfImages = spConfigGetNumOfImages(config, conf_msg);
 
 	/** First maintain a SPPoint matrix -
-	 * each line is for a single image (every SPPoint is a feature of the said image)
+	 * each row is for a single image (every SPPoint is a feature of the said image)
 	 * Also maintain a int array for the number of features for each image,
 	 * because the number of features may vary.
-	 */
-	int* numOfFeatures = (int*) calloc(numOfImages, sizeof(int));
+	 * This is needed because only at the end we can know how many features we have
+	 * overall, and then we could malloc the array to be added to kdarray properly.
+	 * */
 
-	SPPoint** imagesFeatures = (SPPoint**) calloc(numOfImages,
+	int* numOfFeatures = (int*) calloc(numOfImages, sizeof(int)); //array to hold num of features for each img
+
+	SPPoint** imagesFeatures = (SPPoint**) calloc(numOfImages,	//matrix to hold
 			sizeof(SPPoint*));
+
 	if (!numOfFeatures || !imagesFeatures) {
 		MallocError()
 		free(numOfFeatures);
 		free(imagesFeatures);
 		return NULL;
 	}
+
 	int imgCount = 0;
 	for (int img = 0; img < numOfImages; img++) {
 		featAddr = &numOfFeatures[img];
 
-		/* Extract feautres of single image from the appropriate file*/
+		/* Extract features of single image from the appropriate file*/
 		singleImageFeatures = extractSingleImage(img, featAddr, config);
 
 		if (singleImageFeatures == NULL) {
+			/* If some kind of error occourred (all printed and explained inside -
+			 * than skip the invalid file.
+			 */
+			*featAddr = 0; //so that it wont be summed
 			continue;
-		} else
+		} else {
+			/** Insert the image's features to its row in the matrix **/
 			imagesFeatures[imgCount++] = singleImageFeatures;
-
+		}
 	}
 
+	/** No image features were imported **/
 	if (!imgCount) {
-		printError("No image features were imported")
+		printError(NO_FEATS_IMPRT)
 		free(numOfFeatures);
 		free(imagesFeatures);
 		return NULL;
-	} else if (imgCount < numOfImages)
-		printWarning("Some of the images features were not imported");
+	} else if (imgCount < numOfImages) {
+		/** Some of the images features were not imported
+		 * Only warning - not finishing program **/
+		printWarning(SOME_FEATS);
+	}
 
+	/** Overall number of features added **/
 	int totalNumOfFeatures = 0;
 	for (int i = 0; i < numOfImages; i++) {
 		totalNumOfFeatures += numOfFeatures[i];
 	}
 	*totalNumOfFeaturesPtr = totalNumOfFeatures;
 
-	/* Copy all points from the matrix to a single big point array, to be inserted to a kdarray */
-
+	/** Copy all points from the matrix to a large single point
+	 *  array, to be inserted to a kdarray **/
 	SPPoint* allFeatures = (SPPoint*) calloc(totalNumOfFeatures,
 			sizeof(*allFeatures));
+
 	/** allocation error **/
 	if (!allFeatures) {
 		MallocError()
@@ -444,15 +455,13 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 
 		int features = numOfFeatures[img];
 		for (int feat = 0; feat < features; feat++) {
+			//insertion to returned array
 			allFeatures[++currentFeature] = imagesFeatures[img][feat];
 		}
 	}
 
-//	for (int img = imgCount - 1; img >= 0; img--) {
-//		spPointArrayDestroy(imagesFeatures[img], numOfFeatures[img]);
-//	}
 	free(numOfFeatures);
-	free(imagesFeatures);
+	free(imagesFeatures); //only pointer to matrix need to be freed - features themselves still being used later
 
 	return allFeatures;
 }
@@ -461,13 +470,23 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 /**************************************** Export to Files *********************************************/
 /******************************************************************************************************/
 
-int exportImageToFile(SPPoint* pa, int size, int image_index, SPConfig config) {
+int exportImageToFile(SPPoint* pointArray, int size, int image_index,
+		SPConfig config) {
 	declareLogMsg();
+
+	if(!pointArray || size<1 || image_index <0 || !config) {
+		InvalidError();
+		return 1;
+	}
+
+	/** init **/
 	SP_CONFIG_MSG _conf_msg = SP_CONFIG_SUCCESS,
 	*conf_msg = &_conf_msg;
+	int rc = 0, i, j, dims;
+	char endChar, filepath[1024] = { '\0' };
+	SPPoint curr;
 
-	int rc = 0;
-	char filepath[1024] = { '\0' };
+	/** Get file path **/
 	*conf_msg = spConfigGetImagePath(filepath, config, image_index);
 	returnIfConfigMsg(1)
 
@@ -482,16 +501,17 @@ int exportImageToFile(SPPoint* pa, int size, int image_index, SPConfig config) {
 		printError(FEATS_SUFFIX);
 	}
 	sprintf(ptr, ".feats");
-//printf("%s\n", filepath);
 	/*********************************/
 
+	/** Open feats file **/
 	FILE *output = fopen(filepath, "w");
 	if (!output) {
 		printError(FEATS_FILE)
 		return 1;
 	}
 
-	/*writes image index and num of points at the beginning of file*/
+	/* Writes image index at 1st line,
+	 * No. of points at the 2nd line*/
 	rc = fprintf(output, "%d\n%d\n", image_index, size);
 	if (rc < 1) {
 		printError(FEATS_PRNT)
@@ -500,27 +520,30 @@ int exportImageToFile(SPPoint* pa, int size, int image_index, SPConfig config) {
 	}
 
 	/*writes double array inside points*/
-	int i, j, dims;
-	SPPoint curr;
+
 	for (i = 0; i < size; i++) {
-		curr = pa[i];
+		curr = pointArray[i];
 		dims = spPointGetDimension(curr);
 		for (j = 0; j < dims; j++) {
 
-			char endChar;
-			if ((j + 1) == dims && i == size - 1) {	//Last feature of last line
+			/** Last feature of last line **/
+			if ((j + 1) == dims && i == size - 1) {
 				rc = fprintf(output, "%f", spPointGetAxisCoor(curr, j));
+
 			} else {
-				if ((j + 1) == dims && i != size - 1) {	//Last feature of another line
+				/** Last feature of another line **/
+				if ((j + 1) == dims && i != size - 1) {
 					endChar = '\n';
+
 				} else {
-					//Regular feature
+					/** Regular non-at-some-kind-of-end feature **/
 					endChar = ' ';
 				}
 				rc = fprintf(output, "%f%c", spPointGetAxisCoor(curr, j),
 						endChar);
 			}
 
+			/** file write error **/
 			if (rc < 1) {
 				printError(FEATS_PRNT)
 				fclose(output);
@@ -529,5 +552,5 @@ int exportImageToFile(SPPoint* pa, int size, int image_index, SPConfig config) {
 		}
 	}
 	fclose(output);
-	return 0;
+	return OK;
 }
