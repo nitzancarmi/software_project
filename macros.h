@@ -9,7 +9,7 @@
 #define MAX_LENGTH 1025
 
 #define OK 0
-#define ERROR 1
+#define ERROR -1
 #define COMMENT_BLANK 2
 
 #define DEFAULT_CANT_OPEN 			"The default configuration file spcbir.config couldn’t be open\n"
@@ -111,4 +111,28 @@
 										}
 #define frees()							free(map1); free(map2); free(X);
 
+/************************************************************/
+/************************ SPExtractor ***********************/
+/************************************************************/
+
+#define MAX_FEATS_LINE	50000
+#define READ_ERR 		"Error while reading the file. SKIPPING FILE"
+#define CHAR_ERR		"Invalid characters found on file. SKIPPING FILE"
+#define FEAT_ERR		"%s\n feature = %d, line = %d, char = %c <%d>\nline is:\n%s"
+#define FEAT_ERR2		"Invalid characters found on file. SKIPPING FILE\n\tfeature = %d, line = %d, char = %c <%d>\n\tline is:\n%s"
+#define FEAT_SIZE_ERR	"Current feature size is %d features while spCADimension = %d. SKIPPING FILE"
+#define FEAT_SMALL 		"Feature size is smaller than spCADimension. SKIPPING FILE"
+#define extractError()	*numOfFeatures = -1; fclose(feats);	return NULL;
+#define FEATS_EXT 		".feats"
+#define FILE_ERR		"File \"%s\" cannot be opened. SKIPPING FILE"
+#define INDEX_ERR		"Image index inside file (%d) doesn't match filename index - \"%s\". SKIPPING FILE"
+#define FEATS_QNTTY		"Features file %d features, while %d was the quantity defined. SKIPPING FILE"
+#define FEATS_SUFFIX	"Error with the configuration:\nPath of .feats file cannot be retrieved"
 #endif /* MACROS_H_ */
+
+
+
+
+
+
+
