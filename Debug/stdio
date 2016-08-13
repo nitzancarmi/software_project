@@ -1,9 +1,0 @@
----DEBUG---
-- file: ..\main.cpp
-- function: main
-- line: 54
-- message: finished azquiring attributes from config file, uploaded logger successfully
----INFO---
-- message: program has finished successfully. moving to teardown
----INFO---
-- message: cleaning allocated logger and configibutes
