@@ -50,35 +50,40 @@
 int exportImageToFile(SPPoint* pointArray, int pointArray_size, int image_index, SPConfig config);
 
 /*
- * Imports all features of the images that are defined in the configuration object,
- * from feature file of the type ".feats".
- * Expected name of the .feats files are as the image filename, only with the extension ".feats"
- * instead of the image extension (as the pattern defined in the configuration object).
- * If an image exists but the file cannot be opened (read error or file does not exist),
- * the .feats file is IGNORED and the function skips to the next index.
+ * This function imports all features of the images that are defined in the configuration object,
+ * from feature file of the type ".feats", and allocates a SPPoint array to conatin all of them.
+ * The size of the array will be stored in *totalNumOfFeaturesPtr.
  *
- * Format of the file is expected to be exactly as created by the function exportImageToFile.
- * @see exportImageToFile
- *
- * Expecting points to be separated with exactly one space (no space after the last point in each line).
- * No empty lines are permitted in the file.
- * The file must contain pointArray_size features exactly, and each feature's size has to be
- * exactly as defined in spCADimension in the configuration object.
+ * The following constraints must be met:
+ * 1.	Expected name of the .feats files are as the image filename, only with the extension ".feats"
+ * 		instead of the image extension (as the pattern defined in the configuration object).
+ * 2.	Feats file for every image must exist and be readable.
+ * 3.	Format of the file is expected to be as created by the function exportImageToFile.
+ * 		@see exportImageToFile
+ * 4.	Integers are expected to be positive (index can be 0, number of integers must be > 0).
+ * 5.	Image index inside file (first line) is expected to be the same as in the filename.
+ * 6.	Points are separated with space characters (Space characters are permitted before .
+ * 		and after each number in the file (integers and doubles).
+ * 7.	File contains no empty lines.
+ * 8.	The file contains the same amount of features as written on the second line of the file exactly,
+ * 		and each feature's size has to be exactly as defined in spCADimension in the configuration object.
  *
  * If one of the mentioned constraints were not met than the .feats file is
- * IGNORED and the function skips to the next index.
+ * IGNORED and the function SKIPS to the next index.
+ * The returned array will contain only the features of the .feats file the met with the constraints.
  *
- * @param pointArray 	 	 SPPoint array contains the image's features
- * @param pointArray_size	 size of pointArray (number of the image's features)
- * @param image_index		 The index of the image in its directory
- * @param config			 Configuration attributes
+ * @param totalNumOfFeaturesPtr	 	 Address to the size of the
+ * @param config					 Configuration attributes
+ * @param log_msg					 SPLogger message for debugging purposes
+ * @param conf_msg					 SPConfig message for debugging purposes
  *
  * @return
- * 1 if failure for one of the following reasons:
- * 		- SPConfig access error
- * 		- .feats file cannot be created (or Memory Allocation Failure)
- * 		- Writing error to .feats file
- * 0 for successful operation
+ * NULL if failure for one of the following reasons:
+ * 		- ALL of the .feats file didn't meet the constrains mentioned above
+ *		- config == NULL || log_msg == NULL || conf_msg == NULL
+ *		- Memory allocation error
+ *
+ * The allocated SPPoint array on success
  */
 SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 		SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg);
