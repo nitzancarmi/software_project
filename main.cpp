@@ -105,10 +105,12 @@ int main(int argc, char* argv[]) {
 
 	numOfImages = spConfigGetNumOfImages(config, &conf_msg);
 	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
-	img_near_cnt = (int*) malloc(numOfImages * sizeof(int));
-	similar_images = (int*) malloc(numOfSimilarImages * sizeof(int));
-	memset(&img_near_cnt, 0, numOfImages);
-	memset(&similar_images, 0, numOfSimilarImages);
+	img_near_cnt = (int*) calloc(numOfImages , sizeof(int));
+	similar_images = (int*) calloc(numOfSimilarImages , sizeof(int));
+
+	//TODO caused memory malfunction and runtime error on FREEing (almogz)
+	//memset(&img_near_cnt, 0, numOfImages);
+	//memset(&similar_images, 0, numOfSimilarImages);
 
 
 
