@@ -130,6 +130,15 @@
 #define FEATS_SUFFIX	"Error with the configuration:\nPath of .feats file cannot be retrieved"
 #define NO_FEATS_IMPRT	"No image features were imported"
 #define SOME_FEATS		"Some of the images features were not imported"
+
+/*****************************************************/
+/************************ Main ***********************/
+/*****************************************************/
+
+#define clearAll()		finishProgram(config, bpq, pc, kdarray, kdtree, all_points, img_near_cnt,	\
+							similar_images, all_points_size);
+
+
 #endif /* MACROS_H_ */
 
 
