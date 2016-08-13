@@ -112,20 +112,7 @@ int main(int argc, char* argv[]) {
 
 
 
-	all_points = extractImagesFeatures(&all_points_size, config, &log_msg,
-			&conf_msg);
 
-	kdarray = spKDArrayCreate(config, all_points, all_points_size, &log_msg,
-			&conf_msg);
-
-	kdtree = spKDTreeCreate(kdarray, config, &conf_msg, &log_msg);
-
-	if (!kdtree || !kdarray || !bpq || !pc) {
-		//TODO logger msg
-		finishProgram(config, bpq, pc, kdtree, all_points, img_near_cnt,
-				similar_images, all_points_size);
-		return ERROR;
-	}
 
 	/*******************************************/
 	/*********   Extraction Mode    ************/
@@ -151,6 +138,23 @@ int main(int argc, char* argv[]) {
 			/************************/
 		}
 	}
+
+	all_points = extractImagesFeatures(&all_points_size, config, &log_msg,
+			&conf_msg);
+
+	kdarray = spKDArrayCreate(config, all_points, all_points_size, &log_msg,
+			&conf_msg);
+
+	kdtree = spKDTreeCreate(kdarray, config, &conf_msg, &log_msg);
+
+	if (!kdtree || !kdarray || !bpq || !pc) {
+		//TODO logger msg
+		finishProgram(config, bpq, pc, kdtree, all_points, img_near_cnt,
+				similar_images, all_points_size);
+		return ERROR;
+	}
+
+
 
 	/**** execute queries ****/
 	char q_path[1024] = { '\0' };
@@ -232,7 +236,7 @@ int main(int argc, char* argv[]) {
 	}
 
 	printf("Exiting...\n");
-	//need to add free for query parameters        
+	//need to add free for query parameters
 	finishProgram(config, bpq, pc, kdtree, all_points, img_near_cnt,
 			similar_images, all_points_size);
 	return OK;
