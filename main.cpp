@@ -22,7 +22,7 @@ SPPoint* findKNearestNeighbors(SPKDTreeNode kdtree, SPBPQueue bpq,
 }
 
 void finishProgram(SPConfig config, SPBPQueue bpq, ImageProc* pc,
-		SPKDTreeNode kdtree, SPPoint* all_points, int* img_near_cnt,
+		SPKDArray kdarray, SPKDTreeNode kdtree, SPPoint* all_points, int* img_near_cnt,
 		int* similar_images, int all_points_size) {
 	spLoggerPrintInfo("#Removing SPLogger and SPConfig");
 	spLoggerDestroy();
@@ -32,6 +32,8 @@ void finishProgram(SPConfig config, SPBPQueue bpq, ImageProc* pc,
 		spBPQueueDestroy(bpq);
 	if (pc)
 		delete pc;
+	if(kdarray)
+		SPKDArrayDestroy(kdarray);
 	if (kdtree)
 		spKDTreeDestroy(kdtree);
 	if (all_points)
@@ -86,35 +88,28 @@ int main(int argc, char* argv[]) {
 	/***initiallize logger***/
 	if ((log_msg = spLoggerCreate(NULL, SP_LOGGER_WARNING_ERROR_LEVEL))
 			!= SP_LOGGER_SUCCESS) {
-		finishProgram(config, bpq, pc, kdtree, all_points, img_near_cnt,
-				similar_images, 0);
+		clearAll()
 		return ERROR;
 	}
 	log_msg = spLoggerPrintDebug(FIRST_MSG, __FILE__, __func__, __LINE__);
 	if (log_msg != SP_LOGGER_SUCCESS) {
 		printf(LOGGERnMSG, log_msg);
-		finishProgram(config, bpq, pc, kdtree, all_points, img_near_cnt,
-				similar_images, 0);
+		clearAll()
 		return ERROR;
 	}
 
 	/***initialize additional resources using config parameters***/
 
-
 	bpq = spBPQueueCreate(spConfigGetKNN(config, &conf_msg));
 
 	numOfImages = spConfigGetNumOfImages(config, &conf_msg);
 	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
-	img_near_cnt = (int*) calloc(numOfImages , sizeof(int));
-	similar_images = (int*) calloc(numOfSimilarImages , sizeof(int));
+	img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
+	similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
 
 	//TODO caused memory malfunction and runtime error on FREEing (almogz)
 	//memset(&img_near_cnt, 0, numOfImages);
 	//memset(&similar_images, 0, numOfSimilarImages);
-
-
-
-
 
 	/*******************************************/
 	/*********   Extraction Mode    ************/
@@ -132,9 +127,7 @@ int main(int argc, char* argv[]) {
 
 				/* Writing to File Error */
 				spPointArrayDestroy(pointArray, numOfFeats);
-				delete pc;
-				finishProgram(config, bpq, pc, kdtree, all_points, img_near_cnt,
-						similar_images, all_points_size);
+				clearAll()
 				return ERROR;
 			}
 			/************************/
@@ -151,12 +144,14 @@ int main(int argc, char* argv[]) {
 
 	if (!kdtree || !kdarray || !bpq || !pc) {
 		//TODO logger msg
-		finishProgram(config, bpq, pc, kdtree, all_points, img_near_cnt,
-				similar_images, all_points_size);
+		finishProgram(config, bpq, pc, kdarray, kdtree, all_points, img_near_cnt,
+								similar_images, all_points_size);
 		return ERROR;
 	}
 
-
+	spPointArrayDestroy(all_points, all_points_size);
+	all_points = NULL;
+	SPKDArrayDestroy(kdarray);
 
 	/**** execute queries ****/
 	char q_path[1024] = { '\0' };
@@ -166,17 +161,14 @@ int main(int argc, char* argv[]) {
 	SPPoint curr_pnt = NULL;
 	knn_size = spConfigGetKNN(config, &conf_msg);
 
-
-
 	while (1) {
 
 		//get image path from user
-		fflush(stdout);
 		printf("Please enter an image path:\n");
 		fflush(stdout);
 		fgets(q_path, 1024, stdin);
-		fflush(stdout);
-		q_path[strlen(q_path) - 1] = '\0';
+
+		q_path[strlen(q_path) - 1] = '\0'; //q_path will always include at lease '/n'
 
 		//check validity of output
 		if (!strlen(q_path))
@@ -232,19 +224,16 @@ int main(int argc, char* argv[]) {
 		//re-initializing query-related resources
 		spPointArrayDestroy(q_features, q_numOfFeats);
 		memset(&q_path[0], 0, strlen(q_path));
-		memset(&img_near_cnt[0], 0, numOfImages);
-		memset(&similar_images[0], 0, numOfSimilarImages);
+		memset(&img_near_cnt[0], 0, numOfImages*sizeof(int));			//added sizeof(int) (almogz)
+		memset(&similar_images[0], 0, numOfSimilarImages*sizeof(int));
 		q_features = NULL;
 	}
 
 	printf("Exiting...\n");
 	//need to add free for query parameters
-	finishProgram(config, bpq, pc, kdtree, all_points, img_near_cnt,
-			similar_images, all_points_size);
+	clearAll()
 	return OK;
 
-	//freeing temporary resources
-//            spPointArrayDestroy(q_pp); //TODO uncomment after pull
 }
 
 //printf("Exiting...\n");
