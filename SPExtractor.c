@@ -314,7 +314,6 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 	while (!feof(feats)) {
 
 		data = NULL;
-		line = NULL;
 		lineChk = SPgetLine(&line, feats);		//The line itself
 
 		if (lineChk == -1) {	//some kind of error while getting line
@@ -331,7 +330,8 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 
 		/** Create a point from the data extracted from the line **/
 		currentPoint = spPointCreate(data, dim, imageIndex);
-
+		free(data);
+		data = NULL;
 		/*** ERRORS ***/
 		if (!currentPoint || countOfFeatures > *numOfFeatures) {
 			if (!currentPoint) { //error creating the point
@@ -352,6 +352,8 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 
 		/** inserting point to returned array **/
 		pntsArray[countOfFeatures++] = currentPoint;
+		free(line);
+		line = NULL;
 	}
 	/** now can be less than within in the file. again - warning and skipping **/
 	if (countOfFeatures != *numOfFeatures) {
@@ -458,6 +460,7 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 			//insertion to returned array
 			allFeatures[++currentFeature] = imagesFeatures[img][feat];
 		}
+		free(imagesFeatures[img]);	//freeing only the pointers to the points array, not the points themselves
 	}
 
 	free(numOfFeatures);
