@@ -2,8 +2,7 @@
 #include "macros.h"
 #include <math.h>
 
-
-/*** Struct DefspKDArrayCreateion ***/
+/*** Struct defintion for spKDArray ***/
 struct kd_array_t {
 
 	SPPoint* pointArray;
@@ -13,6 +12,7 @@ struct kd_array_t {
 };
 /****************************/
 
+/** Private struct for comfrotably sorting the kd-array's matrix during creation **/
 struct pointAxis_t {
 	SPPoint pnt;
 	int axis;
@@ -20,13 +20,21 @@ struct pointAxis_t {
 };
 
 SPPoint* getKDPointArray(SPKDArray kd) {
+	int i;
 	declareLogMsg();
+	if (!kd) {
+		InvalidError()
+		return NULL;
+	}
+
+	/** Allocation of the copy **/
 	SPPoint* cpy = (SPPoint*) calloc(kd->cols, sizeof(SPPoint));
 	if (!cpy) {
 		MallocError()
 		return NULL;
 	}
-	int i;
+
+	/** Copying each point **/
 	for (i = 0; i < kd->cols; i++) {
 		cpy[i] = spPointCopy(kd->pointArray[i]);
 		if (!cpy[i]) {
@@ -46,6 +54,7 @@ SPPoint getKDOnlyPoint(SPKDArray kd) {
 		return NULL;
 	}
 
+	/** Copying the first point only **/
 	SPPoint ret = spPointCopy(kd->pointArray[0]);
 	if (!ret) {
 		MallocError()
@@ -54,17 +63,44 @@ SPPoint getKDOnlyPoint(SPKDArray kd) {
 	return ret;
 }
 
+/*
+ * Allocation of a 2d integer array while allowing only one call to free() function when
+ * deallocating the said array. No need to free each individual row.
+ * The value of each cell in the returned array is zero.
+ *
+ * @param rows - rows of the allocated matrix
+ * @param cols - columns of the allocated matrix
+ *
+ * @return NULL if rows < 0 || cols < 0 or a Memory allocation failure occurred.
+ * Otherwise, the allocated array.
+ */
 int** calloc2dInt(int rows, int cols) {
 	declareLogMsg();
+	if (rows < 0 || cols < 0) {
+		InvalidError()
+		return NULL;
+	}
+	/* size of the main array, pointers to the rows */
 	int header = rows * sizeof(int*);
+
+	/* Overall size of all cells */
 	int data = rows * cols * sizeof(int);
+
+	/** Allocate enough space to include row pointers & cells **/
 	int** rowptr = (int**) calloc(header + data, sizeof(int));
 	if (!rowptr) {
 		MallocError()
 		return NULL;
 	}
+
+	/** Pointer to the first cell, after the allocated space for the row pointers **/
 	int* buf = (int*) (rowptr + rows);
+
 	for (int k = 0; k < rows; ++k) {
+		/** Iterate through all rows, each row pointer of the main array
+		 *  will now point to the right row, allowing enough space to remain to accomulate
+		 *  all the rows beforehand.
+		 */
 		rowptr[k] = buf + k * cols;
 	}
 	return rowptr;
@@ -72,9 +108,13 @@ int** calloc2dInt(int rows, int cols) {
 
 int** getKDMat(SPKDArray kd) {
 	declareLogMsg();
-	int i, j;
+	if (!kd) {
+		InvalidError()
+		return NULL;
+	}
+	int i,
+	j, **cpy = calloc2dInt(kd->rows, kd->cols);
 
-	int** cpy = calloc2dInt(kd->rows, kd->cols);
 	if (!cpy) {
 		MallocError()
 		return NULL;
@@ -88,7 +128,7 @@ int** getKDMat(SPKDArray kd) {
 }
 
 int getKDCols(SPKDArray kd) {
-	if(!kd){
+	if (!kd) {
 		declareLogMsg();
 		InvalidError()
 		return -1;
@@ -98,7 +138,7 @@ int getKDCols(SPKDArray kd) {
 }
 
 int getKDRows(SPKDArray kd) {
-	if(!kd){
+	if (!kd) {
 		declareLogMsg();
 		InvalidError()
 		return -1;
@@ -107,16 +147,34 @@ int getKDRows(SPKDArray kd) {
 	return kd->rows;
 }
 
+/** For comfortability **/
 typedef struct pointAxis_t* PointAxis;
 
+/*
+ * Returns a copy of a point array (with copies of each point).g
+ *
+ * @param arr 		the relevant point array
+ * @param size		size of the array arr
+ * @return NULL if:
+ * 		- arr == NULL
+ * 		- size < 1
+ * 		- Memory Allocation Error
+ *
+ * Otherwise the copy of the point array.
+ */
 SPPoint* copyPointArray(SPPoint* arr, int size) {
+	int i;
 	declareLogMsg();
+	if (!arr || size < 1) {
+		InvalidError()
+		return NULL;
+	}
 	SPPoint* ret = (SPPoint*) malloc(sizeof(SPPoint) * size);
 	if (!ret) {
 		MallocError()
 		return NULL;
 	}
-	for (int i = 0; i < size; i++) {
+	for (i = 0; i < size; i++) {
 		ret[i] = spPointCopy(arr[i]);
 
 		/* frees in case of inner malloc fail */
@@ -133,10 +191,22 @@ SPPoint* copyPointArray(SPPoint* arr, int size) {
 	}
 	return ret;
 }
+
+/*
+ * Compares between two PointAxis objects based on their axis coordinate value.
+ *
+ * @param p 		address of the first pointAxis
+ * @param q			address of the second pointAxis
+ *
+ * @return 0 if values are equal (difference is less than Epsilon)
+ * 		   1 if value of p is bigger than q
+ * 		  -1 if value of q is bigger than p
+ */
 int pointComparator(const void *p, const void *q) {
 	PointAxis p1 = *(const PointAxis *) p;
 	PointAxis p2 = *(const PointAxis *) q;
 
+	/* use of register because this function is called many many times */
 	register double p1ax = spPointGetAxisCoor(p1->pnt, p1->axis);
 	register double p2ax = spPointGetAxisCoor(p2->pnt, p2->axis);
 
@@ -208,9 +278,10 @@ void SPKDArrayDestroy(SPKDArray kd) {
 
 void printKDArrayMatrix(SPKDArray kd) {
 	if (!kd) {
-		if(spLoggerPrintWarning(INVALID_WRN,__FILE__,__func__,__LINE__)!=SP_LOGGER_SUCCESS)
+		if (spLoggerPrintWarning(INVALID_WRN, __FILE__, __func__, __LINE__)
+				!= SP_LOGGER_SUCCESS)
 
-		return;
+			return;
 	}
 	printf("\n");
 	printf("KDArray Matrix is:\n");
@@ -226,9 +297,9 @@ void printKDArrayMatrix(SPKDArray kd) {
 
 void print2DIntArray(int** a, int rows, int cols) {
 	if (!a) {
-			printf("2DIntArray = NULL");
-			return;
-		}
+		printf("2DIntArray = NULL");
+		return;
+	}
 	printf("\n");
 	for (int i = 0; i < rows; i++) {
 		printf("| ");
@@ -342,8 +413,7 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 }
 
 int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
-		SPKDArray* KDpntr2, SP_LOGGER_MSG *log_msg,
-		SP_CONFIG_MSG *conf_msg) {
+		SPKDArray* KDpntr2, SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
 	if (!kd || coor < 0 || !KDpntr1 || !KDpntr2 || !log_msg || !conf_msg) {
 		InvalidError()
