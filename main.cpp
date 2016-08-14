@@ -111,6 +111,7 @@ int main(int argc, char* argv[]) {
 	//memset(&img_near_cnt, 0, numOfImages);
 	//memset(&similar_images, 0, numOfSimilarImages);
 
+
 	/*******************************************/
 	/*********   Extraction Mode    ************/
 	/*******************************************/
@@ -130,10 +131,10 @@ int main(int argc, char* argv[]) {
 				clearAll()
 				return ERROR;
 			}
-			/************************/
+
 		}
 	}
-
+	/************************/
 	all_points = extractImagesFeatures(&all_points_size, config, &log_msg,
 			&conf_msg);
 
