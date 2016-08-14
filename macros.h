@@ -22,9 +22,9 @@
 									" - spNumOfImages\n"
 #define INVALID_CONFLINE 			"File: %s\nLine: %d\nMessage: Invalid configuration line\n"
 
-#define CONSTRAINT 					"File: %s\nLine: %d\nMessage: Invalid value - constraint not met"
+#define CONSTRAINT 					"File: %s\nLine: %d\nMessage: Invalid value - constraint not met\n"
 #define INVALID_COMLINE 			"Invalid command line : use -c <config_filename>\n"
-#define PARAMETER_NOTSET 			"File: %s\nLine: %d\nMessage: Parameter %s is not set"
+#define PARAMETER_NOTSET 			"File: %s\nLine: %d\nMessage: Parameter %s is not set\n"
 
 
 /**********************************************************/
@@ -41,7 +41,7 @@
 #define SYNTAX 			"Syntax Error while reading feature file. SKIPPING FILE."
 #define CONFIG_MSG_ERR 	"Got SPConfig Error, MSG no. <%d>"
 #define FEATS_FILE		"Cannot create feats file"
-#define FEATS_PRNT		"Print to feats file error"
+#define FEATS_PRNT		"Print to feats-file error"
 
 #define errorWithLogger() 		fprintf(stderr,ERR_ARGS,LOGGER_ERR,__FILE__,__LINE__,__func__)
 
