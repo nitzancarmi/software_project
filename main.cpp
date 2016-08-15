@@ -21,6 +21,7 @@ SPPoint* findKNearestNeighbors(SPKDTreeNode kdtree, SPBPQueue bpq,
 	return NULL;
 }
 
+
 void finishProgram(SPConfig config, SPBPQueue bpq, ImageProc* pc,
 		SPKDArray kdarray, SPKDTreeNode kdtree, SPPoint* all_points, int* img_near_cnt,
 		int* similar_images, int all_points_size) {
