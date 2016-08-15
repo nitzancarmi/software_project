@@ -26,6 +26,15 @@
 #define INVALID_COMLINE 			"Invalid command line : use -c <config_filename>\n"
 #define PARAMETER_NOTSET 			"File: %s\nLine: %d\nMessage: Parameter %s is not set\n"
 
+#define DEFAULT_CONFIG				"spcbir.config"
+#define PCA							"pca.yml"
+#define STD							"stdout"
+
+#define	IMGDIR						"spImagesDirectory"
+#define IMGPRE						"spImagesPrefix"
+#define IMGSUF						"spImagesSuffix"
+#define IMGNUM						"spNumOfImages"
+
 
 /**********************************************************/
 /************************ Debugging ***********************/

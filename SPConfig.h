@@ -79,6 +79,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg);
  * @param msg - pointer in which the msg returned by the function is stored
  * @return true if spExtractionMode = true, false otherwise.
  *
+ * The resulting value stored in msg is as follow:
  * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
  * - SP_CONFIG_SUCCESS - in case of success
  */
@@ -90,10 +91,9 @@ bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg);
  * @param config - the configuration structure
  * @assert msg != NULL
  * @param msg - pointer in which the msg returned by the function is stored
- * @return true if spExtractionMode = true, false otherwise.
+ * @return true if spMinimalGui = true, false otherwise.
  *
- * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
- * - SP_CONFIG_SUCCESS - in case of success
+
  */
 bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg);
 
@@ -104,17 +104,45 @@ bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg);
  * @param config - the configuration structure
  * @assert msg != NULL
  * @param msg - pointer in which the msg returned by the function is stored
- * @return positive integer in success, negative integer otherwise.
  *
+ * @return spNumOfImages, and 0 if an error occurred.
+ *
+ * The resulting value stored in msg is as follow:
  * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
  * - SP_CONFIG_SUCCESS - in case of success
  */
 int spConfigGetNumOfImages(const SPConfig config, SP_CONFIG_MSG* msg);
 
+/*
+ * Returns the number of similar images set in the configuration file, i.e the value
+ * of spNumOfSimilarImages.
+ *
+ * @param config - the configuration structure
+ * @assert msg != NULL
+ * @param msg - pointer in which the msg returned by the function is stored
+ *
+ * @return spNumOfSimilarImages, and 0 if an error occurred.
+ *
+ * The resulting value stored in msg is as follow:
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
 int spConfigGetNumOfSimilarImages(const SPConfig config, SP_CONFIG_MSG* msg);
 
-/* TODO docu!!!
-*/
+/*
+ * Returns the the number of nearest value inside config, i.e the value
+ * of spKNN.
+ *
+ * @param config - the configuration structure
+ * @assert msg != NULL
+ * @param msg - pointer in which the msg returned by the function is stored
+ *
+ * @return spKNN, and 0 if an error occurred.
+ *
+ * The resulting value stored in msg is as follow:
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
 int spConfigGetKNN(const SPConfig config, SP_CONFIG_MSG* msg);
 
 /*
@@ -124,8 +152,10 @@ int spConfigGetKNN(const SPConfig config, SP_CONFIG_MSG* msg);
  * @param config - the configuration structure
  * @assert msg != NULL
  * @param msg - pointer in which the msg returned by the function is stored
- * @return positive integer in success, negative integer otherwise.
  *
+ * @return the number of features, and 0 if an error occurred.
+ *
+ * The resulting value stored in msg is as follow:
  * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
  * - SP_CONFIG_SUCCESS - in case of success
  */
@@ -137,14 +167,27 @@ int spConfigGetNumOfFeatures(const SPConfig config, SP_CONFIG_MSG* msg);
  * @param config - the configuration structure
  * @assert msg != NULL
  * @param msg - pointer in which the msg returned by the function is stored
- * @return positive integer in success, negative integer otherwise.
+ *
+ * @return spCADimension, and 0 if an error occurred.
  *
  * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
  * - SP_CONFIG_SUCCESS - in case of success
  */
 int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg);
 
-//TODO DOC
+/**
+ * Returns the type of split method. Return value will be one of those:
+ * {UNDEFINED, RANDOM, MAX_SPREAD, INCREMENTAL}.
+ *
+ * @param config - the configuration structure
+ * @assert msg != NULL
+ * @param msg - pointer in which the msg returned by the function is stored
+ *
+ * @return the split method, and UNDEFINED if an error occurred.
+ *
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
 splitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg);
 
 
@@ -177,7 +220,6 @@ splitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg);
 SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
 		int index);
 
-char* spConfigGetImagesPrefix(const SPConfig config);
 /**
  * The function stores in pcaPath the full path of the pca file.
  * For example given the values of:
@@ -202,8 +244,5 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config);
  */
 void spConfigDestroy(SPConfig config);
 
-/*
-* TODO - add documentation
-*/
-void printAttributes(SPConfig attr);
+void printAttributes(SPConfig attr);			//TODO    DELETEEEE
 #endif /* SPCONFIG_H_ */

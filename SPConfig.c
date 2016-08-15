@@ -1,7 +1,10 @@
 #include "SPConfig.h"
+#include "macros.h"
 
 
+/*************************/
 /*** Struct Definition ***/
+/*************************/
 struct sp_config_t {
 	/*must be set*/
 	char* spImagesDirectory;
@@ -15,8 +18,8 @@ struct sp_config_t {
 	int spNumOfFeatures;
 
 	bool spExtractionMode;
-	bool wasExtractionModeSet;	//No other way to know if spExtractionMode was set, because initial value is false
-								//which can be set as false, but the default value is true.
+	bool wasExtractionModeSet; //No other way to know if spExtractionMode was set, because initial value is false
+							   //which can be set as false, but the default value is true.
 
 	int spNumOfSimilarImages;
 	splitMethod spKDTreeSplitMethod;
@@ -25,11 +28,13 @@ struct sp_config_t {
 	int spLoggerLevel;
 	char* spLoggerFilename;
 };
-/****************************/
+/*************************/
 
 
 void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 		char** varReturn, char** valueReturn) {
+	if(!line || !msg || !isCommentBlank || !varReturn || !valueReturn)
+		return;
 
 	/* pass over spaces to next character*/
 	ignoreSpaces(line)
@@ -303,12 +308,36 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 	return SP_CONFIG_INVALID_STRING;
 }
 
+/**
+ * This function prints the error message to stdout when a certain must-have
+ * parameter is not set in the config file.
+ *
+ * The message is as follows:
+ * 	File: <filename>
+ *  Line: <No. of lines in <filename>>
+ *  Message: Parameter <parameter> is not set
+ *
+ *  The function rewinds the file to its start to count the lines in the file -
+ *  reminder, the function is called on an error, after which the program is
+ *  finished so the file is not supposed to be read continuously after the
+ *  call to this function.
+ *  The file is not closed in the function.
+ *
+ *  If config == NULL || filename == NULL || parameter == NULL, than nothing is done.
+ *
+ */
 void printMissing(FILE* config, const char* filename, const char* parameter) {
+	if (!config || !filename || !parameter)
+		return;
+	/** return to the start of the file **/
 	fseek(config, SEEK_SET, 0);
 	char ch;
-	int lines = 0;
+	int lines = 1;	//doesnt count the last line
+
 	while (!feof(config)) {
+
 		ch = fgetc(config);
+		/** count lines **/
 		if (ch == '\n') {
 			lines++;
 		}
@@ -317,47 +346,59 @@ void printMissing(FILE* config, const char* filename, const char* parameter) {
 
 }
 
+/**
+ * This function checks if the non-essential parameters in the configuration file are set,
+ * and if not, assigns them the default values as follows:
+ *
+ * spPCADimension = 20
+ * spPCAFilename = "pca.yml"
+ * spNumOfFeatures = 100
+ * spExtractionMode = true
+ * spNumOfSimilarImages = 1
+ * spKDTreeSplitMethod = MAX_SPREAD
+ * spKNN = 1
+ * spMinimalGUI = false
+ * spLoggerLevel = 3
+ * spLoggerFilename = "stdout"
+ *
+ *  The function rewinds the file to its start to count the lines in the file -
+ *  reminder, the function is called on an error, after which the program is
+ *  finished so the file is not supposed to be read continuously after the
+ *  call to this function.
+ *  The file is not closed in the function.
+ *
+ */
 SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
-	/*
-	 int spPCADimension = 20;
-	 char* spPCAFilename = "pca.yml";
-	 int spNumOfFeatures = 100;
-	 bool spExtractionMode = true;
-	 int spNumOfSimilarImages = 1;
-	 splitMethod spKDTreeSplitMethod = MAX_SPREAD;
-	 int spKNN = 1;
-	 bool spMinimalGUI = false;
-	 int spLoggerLevel = 3;
-	 char* spLoggerFilename = "stdout";*/
 
+	/** Integer variables, using macro **/
 	checkAndAssign(spPCADimension, 20);
 	checkAndAssign(spNumOfFeatures, 100);
-	if (!attr->wasExtractionModeSet)
-		checkAndAssign(spExtractionMode, true);
 	checkAndAssign(spNumOfSimilarImages, 1);
 	checkAndAssign(spKDTreeSplitMethod, MAX_SPREAD);
 	checkAndAssign(spKNN, 1);
 	checkAndAssign(spLoggerLevel, 3);
+	//no need to check for spMinimalGui, becuase default value is false (0)
+
+	/** Special variables **/
 	if (!attr->spPCAFilename) {
-		attr->spPCAFilename = (char*) malloc(8);
+		attr->spPCAFilename = strdup(PCA);
 		if (!attr->spPCAFilename) {
 			return SP_CONFIG_ALLOC_FAIL;
 		}
-		strcpy(attr->spPCAFilename, "pca.yml");
 	}
 	if (!attr->spLoggerFilename) {
-		attr->spLoggerFilename = (char*) malloc(7);
+		attr->spLoggerFilename = strdup(STD);
 		if (!attr->spLoggerFilename) {
 			return SP_CONFIG_ALLOC_FAIL;
 		}
-		strcpy(attr->spLoggerFilename, "stdout");
 	}
-
+	if (!attr->wasExtractionModeSet)	//using the special variable
+			checkAndAssign(spExtractionMode, true);
 	return SP_CONFIG_SUCCESS;
 
 }
 
-void printAttributes(SPConfig attr) { /** DELETE **/
+void printAttributes(SPConfig attr) { //TODO   /** DELETE **/
 	fprintf(stdout, "=== Attributes: ===\n");
 	fprintf(stdout, "%s\t= %s\n", "spImagesDirectory", attr->spImagesDirectory);
 	fprintf(stdout, "%s\t\t= %s\n", "spImagesPrefix", attr->spImagesPrefix);
@@ -384,11 +425,13 @@ void printAttributes(SPConfig attr) { /** DELETE **/
 	fprintf(stdout, "===================\n\n");
 }
 
+
+
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
 	*msg = SP_CONFIG_SUCCESS;
 
-	/* vars init */
+	/* Variables Initializatgion */
 	char line[MAX_LENGTH], *var, *value;
 	int lineNum = 0;
 	int isCommentBlank = 0;
@@ -402,7 +445,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	if (!config) {
 
 		/* if default file */
-		if (!strcmp(filename, "spcbir.config")) {
+		if (!strcmp(filename, DEFAULT_CONFIG)) {
 			printf(DEFAULT_CANT_OPEN);
 			*msg = SP_CONFIG_CANNOT_OPEN_FILE;
 			return NULL;
@@ -424,7 +467,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 		fseek(config, SEEK_END, 0); 	//so would not get into while at all
 	}
 
-	/* NULLization of atrributes */
+	/* NULLization of attributes - so can be checked if was initialized or not*/
 	memset(attr, 0, sizeof(*attr));
 
 	while (fgets(line, MAX_LENGTH, config) != NULL) {
@@ -456,8 +499,6 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 			*msg = assignVarValue(attr, var, value, lineNum, filename);
 
 			if (*msg != SP_CONFIG_SUCCESS) {
-//				printf("line %d\n", lineNum);
-//				printf("msg = %d", *msg);
 				gotError = true;
 				break;
 			}
@@ -469,37 +510,35 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	if (!gotError) {
 		if (!attr->spImagesDirectory) {
 			*msg = SP_CONFIG_MISSING_DIR;
-			printMissing(config, filename, "spImagesDirectory");
+			printMissing(config, filename, IMGDIR);
 			gotError = true;
 
 		} else if (!attr->spImagesPrefix) {
 			*msg = SP_CONFIG_MISSING_PREFIX;
-			printMissing(config, filename, "spImagesPrefix");
+			printMissing(config, filename, IMGPRE);
 			gotError = true;
 
 		} else if (!attr->spImagesSuffix) {
 			*msg = SP_CONFIG_MISSING_SUFFIX;
-			printMissing(config, filename, "spImagesSuffix");
+			printMissing(config, filename, IMGSUF);
 			gotError = true;
 
 		} else if (!attr->spNumOfImages) {
 			*msg = SP_CONFIG_MISSING_NUM_IMAGES;
-			printMissing(config, filename, "SP_CONFIG_MISSING_NUM_IMAGES");
+			printMissing(config, filename, IMGNUM);
 			gotError = true;
 		}
 	}
 
 	fclose(config);
-	/* Assign dafault values if not set */
+	/* Assign default values if not set */
 	if (checkForDefaults(attr) != SP_CONFIG_SUCCESS) {
 		printf(MEMORY_FAIL1);
 		gotError = true;
 	}
 
 	if (gotError) {
-		printAttributes(attr);
 		spConfigDestroy(attr);
-
 		return NULL;
 	}
 
