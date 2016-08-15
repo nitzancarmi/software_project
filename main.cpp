@@ -43,6 +43,21 @@ void finishProgram(SPConfig config, SPBPQueue bpq, ImageProc* pc,
 	free(similar_images);
 }
 
+void cleanTempResources(SPPoint** q_features,
+                   int q_numOfFeats,
+                   char* q_path,
+                   int* img_near_cnt,
+                   int numOfImages,
+                   int* similar_images,
+                   int numOfSimilarImages)
+{
+        spPointArrayDestroy(*q_features, q_numOfFeats);
+	memset(&q_path[0], '\0', strlen(q_path));
+	memset(&img_near_cnt[0], 0, numOfImages*sizeof(int));			//added sizeof(int) (almogz)
+	memset(&similar_images[0], 0, numOfSimilarImages*sizeof(int));
+	*q_features = NULL;
+}
+
 int main(int argc, char* argv[]) {
 
 	/*variables declaration*/
@@ -108,7 +123,6 @@ int main(int argc, char* argv[]) {
 	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
 	img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
 	similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
-
 
 	/*******************************************/
 	/*********   Extraction Mode    ************/
@@ -186,11 +200,11 @@ int main(int argc, char* argv[]) {
 		//for each point in the query image, find k-nearest neighbors
 		for (i = 0; i < q_numOfFeats; i++) {
 			spBPQueueClear(bpq);
-			knn = findKNearestNeighbors(kdtree, bpq, q_features[i]);
-			if (!knn) {
-				printf("NULL POINTER EXCEPTION2");				//TODO CHANGE
-				exit(1);
-			}
+//			knn = findKNearestNeighbors(kdtree, bpq, q_features[i]);
+//			if (!knn) {
+//				printf("NULL POINTER EXCEPTION2");				//TODO CHANGE
+//				exit(1);
+//			}
 			//count image indices related to neighbors just found
 			for (j = 0; j < knn_size; j++) {
 				curr_pnt = knn[j];
@@ -219,16 +233,11 @@ int main(int argc, char* argv[]) {
 		}
 
 		//re-initializing query-related resources
-		spPointArrayDestroy(q_features, q_numOfFeats);
-		memset(&q_path[0], 0, strlen(q_path));
-		memset(&img_near_cnt[0], 0, numOfImages*sizeof(int));			//added sizeof(int) (almogz)
-		memset(&similar_images[0], 0, numOfSimilarImages*sizeof(int));
-		q_features = NULL;
+//                cleanTempResources(&q_features,q_numOfFeats,q_path,img_near_cnt,numOfImages,similar_images,numOfSimilarImages);
 	}
 
 
 	printf("Exiting...\n");
-	//need to add free for query parameters
 	clearAll()
 	return OK;
 
