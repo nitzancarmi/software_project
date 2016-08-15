@@ -16,21 +16,17 @@ extern "C" {
 #define FINISH_PRG "Program Finished Successfully"
 using namespace sp;
 
-SPPoint* findKNearestNeighbors(SPKDTreeNode kdtree, SPBPQueue bpq,
-		SPPoint point) {
+SPPoint* findKNearestNeighbors(SPKDTreeNode kdtree, SPPoint point) {
 	return NULL;
 }
 
-
-void finishProgram(SPConfig config, SPBPQueue bpq, ImageProc* pc,
+void finishProgram(SPConfig config, ImageProc* pc,
 		SPKDArray kdarray, SPKDTreeNode kdtree, SPPoint* all_points, int* img_near_cnt,
 		int* similar_images, int all_points_size) {
 	spLoggerPrintInfo("#Removing SPLogger and SPConfig");
 	spLoggerDestroy();
 	if (config)
 		spConfigDestroy(config);
-	if (bpq)
-		spBPQueueDestroy(bpq);
 	if (pc)
 		delete pc;
 	if(kdarray)
@@ -62,7 +58,6 @@ int main(int argc, char* argv[]) {
 
 	/*variables declaration*/
 	SPConfig config = NULL;
-	SPBPQueue bpq = NULL;
 	ImageProc* pc = NULL;
 	SPPoint* all_points = NULL, *q_features = NULL;
 	int all_points_size = 0, knn_size = 0;
@@ -117,8 +112,6 @@ int main(int argc, char* argv[]) {
 	pc = new ImageProc(config);
 	/***initialize additional resources using config parameters***/
 
-	bpq = spBPQueueCreate(spConfigGetKNN(config, &conf_msg));
-
 	numOfImages = spConfigGetNumOfImages(config, &conf_msg);
 	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
 	img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
@@ -155,9 +148,10 @@ int main(int argc, char* argv[]) {
 
 	kdtree = spKDTreeCreate(kdarray, config, &conf_msg, &log_msg);
 
-	if (!kdtree || !kdarray || !bpq || !pc) {
+	if (!kdtree || !kdarray || !pc) {
 		//TODO logger msg
-	clearAll()
+		finishProgram(config, pc, kdarray, kdtree, all_points, img_near_cnt,
+								similar_images, all_points_size);
 		return ERROR;
 	}
 
@@ -199,8 +193,7 @@ int main(int argc, char* argv[]) {
 
 		//for each point in the query image, find k-nearest neighbors
 		for (i = 0; i < q_numOfFeats; i++) {
-			spBPQueueClear(bpq);
-//			knn = findKNearestNeighbors(kdtree, bpq, q_features[i]);
+//			knn = findKNearestNeighbors(kdtree, q_features[i]);
 //			if (!knn) {
 //				printf("NULL POINTER EXCEPTION2");				//TODO CHANGE
 //				exit(1);
