@@ -16,12 +16,8 @@ extern "C" {
 #define FINISH_PRG "Program Finished Successfully"
 using namespace sp;
 
-void cleanGlobalResources(SPConfig config,
-                          ImageProc* pc,
-                          SPKDTreeNode kdtree,
-                          int* img_near_cnt,
-                          int* similar_images)
-{
+void cleanGlobalResources(SPConfig config, ImageProc* pc, SPKDTreeNode kdtree,
+		int* img_near_cnt, int* similar_images) {
 	spLoggerPrintInfo("Removing SPLogger and SPConfig");
 	spLoggerDestroy();
 	if (config)
@@ -34,86 +30,68 @@ void cleanGlobalResources(SPConfig config,
 	free(similar_images);
 }
 
-void cleanTempResources(SPPoint** q_features,
-                        int q_numOfFeats,
-                        char* q_path)
-{
-        spPointArrayDestroy(*q_features, q_numOfFeats);
+void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path) {
+	spPointArrayDestroy(*q_features, q_numOfFeats);
 	memset(&q_path[0], '\0', strlen(q_path));
 	*q_features = NULL;
 }
 
-int exportAllImagesToFiles(ImageProc* pc, SPConfig config, SP_LOGGER_MSG* log_msg){
-    if(*log_msg != SP_LOGGER_SUCCESS)
-        return 1;
-    int index, rc=0;
-    SP_CONFIG_MSG conf_msg = SP_CONFIG_SUCCESS;
-    int numOfImages = spConfigGetNumOfImages(config, &conf_msg);
-    if(conf_msg != SP_CONFIG_SUCCESS) {
-        //TODO update logger message
-        return 1;
-    }
+int exportAllImagesToFiles(ImageProc* pc, SPConfig config,
+		SP_LOGGER_MSG* log_msg) {
+	if (*log_msg != SP_LOGGER_SUCCESS)
+		return 1;
+	int index, rc = 0;
+	SP_CONFIG_MSG conf_msg = SP_CONFIG_SUCCESS;
+	int numOfImages = spConfigGetNumOfImages(config, &conf_msg);
+	if (conf_msg != SP_CONFIG_SUCCESS) {
+		//TODO update logger message
+		return 1;
+	}
 
-    for (index = 0; index < numOfImages; index++) {
-        char path[1024] = { '\0' };
-	int numOfFeats = -1;
-	spConfigGetImagePath(path, config, index); 
-	SPPoint* pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
-	rc = exportImageToFile(pointArray, numOfFeats, index, config);
-        if (rc){
-            //TODO update logger message
-            return 1;
-        }
-	spPointArrayDestroy(pointArray, numOfFeats);
-	pointArray = NULL;
-    }
-    return 0;
+	for (index = 0; index < numOfImages; index++) {
+		char path[1024] = { '\0' };
+		int numOfFeats = -1;
+		spConfigGetImagePath(path, config, index);
+		SPPoint* pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
+		rc = exportImageToFile(pointArray, numOfFeats, index, config);
+		if (rc) {
+			//TODO update logger message
+			return 1;
+		}
+		spPointArrayDestroy(pointArray, numOfFeats);
+		pointArray = NULL;
+	}
+	return 0;
 }
 
-int Setup(SPConfig config,
-      ImageProc* pc,
-      SPKDTreeNode* kdtree,
-      int* img_near_cnt,
-      int* similar_images,
-      SP_LOGGER_MSG* log_msg,
-      SP_CONFIG_MSG* conf_msg)
-{
-        int all_points_size=-1;
-        int rc = 0;
+int Setup(SPConfig config, SPKDTreeNode* kdtree,
+		int** img_near_cnt, int** similar_images, SP_LOGGER_MSG* log_msg,
+		SP_CONFIG_MSG* conf_msg) {
+	int all_points_size = -1;
 	int numOfImages = spConfigGetNumOfImages(config, conf_msg);
 	int numOfSimilarImages = spConfigGetNumOfSimilarImages(config, conf_msg);
-	img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
-	similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
-        if(!img_near_cnt || !similar_images){
-            //TODO update logger message
-            return 1;
-        }
+	*img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
+	*similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
+	if (!img_near_cnt || !similar_images) {
+		//TODO update logger message
+		return 1;
+	}
 
-	if (spConfigIsExtractionMode(config, conf_msg)) {
-            rc = exportAllImagesToFiles(pc, config, log_msg);
-            if(rc){
-                //TODO update logger message
-                return 1;
-            }
-        }
-
-	SPPoint* all_points = extractImagesFeatures(&all_points_size, config, log_msg,
-			conf_msg);
-	SPKDArray kdarray = spKDArrayCreate(config, all_points, all_points_size, log_msg,
-			conf_msg);
+	SPPoint* all_points = extractImagesFeatures(&all_points_size, config,
+			log_msg, conf_msg);
+	SPKDArray kdarray = spKDArrayCreate(config, all_points, all_points_size,
+			log_msg, conf_msg);
 	*kdtree = spKDTreeCreate(kdarray, config, conf_msg, log_msg);
-        if(all_points)
-            spPointArrayDestroy(all_points, all_points_size);
-        if(kdarray)
-            SPKDArrayDestroy(kdarray);
+	if (all_points)
+		spPointArrayDestroy(all_points, all_points_size);
+	if (kdarray)
+		SPKDArrayDestroy(kdarray);
 	if (!(*kdtree)) {
 		//TODO update logger msg
-                return 1;
+		return 1;
 	}
-        return 0;
+	return 0;
 }
-
-
 
 int main(int argc, char* argv[]) {
 
@@ -159,7 +137,6 @@ int main(int argc, char* argv[]) {
 		printf(INVALID_COMLINE);
 		break;
 	}
-	printAttributes(config); //TODO delete
 	pc = new ImageProc(config);
 
 	/***initiallize logger***/
@@ -176,8 +153,15 @@ int main(int argc, char* argv[]) {
 	}
 	printAttributes(config); //TODO Delete
 	pc = new ImageProc(config);
+
+
+	if (spConfigIsExtractionMode(config, &conf_msg)) {
+		rc = exportAllImagesToFiles(pc, config, &log_msg);
+
+	}
+
 	/***initialize additional resources using config parameters***/
-	rc = Setup(config, pc, &kdtree, img_near_cnt, similar_images, &log_msg,
+	rc = Setup(config, &kdtree, &img_near_cnt, &similar_images, &log_msg,
 			&conf_msg);
 	if (rc) {
 		//TODO logger msg
@@ -187,13 +171,6 @@ int main(int argc, char* argv[]) {
 
 	/**** execute queries ****/
 	char q_path[1024] = { '\0' };
-//<<<<<<< Upstream, based on origin/master
-//	numOfImages = spConfigGetNumOfImages(config, &conf_msg);
-//	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
-//	int q_numOfFeats, i, j;
-//	SPPoint* knn = NULL;
-//	SPPoint curr_pnt = NULL;
-//=======
 
 	knn_size = spConfigGetKNN(config, &conf_msg);
 
@@ -261,16 +238,13 @@ int main(int argc, char* argv[]) {
 		}
 
 		//re-initializing query-related resources
-        cleanTempResources(&q_features,q_numOfFeats,q_path);
-
-
-
+		//cleanTempResources(&q_features,q_numOfFeats,q_path);
 
 	}
 
 	printf("Exiting...\n");
-    cleanTempResources(&q_features,q_numOfFeats,q_path);
-	clearAll()
+	// cleanTempResources(&q_features,q_numOfFeats,q_path);
+	//clearAll()
 	return OK;
 
 }

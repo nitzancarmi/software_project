@@ -136,12 +136,6 @@
 /*****************************************************/
 
 #define clearAll()		cleanGlobalResources(config, pc, kdtree, img_near_cnt,similar_images);
-<<<<<<< Upstream, based on origin/master
-=======
-
-
-
->>>>>>> f91ddf5 merge with aux functions
 
 
 #endif /* MACROS_H_ */
