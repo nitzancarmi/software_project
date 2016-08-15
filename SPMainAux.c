@@ -1,5 +1,35 @@
 #include "SPMainAux.h"
 
+int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg) {
+	SPConfig config;
+	switch (argc) {
+	case 1:
+		config = spConfigCreate("spcbir.config", conf_msg);
+		if (!config)
+			return 1;
+		break;
+
+	case 3:
+
+		if (strcmp(argv[1], "-c")) {
+			printf(INVALID_COMLINE);
+			return 1;
+		}
+		config = spConfigCreate(argv[2], conf_msg);
+		if (!config)
+			return 1;
+
+		break;
+
+	default:
+		config = NULL;
+		printf(INVALID_COMLINE);
+		break;
+	}
+	*_config = config;
+	return OK;
+}
+
 int Setup(SPConfig config, SPKDTreeNode* kdtree, SP_LOGGER_MSG* log_msg,
 		SP_CONFIG_MSG* conf_msg) {
 
@@ -18,13 +48,10 @@ int Setup(SPConfig config, SPKDTreeNode* kdtree, SP_LOGGER_MSG* log_msg,
 	}
 
 	*kdtree = spKDTreeCreate(kdarray, config, conf_msg, log_msg);
-	if (!(*kdtree)) {
-		spPointArrayDestroy(all_points, all_points_size);
-		SPKDArrayDestroy(kdarray);
-		return 1;
-	}
+	spPointArrayDestroy(all_points, all_points_size);
+	SPKDArrayDestroy(kdarray);
 
-	return 0;
+	return *kdtree ? 0 : 1;
 }
 
 void cleanGlobalResources(SPConfig config, SPKDTreeNode kdtree,
@@ -55,7 +82,7 @@ bool initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg) {
 	}
 	*log_msg = spLoggerPrintDebug(FIRST_MSG, __FILE__, __func__, __LINE__);
 	if (*log_msg != SP_LOGGER_SUCCESS) {
-		printf(LOGGERnMSG, log_msg);
+		printf(LOGGERnMSG, *log_msg);
 		return true;
 	}
 	return false;

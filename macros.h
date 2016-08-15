@@ -149,6 +149,11 @@
 #define LOGGERnMSG 		"SPLogger Error. Message Type: %d"
 #define FINISH_PRG 		"Program Finished Successfully"
 
+#define PLS_ENTER		"Please enter an image path:\n"
+#define INV_PATH		"Invalid path to image. Please try again;\n"
+#define BST_CND			"Best candidates for - %s - are:\n"
+#define EXIT			"Exiting...\n"
+
 #endif /* MACROS_H_ */
 
 

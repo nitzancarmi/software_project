@@ -29,30 +29,8 @@ int main(int argc, char* argv[]) {
 	fflush(stdout);
 
 	/***create config file***/
-	switch (argc) {
-	case 1:
-		config = spConfigCreate("spcbir.config", &conf_msg);
-		if (!config)
-			return ERROR;
-		break;
-
-	case 3:
-
-		if (strcmp(argv[1], "-c")) {
-			printf(INVALID_COMLINE);
-			return ERROR;
-		}
-		config = spConfigCreate(argv[2], &conf_msg);
-		if (!config)
-			return ERROR;
-
-		break;
-
-	default:
-		config = NULL;
-		printf(INVALID_COMLINE);
-		break;
-	}
+	if(argParse(argc, argv, &config, &conf_msg))
+		return ERROR;
 
 	/*** Logger and ImageProc ***/
 	if (initializeSPLogger(config, &log_msg)) {
@@ -98,7 +76,7 @@ int main(int argc, char* argv[]) {
 	while (1) {
 
 		//get image path from user
-		printf("Please enter an image path:\n");
+		printf(PLS_ENTER);
 		fflush(stdout);
 		fgets(q_path, 1024, stdin);
 		q_path[strlen(q_path) - 1] = '\0'; //q_path will always include at lease '/n'
@@ -107,15 +85,14 @@ int main(int argc, char* argv[]) {
 		if (!strlen(q_path))
 			break;
 		if (access(q_path, F_OK) == -1) {
-			//TODO logger
-			printf("invalid path to image. Please try again\n");
+			printf(INV_PATH);
 			continue;
 		}
 
 		//getting query image features
 		q_features = pc->getImageFeatures(q_path, 0, &q_numOfFeats);
 		if (!q_features || !(*q_features)) {
-			//TODO logger message
+			//logger prints inside
 			return 1;
 		}
 
@@ -123,14 +100,14 @@ int main(int argc, char* argv[]) {
 		similar_images = getClosestImages(kdtree, config, q_features,
 				q_numOfFeats, &log_msg, &conf_msg);
 		if (!similar_images) {
-			//TODO logger message
+			//logger prints inside
 			return 1;
 		}
 
 		//show closest images on screen
 		bool gui = spConfigMinimalGui(config, &conf_msg);
 		if (!gui)
-			printf("Best candidates for - %s - are:\n", q_path);
+			printf(BST_CND, q_path);
 		for (int img = 0; img < numOfSimilarImages; img++) {
 			char tmp_path[1024] = { '\0' };
 			spConfigGetImagePath(tmp_path, config, similar_images[img]);
@@ -144,7 +121,7 @@ int main(int argc, char* argv[]) {
 		cleanTempResources(&q_features, q_numOfFeats, q_path);
 	}
 
-	printf("Exiting...\n");
+	printf(EXIT);
 	cleanTempResources(&q_features, q_numOfFeats, q_path);
 	clearAll()
 	if (pc)
