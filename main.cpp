@@ -20,7 +20,7 @@ SPPoint* findKNearestNeighbors(SPKDTreeNode kdtree, SPPoint point) {
 	return NULL;
 }
 
-void finishProgram(SPConfig config, ImageProc* pc,
+void cleanGlobalResources(SPConfig config, ImageProc* pc,
 		SPKDArray kdarray, SPKDTreeNode kdtree, SPPoint* all_points, int* img_near_cnt,
 		int* similar_images, int all_points_size) {
 	spLoggerPrintInfo("#Removing SPLogger and SPConfig");
@@ -150,7 +150,7 @@ int main(int argc, char* argv[]) {
 
 	if (!kdtree || !kdarray || !pc) {
 		//TODO logger msg
-		finishProgram(config, pc, kdarray, kdtree, all_points, img_near_cnt,
+		cleanGlobalResources(config, pc, kdarray, kdtree, all_points, img_near_cnt,
 								similar_images, all_points_size);
 		return ERROR;
 	}
@@ -190,14 +190,14 @@ int main(int argc, char* argv[]) {
 			printf("NULL POINTER EXCEPTION1");
 			exit(1);								//TODO CHANGE
 		}
-
+/*
 		//for each point in the query image, find k-nearest neighbors
 		for (i = 0; i < q_numOfFeats; i++) {
-//			knn = findKNearestNeighbors(kdtree, q_features[i]);
-//			if (!knn) {
-//				printf("NULL POINTER EXCEPTION2");				//TODO CHANGE
-//				exit(1);
-//			}
+			knn = findKNearestNeighbors(kdtree, q_features[i]);
+			if (!knn) {
+				printf("NULL POINTER EXCEPTION2");				//TODO CHANGE
+				exit(1);
+			}
 			//count image indices related to neighbors just found
 			for (j = 0; j < knn_size; j++) {
 				curr_pnt = knn[j];
@@ -224,13 +224,14 @@ int main(int argc, char* argv[]) {
 			printf("%d%c", similar_images[i],
 					i + 1 == numOfSimilarImages ? '\n' : ' ');
 		}
-
+*/
 		//re-initializing query-related resources
-//                cleanTempResources(&q_features,q_numOfFeats,q_path,img_near_cnt,numOfImages,similar_images,numOfSimilarImages);
+                cleanTempResources(&q_features,q_numOfFeats,q_path,img_near_cnt,numOfImages,similar_images,numOfSimilarImages);
 	}
 
 
 	printf("Exiting...\n");
+        cleanTempResources(&q_features,q_numOfFeats,q_path,img_near_cnt,numOfImages,similar_images,numOfSimilarImages);
 	clearAll()
 	return OK;
 
