@@ -17,7 +17,7 @@ extern "C" {
 using namespace sp;
 
 void cleanGlobalResources(SPConfig config, ImageProc* pc, SPKDTreeNode kdtree,
-		int* img_near_cnt, int* similar_images) {
+		int* similar_images) {
 	spLoggerPrintInfo("Removing SPLogger and SPConfig");
 	spLoggerDestroy();
 	if (config)
@@ -26,7 +26,6 @@ void cleanGlobalResources(SPConfig config, ImageProc* pc, SPKDTreeNode kdtree,
 		delete pc;
 	if (kdtree)
 		spKDTreeDestroy(kdtree);
-	free(img_near_cnt);
 	free(similar_images);
 }
 
@@ -77,11 +76,8 @@ void printIntArray(int* a, int size, const char* name) {
 }
 
 int Setup(SPConfig config, SPKDTreeNode* kdtree,
-		int** img_near_cnt, int** similar_images, SP_LOGGER_MSG* log_msg,
-		SP_CONFIG_MSG* conf_msg) {
+		SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg) {
 	int all_points_size = -1;
-
-
 	SPPoint* all_points = extractImagesFeatures(&all_points_size, config,
 			log_msg, conf_msg);
 	SPKDArray kdarray = spKDArrayCreate(config, all_points, all_points_size,
@@ -99,22 +95,68 @@ int Setup(SPConfig config, SPKDTreeNode* kdtree,
 }
 
 
+int* getClosestImages(SPKDTreeNode kdtree,
+                      SPConfig config,
+                      SPPoint* q_features,
+                      int q_numOfFeats,
+                      SP_LOGGER_MSG* log_msg,
+                      SP_CONFIG_MSG* conf_msg)
+{               
+    int* knn = NULL;
+    int i,j;
+    int knn_size = spConfigGetKNN(config, conf_msg);
+    int numOfImages = spConfigGetNumOfImages(config, conf_msg);
+    int numOfSimilarImages = spConfigGetNumOfSimilarImages(config, conf_msg);
+    int *img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
+    int *similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
+    if (!img_near_cnt || !similar_images) {
+        //TODO update logger message
+        return NULL;
+    }
+
+    //for each point in the query image, find k-nearest neighbors
+    for (i = 0; i < q_numOfFeats; i++) {
+	knn = findKNearestNeighbors(kdtree, q_features[i], config);
+	if (!knn) {
+            //TODO logger message
+            return NULL;
+	}
+
+    //count image indices related to neighbors just found
+    for (j = 0; j < knn_size; j++)
+        img_near_cnt[knn[j]]++;
+	free(knn);
+	knn = NULL;
+    }
+
+    //return the k nearest images based on img_near_cnt array
+    // assumes numOfSimilarImages << n
+    for (i = 0; i < numOfSimilarImages; i++) {
+        similar_images[i] = 0;
+	for (j = 0; j < numOfImages; j++) {
+	    if (img_near_cnt[j] > img_near_cnt[similar_images[i]])
+	        similar_images[i] = j;
+	}
+	img_near_cnt[similar_images[i]] = 0;
+    }
+
+    free(img_near_cnt);
+    return similar_images;
+}
+
+
 int main(int argc, char* argv[]) {
 
 	/*variables declaration*/
 	SPConfig config = NULL;
-	ImageProc* pc = NULL;
-	SPPoint* q_features = NULL;
-	int knn_size = 0;
-	SPKDTreeNode kdtree = NULL;
-	int numOfImages = 0, numOfSimilarImages = 0;
-	int rc;
-	int *img_near_cnt = NULL, *similar_images = NULL;
 	SP_CONFIG_MSG conf_msg = SP_CONFIG_SUCCESS;
 	SP_LOGGER_MSG log_msg = SP_LOGGER_SUCCESS;
-
-	int q_numOfFeats, i, j;
-	int* knn = NULL;
+	ImageProc* pc = NULL;
+	SPKDTreeNode kdtree = NULL;
+	SPPoint* q_features = NULL;
+        char q_path[1024];
+	int q_numOfFeats, rc, numOfSimilarImages = 0;
+	int *similar_images = NULL;
 
 	fflush(stdout);
 	switch (argc) {
@@ -144,7 +186,7 @@ int main(int argc, char* argv[]) {
 		break;
 	}
 
-	/***initiallize logger***/
+	/***initiallize resources using config parameters***/
 	if ((log_msg = spLoggerCreate(NULL, SP_LOGGER_WARNING_ERROR_LEVEL))
 			!= SP_LOGGER_SUCCESS) {
 		clearAll()
@@ -165,28 +207,17 @@ int main(int argc, char* argv[]) {
 
 	}
 
-	/***initialize additional resources using config parameters***/
-	rc = Setup(config, &kdtree, &img_near_cnt, &similar_images, &log_msg,
-			&conf_msg);
-	numOfImages = spConfigGetNumOfImages(config, &conf_msg);
-	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
-	img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
-	similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
-	if (!img_near_cnt || !similar_images) {
-		//TODO update logger message
-		return 1;
-	}
-
+	rc = Setup(config, &kdtree, &log_msg, &conf_msg);
 	if (rc) {
 		//TODO logger msg
-		cleanGlobalResources(config, pc, kdtree, img_near_cnt, similar_images);
+		cleanGlobalResources(config, pc, kdtree, similar_images);
 		return ERROR;
 	}
 
-	/**** execute queries ****/
-	char q_path[1024] = { '\0' };
 
-	knn_size = spConfigGetKNN(config, &conf_msg);
+	/**** execute queries ****/
+	q_path[1024] = { '\0' };
+        numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
 
 	while (1) {
 
@@ -200,6 +231,7 @@ int main(int argc, char* argv[]) {
 		if (!strlen(q_path))
 			break;
 		if (access(q_path, F_OK) == -1) {
+                        //TODO logger
 			printf("invalid path to image. Please try again\n");
 			continue;
 		}
@@ -208,47 +240,20 @@ int main(int argc, char* argv[]) {
 		q_features = pc->getImageFeatures(q_path, 0, &q_numOfFeats);
 		if (!q_features || !(*q_features)) {
 			//TODO logger message
-			printf("NULL POINTER EXCEPTION1");
-			exit(1);								//TODO CHANGE
+			return 1;
 		}
 
-		//for each point in the query image, find k-nearest neighbors
-		for (i = 0; i < q_numOfFeats; i++) {
-			knn = findKNearestNeighbors(kdtree, q_features[i], config);
-			if (!knn) {
-				printf("NULL POINTER EXCEPTION2");				//TODO CHANGE
-				exit(1);
-			}
-			if(!img_near_cnt){
-				printf("NULL POINTER EXCEPTION3");				//TODO CHANGE
-								exit(1);
-			}
+                //find closest images to query image
+		similar_images = getClosestImages(kdtree, config, q_features, q_numOfFeats, &log_msg, &conf_msg);
+                if(!similar_images) {
+                    //TODO logger message
+                    return 1;
+                }
 
-			//count image indices related to neighbors just found
-			for (j = 0; j < knn_size; j++) {
-
-				img_near_cnt[knn[j]]++;
-			}
-
-			free(knn);
-			knn = NULL;
-		}
-
-		//return the k nearest images based on img_near_cnt array
-		// assumes numOfSimilarImages << n
-		for (i = 0; i < numOfSimilarImages; i++) {
-			similar_images[i] = 0;
-			for (j = 0; j < numOfImages; j++) {
-				if (img_near_cnt[j] > img_near_cnt[similar_images[i]])
-					similar_images[i] = j;
-			}
-			img_near_cnt[similar_images[i]] = 0;
-		}
-
+                //show closest images on screen
 		bool gui = spConfigMinimalGui(config, &conf_msg);
 		if (!gui)
 			printf("Best candidates for - %s - are:\n", q_path);
-
 		for (int img = 0; img < numOfSimilarImages; img++) {
 			char tmp_path[1024] = { '\0' };
 			spConfigGetImagePath(tmp_path, config, similar_images[img]);
@@ -260,14 +265,12 @@ int main(int argc, char* argv[]) {
 
 		//re-initializing query-related resources
 		cleanTempResources(&q_features,q_numOfFeats,q_path);
-
 	}
 
 	printf("Exiting...\n");
-	 cleanTempResources(&q_features,q_numOfFeats,q_path);
+        cleanTempResources(&q_features,q_numOfFeats,q_path);
 	clearAll()
 	return OK;
-
 }
 
 //printf("Exiting...\n");

@@ -135,7 +135,7 @@
 /************************ Main ***********************/
 /*****************************************************/
 
-#define clearAll()		cleanGlobalResources(config, pc, kdtree, img_near_cnt,similar_images);
+#define clearAll()		cleanGlobalResources(config, pc, kdtree, similar_images);
 
 
 #endif /* MACROS_H_ */
