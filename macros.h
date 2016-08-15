@@ -135,8 +135,7 @@
 /************************ Main ***********************/
 /*****************************************************/
 
-#define clearAll()		cleanGlobalResources(config, pc, kdarray, kdtree, all_points, img_near_cnt,	\
-							similar_images, all_points_size);
+#define clearAll()		cleanGlobalResources(config, pc, kdtree, img_near_cnt,similar_images);
 
 
 #endif /* MACROS_H_ */
