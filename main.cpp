@@ -264,6 +264,8 @@ int main(int argc, char* argv[]) {
         cleanTempResources(&q_features,q_numOfFeats,q_path);
 
 
+
+
 	}
 
 	printf("Exiting...\n");
