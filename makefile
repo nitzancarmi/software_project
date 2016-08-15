@@ -1,7 +1,8 @@
 CC = gcc
 CPP = g++
 #put your object files here
-OBJS = main.o SPImageProc.o SPPoint.o SPConfig.o SPLogger.o SPBPriorityQueue.o SPList.o SPListElement.o KDArray.o KDTree.o SPExtractor.o
+OBJS = main.o SPImageProc.o SPPoint.o SPConfig.o SPLogger.o SPBPriorityQueue.o \
+SPList.o SPListElement.o KDArray.o KDTree.o SPExtractor.o SPKNNSearch.o
 #The executabel filename
 EXEC = SPCBIR
 INCLUDEPATH=/usr/local/lib/opencv-3.1.0/include/
@@ -18,7 +19,7 @@ C_COMP_FLAG = -std=c99 -Wall -Wextra \
 
 $(EXEC): $(OBJS)
 	$(CPP) $(OBJS) -L$(LIBPATH) $(LDFLAGS) $(LIBS) -o $@
-main.o: main.cpp SPImageProc.h SPConfig.h SPLogger.h SPPoint.h KDArray.h SPExtractor.h
+main.o: main.cpp SPImageProc.h SPConfig.h SPLogger.h SPPoint.h KDArray.h SPExtractor.h SPKNNSearch.h
 	$(CPP)  $(CPP_COMP_FLAG) $(LDFLAGS)  -I$(INCLUDEPATH) -c $*.cpp
 SPImageProc.o: SPImageProc.cpp SPImageProc.h SPConfig.h SPLogger.h SPPoint.h
 	$(CPP) $(CPP_COMP_FLAG) -I$(INCLUDEPATH) -c $*.cpp
@@ -51,5 +52,9 @@ KDTree.o: KDTree.c KDTree.h KDArray.h SPPoint.h SPConfig.h SPLogger.h
 
 SPExtractor.o: SPExtractor.c SPExtractor.h SPPoint.h SPConfig.h SPLogger.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
+
+SPKNNSearch.o: SPKNNSearch.c macros.h KDTree.h KDArray.h SPPoint.h \
+SPConfig.h SPLogger.h SPBPriorityQueue.h SPListElement.h
+
 clean:
 	rm -f $(OBJS) $(EXEC)
