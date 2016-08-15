@@ -64,18 +64,23 @@ int exportAllImagesToFiles(ImageProc* pc, SPConfig config,
 	return 0;
 }
 
+void printIntArray(int* a, int size, const char* name) {
+	if (!a) {
+		printf("error");
+		return;
+	}
+	printf("%s: (", name);
+	for (int i = 0; i < size; i++) {
+		printf((i == size - 1 ? "%d" : "%d, "), a[i]);
+	}
+	printf(")\n");
+}
+
 int Setup(SPConfig config, SPKDTreeNode* kdtree,
 		int** img_near_cnt, int** similar_images, SP_LOGGER_MSG* log_msg,
 		SP_CONFIG_MSG* conf_msg) {
 	int all_points_size = -1;
-	int numOfImages = spConfigGetNumOfImages(config, conf_msg);
-	int numOfSimilarImages = spConfigGetNumOfSimilarImages(config, conf_msg);
-	*img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
-	*similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
-	if (!img_near_cnt || !similar_images) {
-		//TODO update logger message
-		return 1;
-	}
+
 
 	SPPoint* all_points = extractImagesFeatures(&all_points_size, config,
 			log_msg, conf_msg);
@@ -92,6 +97,7 @@ int Setup(SPConfig config, SPKDTreeNode* kdtree,
 	}
 	return 0;
 }
+
 
 int main(int argc, char* argv[]) {
 
@@ -137,7 +143,6 @@ int main(int argc, char* argv[]) {
 		printf(INVALID_COMLINE);
 		break;
 	}
-	pc = new ImageProc(config);
 
 	/***initiallize logger***/
 	if ((log_msg = spLoggerCreate(NULL, SP_LOGGER_WARNING_ERROR_LEVEL))
@@ -163,6 +168,15 @@ int main(int argc, char* argv[]) {
 	/***initialize additional resources using config parameters***/
 	rc = Setup(config, &kdtree, &img_near_cnt, &similar_images, &log_msg,
 			&conf_msg);
+	numOfImages = spConfigGetNumOfImages(config, &conf_msg);
+	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
+	img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
+	similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
+	if (!img_near_cnt || !similar_images) {
+		//TODO update logger message
+		return 1;
+	}
+
 	if (rc) {
 		//TODO logger msg
 		cleanGlobalResources(config, pc, kdtree, img_near_cnt, similar_images);
@@ -205,10 +219,17 @@ int main(int argc, char* argv[]) {
 				printf("NULL POINTER EXCEPTION2");				//TODO CHANGE
 				exit(1);
 			}
+			if(!img_near_cnt){
+				printf("NULL POINTER EXCEPTION3");				//TODO CHANGE
+								exit(1);
+			}
+
 			//count image indices related to neighbors just found
 			for (j = 0; j < knn_size; j++) {
+
 				img_near_cnt[knn[j]]++;
 			}
+
 			free(knn);
 			knn = NULL;
 		}
@@ -238,13 +259,13 @@ int main(int argc, char* argv[]) {
 		}
 
 		//re-initializing query-related resources
-		//cleanTempResources(&q_features,q_numOfFeats,q_path);
+		cleanTempResources(&q_features,q_numOfFeats,q_path);
 
 	}
 
 	printf("Exiting...\n");
-	// cleanTempResources(&q_features,q_numOfFeats,q_path);
-	//clearAll()
+	 cleanTempResources(&q_features,q_numOfFeats,q_path);
+	clearAll()
 	return OK;
 
 }
