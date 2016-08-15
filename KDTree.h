@@ -35,4 +35,22 @@ SPKDTreeNode spKDTreeCreate(SPKDArray KDArray,const SPConfig config,SP_CONFIG_MS
  */
 void spKDTreeDestroy(SPKDTreeNode KDTree);
 
+//TODO DOCO
+bool isLeaf(SPKDTreeNode node);
+
+
+int getIndex(SPKDTreeNode node);
+
+double getDistFromPoint(SPKDTreeNode node, SPPoint point);
+
+int getDim(SPKDTreeNode node);
+
+int getVal(SPKDTreeNode node);
+
+SPKDTreeNode getLeftSubtree(SPKDTreeNode node);
+
+SPKDTreeNode getRightSubtree(SPKDTreeNode node);
+
+bool doubleEquals(double a, double b);
+
 #endif /* KDTREE_H_ */

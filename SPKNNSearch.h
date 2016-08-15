@@ -8,6 +8,6 @@
 #ifndef SPKNNSEARCH_H_
 #define SPKNNSEARCH_H_
 
-
+int* findKNearestNeighbors(SPKDTreeNode kdtree,	SPPoint point, SPConfig config);
 
 #endif /* SPKNNSEARCH_H_ */

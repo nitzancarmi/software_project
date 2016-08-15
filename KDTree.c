@@ -246,7 +246,6 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	SPKDArrayDestroy(KDpntr1);
 	returnIfConfigMsg(NULL)
 
-
 	/* Right Recursion */
 	if (printChk)
 		printf("\n******RIGHT:*******\n");
@@ -275,3 +274,56 @@ void spKDTreeDestroy(SPKDTreeNode kdtree) {
 
 }
 
+bool isLeaf(SPKDTreeNode node) {
+	if (!node)
+		return false;
+
+	if (node->dim == -1 && node->val == -1 && !node->left && !node->right
+			&& node->data)
+		return true;
+
+	return false;
+
+}
+
+int getIndex(SPKDTreeNode node) {
+	if (!node)
+		return -1;
+
+	return spPointGetIndex(node->data);
+}
+
+double getDistFromPoint(SPKDTreeNode node, SPPoint point) {
+	if (!node || !point)
+		return -1;
+
+	return spPointL2SquaredDistance(node->data,point);
+}
+
+int getDim(SPKDTreeNode node) {
+	if (!node)
+		return -1;
+
+	return node->dim;
+}
+
+int getVal(SPKDTreeNode node) {
+	if (!node)
+		return -1;
+
+	return node->val;
+}
+
+SPKDTreeNode getLeftSubtree(SPKDTreeNode node) {
+	if (!node)
+		return NULL;
+
+	return node->left;
+}
+
+SPKDTreeNode getRightSubtree(SPKDTreeNode node) {
+	if (!node)
+		return NULL;
+
+	return node->right;
+}
