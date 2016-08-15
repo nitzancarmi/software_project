@@ -1,6 +1,6 @@
 #include "SPConfig.h"
 #include "macros.h"
-
+#include "string.h"
 
 /*************************/
 /*** Struct Definition ***/
@@ -30,10 +30,9 @@ struct sp_config_t {
 };
 /*************************/
 
-
 void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 		char** varReturn, char** valueReturn) {
-	if(!line || !msg || !isCommentBlank || !varReturn || !valueReturn)
+	if (!line || !msg || !isCommentBlank || !varReturn || !valueReturn)
 		return;
 
 	/* pass over spaces to next character*/
@@ -381,19 +380,21 @@ SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 
 	/** Special variables **/
 	if (!attr->spPCAFilename) {
-		attr->spPCAFilename = strdup(PCA);
+		attr->spPCAFilename = (char*) malloc(8);
 		if (!attr->spPCAFilename) {
 			return SP_CONFIG_ALLOC_FAIL;
 		}
+		strcpy(attr->spPCAFilename, PCAYML);
 	}
 	if (!attr->spLoggerFilename) {
-		attr->spLoggerFilename = strdup(STD);
+		attr->spLoggerFilename = (char*) malloc(7);
 		if (!attr->spLoggerFilename) {
 			return SP_CONFIG_ALLOC_FAIL;
 		}
+		strcpy(attr->spPCAFilename, STD);
 	}
 	if (!attr->wasExtractionModeSet)	//using the special variable
-			checkAndAssign(spExtractionMode, true);
+		checkAndAssign(spExtractionMode, true);
 	return SP_CONFIG_SUCCESS;
 
 }
@@ -424,8 +425,6 @@ void printAttributes(SPConfig attr) { //TODO   /** DELETE **/
 	fprintf(stdout, "%s\t= %s\n", "spLoggerFilename", attr->spLoggerFilename);
 	fprintf(stdout, "===================\n\n");
 }
-
-
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
@@ -611,3 +610,11 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	return SP_CONFIG_SUCCESS;
 }
 
+SP_CONFIG_MSG spConfigGetSPLoggerFilename(char* loggerPath, const SPConfig config) {
+	if (!loggerPath || !config)
+		return SP_CONFIG_INVALID_ARGUMENT;
+
+	sprintf(loggerPath, "%s", config->spLoggerFilename);
+
+	return SP_CONFIG_SUCCESS;
+}

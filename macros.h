@@ -27,7 +27,7 @@
 #define PARAMETER_NOTSET 			"File: %s\nLine: %d\nMessage: Parameter %s is not set\n"
 
 #define DEFAULT_CONFIG				"spcbir.config"
-#define PCA							"pca.yml"
+#define PCAYML						"pca.yml"
 #define STD							"stdout"
 
 #define	IMGDIR						"spImagesDirectory"
@@ -144,8 +144,10 @@
 /************************ Main ***********************/
 /*****************************************************/
 
-#define clearAll()		cleanGlobalResources(config, pc, kdtree, similar_images);
-
+#define clearAll()		cleanGlobalResources(config, kdtree, similar_images);
+#define FIRST_MSG 		"SPConfig file imported.\nLogger opened."
+#define LOGGERnMSG 		"SPLogger Error. Message Type: %d"
+#define FINISH_PRG 		"Program Finished Successfully"
 
 #endif /* MACROS_H_ */
 

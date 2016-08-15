@@ -1,4 +1,3 @@
-
 #ifndef SPKNNSEARCH_H_
 #define SPKNNSEARCH_H_
 
@@ -17,6 +16,11 @@
  *  	- Memory allocation failure
  *  	- SPConfig access error
  */
-int* findKNearestNeighbors(SPKDTreeNode kdtree,	SPPoint point, SPConfig config);
+int* findKNearestNeighbors(SPKDTreeNode kdtree, SPPoint point, SPConfig config);
+
+
+//TODO DOCO
+int* getClosestImages(SPKDTreeNode kdtree, SPConfig config, SPPoint* q_features,
+		int q_numOfFeats, SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg);
 
 #endif /* SPKNNSEARCH_H_ */

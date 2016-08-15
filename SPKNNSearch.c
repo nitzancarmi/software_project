@@ -40,14 +40,12 @@ void knnRecursive(SPKDTreeNode kd, SPPoint feat, SPBPQueue bpq) {
 	lessOrEqual = (equal) ? equal : val < p_dim;
 	/***************************/
 
-
 	/** First, continue the recursion downward the KDTree based on val **/
 	if (lessOrEqual) {
 		knnRecursive(getLeftSubtree(kd), feat, bpq);
 		left = true;	//to know it was left
 	} else
 		knnRecursive(getRightSubtree(kd), feat, bpq);
-
 
 	/** Then, check the conditions for recursion continuation
 	 *  on the second branch - if the queue isn't full, than obviously
@@ -105,5 +103,49 @@ int* findKNearestNeighbors(SPKDTreeNode kdtree, SPPoint feat, SPConfig config) {
 	spBPQueueDestroy(bpq);
 
 	return ret;
+}
+
+int* getClosestImages(SPKDTreeNode kdtree, SPConfig config, SPPoint* q_features,
+		int q_numOfFeats, SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg) {
+	int* knn = NULL;
+	int i, j;
+	int knn_size = spConfigGetKNN(config, conf_msg);
+	int numOfImages = spConfigGetNumOfImages(config, conf_msg);
+	int numOfSimilarImages = spConfigGetNumOfSimilarImages(config, conf_msg);
+	int *img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
+	int *similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
+	if (!img_near_cnt || !similar_images) {
+		MallocError()
+		return NULL;
+	}
+
+	//for each point in the query image, find k-nearest neighbors
+	for (i = 0; i < q_numOfFeats; i++) {
+		knn = findKNearestNeighbors(kdtree, q_features[i], config);
+		if (!knn) {
+			//printed inside
+			return NULL;
+		}
+
+		//count image indices related to neighbors just found
+		for (j = 0; j < knn_size; j++)
+			img_near_cnt[knn[j]]++;
+		free(knn);
+		knn = NULL;
+	}
+
+	//return the k nearest images based on img_near_cnt array
+	// assumes numOfSimilarImages << n
+	for (i = 0; i < numOfSimilarImages; i++) {
+		similar_images[i] = 0;
+		for (j = 0; j < numOfImages; j++) {
+			if (img_near_cnt[j] > img_near_cnt[similar_images[i]])
+				similar_images[i] = j;
+		}
+		img_near_cnt[similar_images[i]] = 0;
+	}
+
+	free(img_near_cnt);
+	return similar_images;
 }
 
