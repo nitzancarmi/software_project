@@ -108,10 +108,6 @@ int main(int argc, char* argv[]) {
 	img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
 	similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
 
-	//TODO caused memory malfunction and runtime error on FREEing (almogz)
-	//memset(&img_near_cnt, 0, numOfImages);
-	//memset(&similar_images, 0, numOfSimilarImages);
-
 
 	/*******************************************/
 	/*********   Extraction Mode    ************/

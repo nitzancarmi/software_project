@@ -138,6 +138,7 @@
 #define clearAll()			finishProgram(config, bpq, pc, kdarray, kdtree, all_points, img_near_cnt, \
 								similar_images, all_points_size);
 
+
 #endif /* MACROS_H_ */
 
 
