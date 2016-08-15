@@ -47,7 +47,7 @@ int main(int argc, char* argv[]) {
 	/*variables declaration*/
 	SPConfig config = NULL;
 	SPBPQueue bpq = NULL;
-
+	ImageProc* pc = NULL;
 	SPPoint* all_points = NULL, *q_features = NULL;
 	int all_points_size = 0, knn_size = 0;
 	SPKDArray kdarray = NULL;
@@ -84,12 +84,12 @@ int main(int argc, char* argv[]) {
 		break;
 	}
 	printAttributes(config);
-	ImageProc* pc = new ImageProc(config);
+
 	/***initiallize logger***/
 	if ((log_msg = spLoggerCreate(NULL, SP_LOGGER_WARNING_ERROR_LEVEL))
 			!= SP_LOGGER_SUCCESS) {
 		clearAll()
-		return ERROR;
+				return ERROR;
 	}
 	log_msg = spLoggerPrintDebug(FIRST_MSG, __FILE__, __func__, __LINE__);
 	if (log_msg != SP_LOGGER_SUCCESS) {
@@ -98,6 +98,7 @@ int main(int argc, char* argv[]) {
 		return ERROR;
 	}
 
+	pc = new ImageProc(config);
 	/***initialize additional resources using config parameters***/
 
 	bpq = spBPQueueCreate(spConfigGetKNN(config, &conf_msg));
@@ -110,6 +111,7 @@ int main(int argc, char* argv[]) {
 	//TODO caused memory malfunction and runtime error on FREEing (almogz)
 	//memset(&img_near_cnt, 0, numOfImages);
 	//memset(&similar_images, 0, numOfSimilarImages);
+
 
 	/*******************************************/
 	/*********   Extraction Mode    ************/
@@ -130,10 +132,10 @@ int main(int argc, char* argv[]) {
 				clearAll()
 				return ERROR;
 			}
-			/************************/
+
 		}
 	}
-
+	/************************/
 	all_points = extractImagesFeatures(&all_points_size, config, &log_msg,
 			&conf_msg);
 
@@ -144,14 +146,12 @@ int main(int argc, char* argv[]) {
 
 	if (!kdtree || !kdarray || !bpq || !pc) {
 		//TODO logger msg
-		finishProgram(config, bpq, pc, kdarray, kdtree, all_points, img_near_cnt,
-								similar_images, all_points_size);
+	clearAll()
 		return ERROR;
 	}
 
 	spPointArrayDestroy(all_points, all_points_size);
 	all_points = NULL;
-	SPKDArrayDestroy(kdarray);
 
 	/**** execute queries ****/
 	char q_path[1024] = { '\0' };
