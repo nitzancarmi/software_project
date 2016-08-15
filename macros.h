@@ -139,6 +139,7 @@
 								similar_images, all_points_size);
 
 
+
 #endif /* MACROS_H_ */
 
 

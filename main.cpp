@@ -225,6 +225,7 @@ int main(int argc, char* argv[]) {
 		q_features = NULL;
 	}
 
+
 	printf("Exiting...\n");
 	//need to add free for query parameters
 	clearAll()
