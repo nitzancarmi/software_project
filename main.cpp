@@ -16,21 +16,12 @@ extern "C" {
 #define FINISH_PRG "Program Finished Successfully"
 using namespace sp;
 
-<<<<<<< Upstream, based on origin/master
-SPPoint* findKNearestNeighbors(SPKDTreeNode kdtree, SPPoint point) {
-	return NULL;
-}
-
 void cleanGlobalResources(SPConfig config,
                           ImageProc* pc,
                           SPKDTreeNode kdtree,
                           int* img_near_cnt,
-                          int* similar_images) 
+                          int* similar_images)
 {
-=======
-void cleanGlobalResources(SPConfig config, ImageProc* pc, SPKDTreeNode kdtree,
-		int* img_near_cnt, int* similar_images) {
->>>>>>> f91ddf5 merge with aux functions
 	spLoggerPrintInfo("Removing SPLogger and SPConfig");
 	spLoggerDestroy();
 	if (config)
@@ -41,78 +32,6 @@ void cleanGlobalResources(SPConfig config, ImageProc* pc, SPKDTreeNode kdtree,
 		spKDTreeDestroy(kdtree);
 	free(img_near_cnt);
 	free(similar_images);
-}
-
-void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path) {
-	spPointArrayDestroy(*q_features, q_numOfFeats);
-	memset(&q_path[0], '\0', strlen(q_path));
-	*q_features = NULL;
-}
-
-int exportAllImagesToFiles(ImageProc* pc, SPConfig config,
-		SP_LOGGER_MSG* log_msg) {
-	if (*log_msg != SP_LOGGER_SUCCESS)
-		return 1;
-	int index, rc = 0;
-	SP_CONFIG_MSG conf_msg = SP_CONFIG_SUCCESS;
-	int numOfImages = spConfigGetNumOfImages(config, &conf_msg);
-	if (conf_msg != SP_CONFIG_SUCCESS) {
-		//TODO update logger message
-		return 1;
-	}
-
-	for (index = 0; index < numOfImages; index++) {
-		char path[1024] = { '\0' };
-		int numOfFeats = -1;
-		spConfigGetImagePath(path, config, index);
-		SPPoint* pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
-		rc = exportImageToFile(pointArray, numOfFeats, index, config);
-		if (rc) {
-			//TODO update logger message
-			return 1;
-		}
-		spPointArrayDestroy(pointArray, numOfFeats);
-		pointArray = NULL;
-	}
-	return 0;
-}
-
-int Setup(SPConfig config, ImageProc* pc, SPKDTreeNode* kdtree,
-		int* img_near_cnt, int* similar_images, SP_LOGGER_MSG* log_msg,
-		SP_CONFIG_MSG* conf_msg) {
-	int all_points_size = -1;
-	int rc = 0;
-	int numOfImages = spConfigGetNumOfImages(config, conf_msg);
-	int numOfSimilarImages = spConfigGetNumOfSimilarImages(config, conf_msg);
-	img_near_cnt = (int*) calloc(numOfImages, sizeof(int));
-	similar_images = (int*) calloc(numOfSimilarImages, sizeof(int));
-	if (!img_near_cnt || !similar_images) {
-		//TODO update logger message
-		return 1;
-	}
-
-	if (spConfigIsExtractionMode(config, conf_msg)) {
-		rc = exportAllImagesToFiles(pc, config, log_msg);
-		if (rc) {
-			//TODO update logger message
-			return 1;
-		}
-	}
-
-	SPPoint* all_points = extractImagesFeatures(&all_points_size, config,
-			log_msg, conf_msg);
-	SPKDArray kdarray = spKDArrayCreate(config, all_points, all_points_size,
-			log_msg, conf_msg);
-	*kdtree = spKDTreeCreate(kdarray, config, conf_msg, log_msg);
-	if (all_points)
-		spPointArrayDestroy(all_points, all_points_size);
-	if (kdarray)
-		SPKDArrayDestroy(kdarray);
-	if (!(*kdtree)) {
-		//TODO update logger msg
-		return 1;
-	}
-	return 0;
 }
 
 void cleanTempResources(SPPoint** q_features,
@@ -203,17 +122,9 @@ int main(int argc, char* argv[]) {
 	ImageProc* pc = NULL;
 	SPPoint* q_features = NULL;
 	int knn_size = 0;
-<<<<<<< Upstream, based on origin/master
-	SPKDArray kdarray = NULL;
-=======
->>>>>>> f91ddf5 merge with aux functions
 	SPKDTreeNode kdtree = NULL;
 	int numOfImages = 0, numOfSimilarImages = 0;
-<<<<<<< Upstream, based on origin/master
-        int rc;
-=======
 	int rc;
->>>>>>> f91ddf5 merge with aux functions
 	int *img_near_cnt = NULL, *similar_images = NULL;
 	SP_CONFIG_MSG conf_msg = SP_CONFIG_SUCCESS;
 	SP_LOGGER_MSG log_msg = SP_LOGGER_SUCCESS;
@@ -248,15 +159,8 @@ int main(int argc, char* argv[]) {
 		printf(INVALID_COMLINE);
 		break;
 	}
-<<<<<<< Upstream, based on origin/master
-<<<<<<< f6efb0f2bb47242423bca5023aa4522e48df4992
-	printAttributes(config);
-=======
 	printAttributes(config); //TODO delete
-	ImageProc* pc = new ImageProc(config);
->>>>>>> export resources creation out of main
-=======
->>>>>>> f91ddf5 merge with aux functions
+	pc = new ImageProc(config);
 
 	/***initiallize logger***/
 	if ((log_msg = spLoggerCreate(NULL, SP_LOGGER_WARNING_ERROR_LEVEL))
@@ -273,33 +177,24 @@ int main(int argc, char* argv[]) {
 	printAttributes(config); //TODO Delete
 	pc = new ImageProc(config);
 	/***initialize additional resources using config parameters***/
-<<<<<<< Upstream, based on origin/master
-        rc = Setup(config, pc, &kdtree, img_near_cnt, similar_images, &log_msg, &conf_msg);
-        if (rc) {
-	    //TODO logger msg
-	    cleanGlobalResources(config, pc, kdtree, img_near_cnt, similar_images);
-	    return ERROR;
-=======
 	rc = Setup(config, pc, &kdtree, img_near_cnt, similar_images, &log_msg,
 			&conf_msg);
 	if (rc) {
 		//TODO logger msg
 		cleanGlobalResources(config, pc, kdtree, img_near_cnt, similar_images);
 		return ERROR;
->>>>>>> f91ddf5 merge with aux functions
 	}
 
 	/**** execute queries ****/
 	char q_path[1024] = { '\0' };
-<<<<<<< Upstream, based on origin/master
-	numOfImages = spConfigGetNumOfImages(config, &conf_msg);
-	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
-	int q_numOfFeats, i, j;
-	SPPoint* knn = NULL;
-	SPPoint curr_pnt = NULL;
-=======
+//<<<<<<< Upstream, based on origin/master
+//	numOfImages = spConfigGetNumOfImages(config, &conf_msg);
+//	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
+//	int q_numOfFeats, i, j;
+//	SPPoint* knn = NULL;
+//	SPPoint curr_pnt = NULL;
+//=======
 
->>>>>>> f91ddf5 merge with aux functions
 	knn_size = spConfigGetKNN(config, &conf_msg);
 
 	while (1) {
@@ -325,14 +220,10 @@ int main(int argc, char* argv[]) {
 			printf("NULL POINTER EXCEPTION1");
 			exit(1);								//TODO CHANGE
 		}
-/*
+
 		//for each point in the query image, find k-nearest neighbors
 		for (i = 0; i < q_numOfFeats; i++) {
-<<<<<<< Upstream, based on origin/master
-			knn = findKNearestNeighbors(kdtree, q_features[i]);
-=======
 			knn = findKNearestNeighbors(kdtree, q_features[i], config);
->>>>>>> f91ddf5 merge with aux functions
 			if (!knn) {
 				printf("NULL POINTER EXCEPTION2");				//TODO CHANGE
 				exit(1);
@@ -368,23 +259,15 @@ int main(int argc, char* argv[]) {
 			else
 				printf("%s\n", tmp_path);
 		}
-*/
+
 		//re-initializing query-related resources
-<<<<<<< Upstream, based on origin/master
-                cleanTempResources(&q_features,q_numOfFeats,q_path);
-=======
         cleanTempResources(&q_features,q_numOfFeats,q_path);
 
 
->>>>>>> f91ddf5 merge with aux functions
 	}
 
 	printf("Exiting...\n");
-<<<<<<< Upstream, based on origin/master
-        cleanTempResources(&q_features,q_numOfFeats,q_path);
-=======
     cleanTempResources(&q_features,q_numOfFeats,q_path);
->>>>>>> f91ddf5 merge with aux functions
 	clearAll()
 	return OK;
 
