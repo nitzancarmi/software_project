@@ -3,6 +3,7 @@
 #include "SPBPriorityQueue.h"
 #include "math.h"
 
+
 /**
  * 	This function is the recursive function for the actual KNN search.
  * 	It searches for all the neighbors of the SPPoint feat in the KD-Tree kd,
@@ -107,6 +108,10 @@ int* findKNearestNeighbors(SPKDTreeNode kdtree, SPPoint feat, SPConfig config) {
 
 int* getClosestImages(SPKDTreeNode kdtree, SPConfig config, SPPoint* q_features,
 		int q_numOfFeats, SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg) {
+	if(!kdtree || !config || !q_features || q_numOfFeats<0 || !log_msg || !conf_msg){
+		InvalidError()
+				return NULL;
+	}
 	int* knn = NULL;
 	int i, j;
 	int knn_size = spConfigGetKNN(config, conf_msg);

@@ -49,9 +49,15 @@ void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 	char *var = line, *value = line, *tmp;
 
 	/* go to '=' position of value */
-	while (*value != '=' && *value != '\0')
-		value++;
+	while (*value != '=' && *value != '\0') {
+		if (isalpha(*value) || isspace(*value))
+			value++;
+		else {
+			*msg = SP_CONFIG_INVALID_STRING;
+			return;
+		}
 
+	}
 	/* if value (line) ended without equal sign then line is invalid */
 	if (*value == '\0') {
 		*msg = SP_CONFIG_INVALID_STRING;
@@ -610,7 +616,8 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	return SP_CONFIG_SUCCESS;
 }
 
-SP_CONFIG_MSG spConfigGetSPLoggerFilename(char* loggerPath, const SPConfig config) {
+SP_CONFIG_MSG spConfigGetSPLoggerFilename(char* loggerPath,
+		const SPConfig config) {
 	if (!loggerPath || !config)
 		return SP_CONFIG_INVALID_ARGUMENT;
 

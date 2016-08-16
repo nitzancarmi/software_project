@@ -15,7 +15,7 @@ void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path);
 
 bool initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg);
 
-int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg);
-
+int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg,
+		int* numOfImagesPtr);
 
 #endif /* SPMAINAUX_H_ */

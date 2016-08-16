@@ -1,6 +1,7 @@
 #include "SPMainAux.h"
 
-int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg) {
+int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg,
+		int* numOfImagesPtr) {
 	SPConfig config;
 	switch (argc) {
 	case 1:
@@ -27,6 +28,7 @@ int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg)
 		break;
 	}
 	*_config = config;
+	*numOfImagesPtr = spConfigGetNumOfImages(config, conf_msg);
 	return OK;
 }
 

@@ -29,7 +29,7 @@ int main(int argc, char* argv[]) {
 	fflush(stdout);
 
 	/***create config file***/
-	if(argParse(argc, argv, &config, &conf_msg))
+	if(argParse(argc, argv, &config, &conf_msg,&numOfImages))
 		return ERROR;
 
 	/*** Logger and ImageProc ***/
