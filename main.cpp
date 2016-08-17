@@ -82,7 +82,7 @@ int main(int argc, char* argv[]) {
 		q_path[strlen(q_path) - 1] = '\0'; //q_path will always include at lease '/n'
 
 		//check validity of output
-		if (!strlen(q_path))
+		if (!strcmp(q_path,"<>"))
 			break;
 		if (access(q_path, F_OK) == -1) {
 			printf(INV_PATH);

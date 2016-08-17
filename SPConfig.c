@@ -563,11 +563,11 @@ void spConfigDestroy(SPConfig config) {
 }
 
 bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg) {
-	getter(spExtractionMode);
+	getterBoolean(spExtractionMode);
 }
 
 bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg) {
-	getter(spMinimalGUI);
+	getterBoolean(spMinimalGUI);
 }
 
 int spConfigGetKNN(const SPConfig config, SP_CONFIG_MSG* msg) {

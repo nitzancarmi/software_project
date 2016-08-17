@@ -102,8 +102,11 @@
 
 #define getter(property)					assert(msg);									\
 	*msg = config ? SP_CONFIG_SUCCESS : SP_CONFIG_INVALID_ARGUMENT;							\
-	return config ? config->property : 0 //maybe error
+	return config ? config->property : -1 //maybe error
 
+#define getterBoolean(property)				assert(msg);									\
+	*msg = config ? SP_CONFIG_SUCCESS : SP_CONFIG_INVALID_ARGUMENT;							\
+	return config ? config->property : 0 //maybe error
 
 /********************************************************/
 /************************ KDArray ***********************/

@@ -38,7 +38,7 @@ typedef struct sp_config_t* SPConfig;
 
 
 typedef enum split_method_t {
-	UNDEFINED, RANDOM, MAX_SPREAD, INCREMENTAL		//so it would not be confused with 0,1,2
+	UNDEFINED = -1, RANDOM = 1, MAX_SPREAD, INCREMENTAL		//so it would not be confused with 0,1,2
 
 } splitMethod;
 
@@ -93,7 +93,9 @@ bool spConfigIsExtractionMode(const SPConfig config, SP_CONFIG_MSG* msg);
  * @param msg - pointer in which the msg returned by the function is stored
  * @return true if spMinimalGui = true, false otherwise.
  *
-
+ * The resulting value stored in msg is as follow:
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
  */
 bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg);
 
@@ -105,7 +107,7 @@ bool spConfigMinimalGui(const SPConfig config, SP_CONFIG_MSG* msg);
  * @assert msg != NULL
  * @param msg - pointer in which the msg returned by the function is stored
  *
- * @return spNumOfImages, and 0 if an error occurred.
+ * @return positive integer in success, negative integer otherwise.
  *
  * The resulting value stored in msg is as follow:
  * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
@@ -121,7 +123,7 @@ int spConfigGetNumOfImages(const SPConfig config, SP_CONFIG_MSG* msg);
  * @assert msg != NULL
  * @param msg - pointer in which the msg returned by the function is stored
  *
- * @return spNumOfSimilarImages, and 0 if an error occurred.
+ * @return positive integer in success, negative integer otherwise.
  *
  * The resulting value stored in msg is as follow:
  * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
@@ -137,7 +139,7 @@ int spConfigGetNumOfSimilarImages(const SPConfig config, SP_CONFIG_MSG* msg);
  * @assert msg != NULL
  * @param msg - pointer in which the msg returned by the function is stored
  *
- * @return spKNN, and 0 if an error occurred.
+ * @return positive integer in success, negative integer otherwise.
  *
  * The resulting value stored in msg is as follow:
  * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
@@ -153,7 +155,7 @@ int spConfigGetKNN(const SPConfig config, SP_CONFIG_MSG* msg);
  * @assert msg != NULL
  * @param msg - pointer in which the msg returned by the function is stored
  *
- * @return the number of features, and 0 if an error occurred.
+ * @return positive integer in success, negative integer otherwise.
  *
  * The resulting value stored in msg is as follow:
  * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
@@ -168,7 +170,7 @@ int spConfigGetNumOfFeatures(const SPConfig config, SP_CONFIG_MSG* msg);
  * @assert msg != NULL
  * @param msg - pointer in which the msg returned by the function is stored
  *
- * @return spCADimension, and 0 if an error occurred.
+ * @return positive integer in success, negative integer otherwise.
  *
  * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
  * - SP_CONFIG_SUCCESS - in case of success
