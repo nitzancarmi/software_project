@@ -42,7 +42,6 @@ SPPoint* getKDPointArray(SPKDArray kd) {
 			spPointArrayDestroy(cpy, kd->cols);
 			return NULL;
 		}
-
 	}
 	return cpy;
 }
@@ -218,9 +217,20 @@ int pointComparator(const void *p, const void *q) {
 
 }
 
-/* assumes all pts same dimension */
+/* 
+ * Sort SPPoint array with respect to given axis.
+ *
+ * @param ret 		at the end, contains indices (of the pts array) sorted by the given axis
+ * @param pts           opints array to be sorted
+ * @param size		size of the pts array
+ * @param axis          axis in which the points array should be sorted by
+ * @param config        configuration struct for needed resources
+ * @param log_msg       message to be updated during possible errors and can be read from caller functions
+ *
+ * @return 0 for success, 1 otherwise
+ */
 int sortByAxis(int *ret, const SPPoint* pts, int size, int axis,
-		const SPConfig config, SP_LOGGER_MSG* log_msg) {
+		const SPConfig config) {
 	if (!pts || axis < 0 || !config) {
 		InvalidError()
 		return 1;
@@ -234,15 +244,11 @@ int sortByAxis(int *ret, const SPPoint* pts, int size, int axis,
 
 	for (int i = 0; i < size; i++) {
 		ptsAx[i] = (PointAxis) malloc(sizeof(*ptsAx[i]));
-
-		/*Malloc fail */
-
 		if (!ptsAx[i]) {
 			MallocError()
 			for (i--; i >= 0; i--) {
 				free(ptsAx[i]);
 			}
-
 			free(ptsAx);
 			return 1;
 		}
@@ -396,13 +402,9 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 		free(kd);
 		return NULL;
 	}
-//	int **M = (int**) malloc(dims * sizeof(int*) + dims * size * sizeof(int));
-//	int *offset = M[dims];
-//	for (axis = 0; axis < dims; axis++, offset += size)
-//		M[axis] = offset;
 
 	for (axis = 0; axis < dims; axis++) {
-		if (sortByAxis(M[axis], arr, size, axis, attr, log_msg)) {
+		if (sortByAxis(M[axis], arr, size, axis, attr)) {
 			SPKDArrayDestroy(kd);
 			return NULL;
 		}
@@ -434,8 +436,6 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	if (!splitSize)
 		return 0;
 
-	//printf("Split Dimension = %d\n", coor);
-	//printf("splitSize = %d\n", splitSize);
 	SPKDArray KD1 = NULL, KD2 = NULL;
 	KD1 = (SPKDArray) malloc(sizeof(*KD1));
 	KD2 = (SPKDArray) malloc(sizeof(*KD2));
@@ -484,23 +484,13 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 			map1[i] = -1;
 		}
 	}
-	//printIntArray(map1, n, "map1");
-	//printIntArray(map2, n, "map2");
 
 	/***** ALLOCATION *****/
 	A1 = calloc2dInt(kd->rows, splitSize);
-//	A1 = (int**) malloc(kd->rows * sizeof(int*) + kd->rows * splitSize * sizeof(int));
-//	int *offset = A1[kd->rows];
-//	for (i = 0; i < kd->rows; i++, offset += splitSize)
-//		A1[i] = offset;
 	KD1->mat = A1;
 	KD1->rows = kd->rows;
 	KD1->cols = splitSize;
 	A2 = calloc2dInt(kd->rows, n - splitSize);
-//	A2 = (int**) malloc(kd->rows * sizeof(int*) + kd->rows * (n - splitSize) * sizeof(int));
-//	offset = A2[kd->rows];
-//	for (i = 0; i < kd->rows; i++, offset += (n - splitSize))
-//		A2[i] = offset;
 	KD2->mat = A2;
 	KD2->rows = kd->rows;
 	KD2->cols = n - splitSize;
@@ -512,7 +502,7 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 
 	/* Going over original kd->mat, and mapping values to A1, A2, depending on X, map1, map2 values */
 	int cell, k1, k2;
-	for (int i = 0; i < kd->rows; i++) {		//for on columns of X
+	for (int i = 0; i < kd->rows; i++) {
 		k1 = 0;
 		k2 = 0;
 		for (int j = 0; j < kd->cols; j++) {
@@ -523,7 +513,6 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 				A2[i][k2++] = map2[cell];
 		}
 	}
-	//printf("\n");
 	*KDpntr1 = KD1;
 	*KDpntr2 = KD2;
 
