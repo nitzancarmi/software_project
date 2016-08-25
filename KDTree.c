@@ -15,15 +15,6 @@ struct kd_tree_node_t {
 	SPPoint data;
 };
 
-/**
- * 	Compares two doubles.
- *
- *  @param a   	first double
- *  @param b	second double
- *  @return
- *  true if |a-b| < 0.000001   (number of decimal points stored in .feats file)
- *  false otherwise
- */
 bool doubleEquals(double a, double b) {
 	if (fabs(a - b) < EPS)
 		return true;
@@ -157,8 +148,7 @@ SPKDTreeNode nodeAllocation(int dim, int val, SPKDTreeNode* left,
 }
 
 /**
- *  Actual implementation of the recursive creation of a KDTree based on KDArray.
- *  was created as a separate function for comfortability to get splitIncrementalDim.
+ *  Recursive creation of a KDTree based on given KDArray.
  *  @see spKDTreeCreate in header.
  *  Prints the values of the splitted arrays if logger level is Debug.
  *
@@ -210,7 +200,6 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	/* Chooseing split dimension based on config */
 	switch (method) {
 	case MAX_SPREAD:
-//		printf("maxspread\n");
 		dim = getMaxSpreadDimension(kdarray);
 		if (dim == -1) {
 			InvalidError()
@@ -224,7 +213,7 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 
 		dim = splitIncrementalDim % totalDims;
 		break;
-	default:			//method = UNDEFINED - not supposed to get here
+	default:
 		InvalidError()
 		return NULL;
 	}
@@ -239,18 +228,14 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 
 	/* Left Recursion */
 	if (printChk)
-		printf("\n******LEFT:*******\n");
-
-	nodeLeft = spKDTreeCreateRecursion(KDpntr1, config, conf_msg, log_msg,
+	    nodeLeft = spKDTreeCreateRecursion(KDpntr1, config, conf_msg, log_msg,
 			splitIncrementalDim + 1);
 	SPKDArrayDestroy(KDpntr1);
 	returnIfConfigMsg(NULL)
 
 	/* Right Recursion */
 	if (printChk)
-		printf("\n******RIGHT:*******\n");
-
-	nodeRight = spKDTreeCreateRecursion(KDpntr2, config, conf_msg, log_msg,
+	    nodeRight = spKDTreeCreateRecursion(KDpntr2, config, conf_msg, log_msg,
 			splitIncrementalDim + 1);
 	SPKDArrayDestroy(KDpntr2);
 	returnIfConfigMsg(NULL)
