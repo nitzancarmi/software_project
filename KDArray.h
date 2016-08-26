@@ -52,8 +52,8 @@ SPKDArray spKDArrayCreate(SPConfig config, SPPoint* pointsArray, int array_size,
  *
  *  @param kdarr		The KD-Array to be split.
  *  @param coor			The coordinate to split the KD-Array by.
- *  @param KDpntrLeft	        Address of the pointer to kdLeft.
- *  @param KDpntrRight	        Address of the pointer to kdRight.
+ *  @param KDpntrLeft	Address of the pointer to kdLeft.
+ *  @param KDpntrRight	Address of the pointer to kdRight.
  *  @param log_msg		Pointer to log_msg that can be accessed after execution to know if an error
  *  					has occurred when SPLogger was used.
  *  @param conf_msg		Pointer to config_msg that can be accessed after execution to know if an error
@@ -78,8 +78,12 @@ int spKDArraySplit(SPKDArray kdarr, int coor, SPKDArray* KDpntrLeft,
  */
 void SPKDArrayDestroy(SPKDArray KDAr);
 
+
+void printKDArrayMatrix(SPKDArray kd);	//TODO Delete
+void printKDPointArray(SPKDArray kd);	//TODO Delete
+
 /*
- * Returns a copy of the SPPoint Array (with copies of the points inside) included in the KD-Array.
+ * Returns a copy of the SPPoint Array (with copies of the points inside) that makes up the KD-Array.
  * @param KD - the relevant KD-array
  * @return NULL if:
  * 		- KD == NULL
@@ -90,8 +94,8 @@ void SPKDArrayDestroy(SPKDArray KDAr);
 SPPoint* getKDPointArray(SPKDArray KD);
 
 /*
- * Returns a copy of the first point of the SPPoint Array in the KD-Array.
- * Useful for single-pointed KD arrays (KDTree nodes).
+ * Returns a copy of the first point of the SPPoint Array that makes up the KD-Array.
+ * Useful when the KDArray has only one point (when splitting the KDArray upon creating the KDTree.
  * @param KD - the relevant KD-array
  * @return NULL if:
  * 		- KD == NULL
@@ -105,7 +109,10 @@ SPPoint getKDOnlyPoint(SPKDArray kd);
  * Returns a copy of the indices matrix that makes up the KDArray.
  * This function is useful for Unit Tests only.
  *
- * @param kd - the relevant KD-array
+ * Note: The array allocated by this function needs only one free() call on the returned object.
+ * 		 Rows of the matrix are NOT allocated themselves.
+ *
+ * @param KD - the relevant KD-array
  * @return NULL if:
  * 		- KD == NULL
  * 		- Memory Allocation Error
@@ -119,7 +126,7 @@ int** getKDMat(SPKDArray kd);
  * Returns the number of columns in the indices matrix of the KD-Array.
  * Essentially this number represents the number of points included in the SPPoint array of the KDArray.
  *
- * @param kd - the relevant KD-array
+ * @param KD - the relevant KD-array
  * @return -1 if KD == NULL, otherwise the number of columns.
  */
 int getKDCols(SPKDArray kd);
