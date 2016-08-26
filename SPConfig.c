@@ -397,7 +397,7 @@ SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 		if (!attr->spLoggerFilename) {
 			return SP_CONFIG_ALLOC_FAIL;
 		}
-		strcpy(attr->spPCAFilename, STD);
+		strcpy(attr->spLoggerFilename, STD);
 	}
 	if (!attr->wasExtractionModeSet)	//using the special variable
 		checkAndAssign(spExtractionMode, true);
