@@ -4,7 +4,6 @@
 #include <stdbool.h>
 #include "SPList.h"
 #include "SPBPriorityQueue.h"
-/*Macro for checking NULL and returning NULL if is*/
 #define NULLCheck(something) if (something == NULL) { 	return NULL; }
 
 SP_BPQUEUE_MSG convertMessage(SP_LIST_MSG);
@@ -237,6 +236,12 @@ bool spBPQueueIsFull(SPBPQueue source) {
 	return false;
 }
 
+/**
+ * converts SP_LIST_MSG type messages to a SP_BPQUEUE_MSG type message
+ *
+ * @param m - list type message
+ * @return - bpqueue type message fit the given list type message
+ */
 SP_BPQUEUE_MSG convertMessage(SP_LIST_MSG m) {
 	switch (m) {
 	case SP_LIST_SUCCESS:
