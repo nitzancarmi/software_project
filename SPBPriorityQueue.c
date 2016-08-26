@@ -12,7 +12,6 @@ SP_BPQUEUE_MSG convertMessage(SP_LIST_MSG);
 struct sp_bp_queue_t {
 	SPList list;
 	int maxSize;
-//	SPListElement last;
 };
 
 SPBPQueue spBPQueueCreate(int maxSize) {
@@ -34,8 +33,6 @@ SPBPQueue spBPQueueCreate(int maxSize) {
 	}
 
 	q->maxSize = maxSize;
-//	q->last = NULL; //NO NEED AFTER CHANGES IN SPlist
-
 	return q;
 }
 
@@ -55,8 +52,6 @@ SPBPQueue spBPQueueCopy(SPBPQueue source) {
 	}
 
 	newQ->maxSize = source->maxSize;
-//	newQ->last = source->last;
-
 	return newQ;
 }
 
@@ -98,20 +93,18 @@ SP_BPQUEUE_MSG spBPQueueEnqueue(SPBPQueue source, SPListElement element) {
 	if (!source || !element || !source->list) {
 		return SP_BPQUEUE_INVALID_ARGUMENT;
 	}
-	SP_BPQUEUE_MSG msg = SP_BPQUEUE_SUCCESS;		//Returned message
+	SP_BPQUEUE_MSG msg = SP_BPQUEUE_SUCCESS;
 	value = spListElementGetValue(element);
 
 	/* If list is empty , insert at start*/
 	if (spBPQueueIsEmpty(source)) {
 		msg = convertMessage(spListInsertFirst(source->list, element));
-//		source->last = element;
 	}
 	/* If  the value is bigger than the biggest insert him last*/
 	else if (value > spBPQueueMaxValue(source)) {
 
 		if (spBPQueueSize(source) != spBPQueueGetMaxSize(source)) {
 			msg = convertMessage(spListInsertLast(source->list, element));
-//			source->last = element;
 		}
 
 		else { /* If also, the list is full, do nothing */
@@ -157,14 +150,6 @@ SP_BPQUEUE_MSG spBPQueueEnqueue(SPBPQueue source, SPListElement element) {
 		spListRemoveCurrent(source->list);
 	}
 
-	/* OLD CODE - NO NEED BECAUSE MOAB ADDED GETLAST */
-	//so tail of splist will be ok.
-//			/* Searching from element forward for the previous of last */	//CHECK in the test
-//			while ((curr = spListGetNext(source->list)) != NULL) {
-//				prev = curr;
-//			}
-//			source->last = prev;
-//	assert(source->maxSize >= spListGetSize(source->list));			///   REMOVE
 	return msg;
 }
 

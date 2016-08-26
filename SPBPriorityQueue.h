@@ -3,9 +3,12 @@
 #include "SPListElement.h"
 #include <stdbool.h>
 /**
- * SP Bounded Priority Queue summary
- *
- * TODO Complete documentation
+ * SP Bounded Priority Queue
+ * -------------------------
+ * Data structure of a bounded priority Queue.
+ * Implemented as a fixe-length array.
+ * More "sophisticated" implementations (heap) is not needed,
+ * as we assume the queue length remains small.
  */
 
 
