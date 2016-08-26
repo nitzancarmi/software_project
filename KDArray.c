@@ -282,6 +282,86 @@ void SPKDArrayDestroy(SPKDArray kd) {
 	free(kd);
 }
 
+void printKDArrayMatrix(SPKDArray kd) {
+	if (!kd) {
+		if (spLoggerPrintWarning(INVALID_WRN, __FILE__, __func__, __LINE__)
+				!= SP_LOGGER_SUCCESS)
+
+			return;
+	}
+	printf("\n");
+	printf("KDArray Matrix is:\n");
+	for (int i = 0; i < kd->rows; i++) {
+		printf("| ");
+		for (int j = 0; j < kd->cols; j++) {
+			printf((j == kd->cols - 1 ? "%d" : "%d\t"), kd->mat[i][j]);
+		}
+		printf(" |\n");
+	}
+
+}
+
+void print2DIntArray(int** a, int rows, int cols) {
+	if (!a) {
+		printf("2DIntArray = NULL");
+		return;
+	}
+	printf("\n");
+	for (int i = 0; i < rows; i++) {
+		printf("| ");
+		for (int j = 0; j < cols; j++) {
+			printf((j == cols - 1 ? "%d" : "%d\t"), a[i][j]);
+		}
+		printf(" |\n");
+	}
+
+}
+
+void printKDPointArray(SPKDArray kd) {
+	if (!kd) {
+		printf("error");
+		return;
+	}
+	printf("\n=====Point Array:=====\n");
+	for (int j = 0; j < kd->cols; j++) {
+		printf("%d. (", j);
+		for (int i = 0; i < kd->rows; i++) {
+			printf((i == kd->rows - 1 ? "%.0f" : "%.0f, "),
+					spPointGetAxisCoor(kd->pointArray[j], i));
+		}
+		printf(")\n");
+	}
+	printf("======================\n");
+
+}
+void printIntArray(int* a, int size, const char* name) {
+	if (!a) {
+		printf("error");
+		return;
+	}
+	printf("%s: (", name);
+	for (int i = 0; i < size; i++) {
+		printf((i == size - 1 ? "%d" : "%d, "), a[i]);
+	}
+	printf(")\n");
+}
+
+void printBoolArray(bool* a, int size, const char* name) {
+	if (!a) {
+		printf("error");
+		return;
+	}
+	printf("%s: (", name);
+	int i;
+	for (i = 0; i < size; i++) {
+		if (i == size - 1)
+			printf("%d", a[i]);
+		else
+			printf("%d, ", a[i]);
+	}
+	printf(")\n");
+}
+
 SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
