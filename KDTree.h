@@ -35,73 +35,22 @@ SPKDTreeNode spKDTreeCreate(SPKDArray KDArray,const SPConfig config,SP_CONFIG_MS
  */
 void spKDTreeDestroy(SPKDTreeNode KDTree);
 
-/**
- * checks whether a node in KD-Tree is a leaf or not
- *
- * @param node - the checked node
- * @return true iff node is a leaf
- */
+//TODO DOCO
 bool isLeaf(SPKDTreeNode node);
 
 
-/**
- * returns the index of the node
- *
- * @param node - the checked node
- * @return node's index, -1 on failure
- */
 int getIndex(SPKDTreeNode node);
 
-/**
- * returns the distance of a node from a given point
- *
- * @param node - the checked node
- * @param point - the point for the distance to be calculated by
- * @return distance from the point, -1 for failure
- */
 double getDistFromPoint(SPKDTreeNode node, SPPoint point);
 
-/**
- * returns the dimension of the node
- *
- * @param node - the checked node
- * @return node's dimension, -1 for failure
- */
 int getDim(SPKDTreeNode node);
 
-/**
- * returns the value of the node
- *
- * @param node - the checked node
- * @return node's value
- */
 int getVal(SPKDTreeNode node);
 
-/**
- * get the root node of the left child (subtree)
- *
- * @param node - the root node
- * @return node's left child, NULL if !node
- */
 SPKDTreeNode getLeftSubtree(SPKDTreeNode node);
 
-/**
- * get the root node of the right child (subtree)
- *
- * @param node - the root node
- * @return node's right child, NULL if !node
- */
 SPKDTreeNode getRightSubtree(SPKDTreeNode node);
 
-/**
- * calculates whether two double variables are equal.
- * to avoid floating point fail, the function uses EPS
- * constant.
- *
- * @param a - first number
- * @param b - second number
- * @return true iff the numbers are equal.
- */
 bool doubleEquals(double a, double b);
 
 #endif /* KDTREE_H_ */
