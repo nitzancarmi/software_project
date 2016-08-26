@@ -28,26 +28,29 @@ int main(int argc, char* argv[]) {
 	int index, numOfImages = 0;
 	fflush(stdout);
 
-	/** create config file **/
+	/***create config file***/
 	if(argParse(argc, argv, &config, &conf_msg,&numOfImages))
 		return ERROR;
 
-	/** Initialize logger and ImageProc **/
+	/*** Logger and ImageProc ***/
 	if (initializeSPLogger(config, &log_msg)) {
 		clearAll()
 		return ERROR;
 	}
+
 	pc = new ImageProc(config);
 
-	/** Extraction Mode **/
+	/*********   Extraction Mode    ************/
 	if (spConfigIsExtractionMode(config, &conf_msg)) {
 		for (index = 0; index < numOfImages; index++) {
 			path[1024] = {'\0'};
-			spConfigGetImagePath(path, config, index); 
+			spConfigGetImagePath(path, config, index); //No need to read conf_msg, controlling all inputs myself
 			pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
-			//Features Extraction
+
+			/** Features Extraction **/
 			if (exportImageToFile(pointArray, numOfFeats, index, config)) {
-				//TODO Writing to File Error
+
+				/* Writing to File Error */
 				spPointArrayDestroy(pointArray, numOfFeats);
 				clearAll()
 				return ERROR;
@@ -55,6 +58,7 @@ int main(int argc, char* argv[]) {
 
 		}
 	}
+	/*******************************************/
 
 	rc = Setup(config, &kdtree, &log_msg, &conf_msg);
 	if (rc) {
@@ -65,7 +69,7 @@ int main(int argc, char* argv[]) {
 		return ERROR;
 	}
 
-	/** execute queries **/
+	/**** execute queries ****/
 	q_path[1024] = {'\0'};
 	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, &conf_msg);
 
@@ -88,6 +92,7 @@ int main(int argc, char* argv[]) {
 		//getting query image features
 		q_features = pc->getImageFeatures(q_path, 0, &q_numOfFeats);
 		if (!q_features || !(*q_features)) {
+			//logger prints inside
 			return 1;
 		}
 
