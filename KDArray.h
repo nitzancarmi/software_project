@@ -78,10 +78,6 @@ int spKDArraySplit(SPKDArray kdarr, int coor, SPKDArray* KDpntrLeft,
  */
 void SPKDArrayDestroy(SPKDArray KDAr);
 
-
-void printKDArrayMatrix(SPKDArray kd);	//TODO Delete
-void printKDPointArray(SPKDArray kd);	//TODO Delete
-
 /*
  * Returns a copy of the SPPoint Array (with copies of the points inside) that makes up the KD-Array.
  * @param KD - the relevant KD-array

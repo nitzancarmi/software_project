@@ -19,6 +19,9 @@ struct pointAxis_t {
 	int indexInPntArray;
 };
 
+typedef struct pointAxis_t* PointAxis;
+
+
 SPPoint* getKDPointArray(SPKDArray kd) {
 	int i;
 	declareLogMsg();
@@ -147,9 +150,6 @@ int getKDRows(SPKDArray kd) {
 	return kd->rows;
 }
 
-/** For comfortability **/
-typedef struct pointAxis_t* PointAxis;
-
 /*
  * Returns a copy of a point array (with copies of each point).g
  *
@@ -217,8 +217,17 @@ int pointComparator(const void *p, const void *q) {
 	return 1;
 
 }
-
-/* assumes all pts same dimension */
+/**
+ * sort array of points with respect to given axis
+ * 
+ * @param ret - int array to be updated with the sorted indices
+ * @param pts - opint array to be sorted
+ * @param axis - axis to sort by
+ * @param config - configuration struct
+ * @param log_msg - logger message to be updated
+ * @post ret contains the indices of the points sorted with respect to the given axis coordinate
+ *  @return 0 for success, 1 otherwise
+ */
 int sortByAxis(int *ret, const SPPoint* pts, int size, int axis,
 		const SPConfig config, SP_LOGGER_MSG* log_msg) {
 	if (!pts || axis < 0 || !config) {
@@ -276,86 +285,6 @@ void SPKDArrayDestroy(SPKDArray kd) {
 	free(kd);
 }
 
-void printKDArrayMatrix(SPKDArray kd) {
-	if (!kd) {
-		if (spLoggerPrintWarning(INVALID_WRN, __FILE__, __func__, __LINE__)
-				!= SP_LOGGER_SUCCESS)
-
-			return;
-	}
-	printf("\n");
-	printf("KDArray Matrix is:\n");
-	for (int i = 0; i < kd->rows; i++) {
-		printf("| ");
-		for (int j = 0; j < kd->cols; j++) {
-			printf((j == kd->cols - 1 ? "%d" : "%d\t"), kd->mat[i][j]);
-		}
-		printf(" |\n");
-	}
-
-}
-
-void print2DIntArray(int** a, int rows, int cols) {
-	if (!a) {
-		printf("2DIntArray = NULL");
-		return;
-	}
-	printf("\n");
-	for (int i = 0; i < rows; i++) {
-		printf("| ");
-		for (int j = 0; j < cols; j++) {
-			printf((j == cols - 1 ? "%d" : "%d\t"), a[i][j]);
-		}
-		printf(" |\n");
-	}
-
-}
-
-void printKDPointArray(SPKDArray kd) {
-	if (!kd) {
-		printf("error");
-		return;
-	}
-	printf("\n=====Point Array:=====\n");
-	for (int j = 0; j < kd->cols; j++) {
-		printf("%d. (", j);
-		for (int i = 0; i < kd->rows; i++) {
-			printf((i == kd->rows - 1 ? "%.0f" : "%.0f, "),
-					spPointGetAxisCoor(kd->pointArray[j], i));
-		}
-		printf(")\n");
-	}
-	printf("======================\n");
-
-}
-void printIntArray(int* a, int size, const char* name) {
-	if (!a) {
-		printf("error");
-		return;
-	}
-	printf("%s: (", name);
-	for (int i = 0; i < size; i++) {
-		printf((i == size - 1 ? "%d" : "%d, "), a[i]);
-	}
-	printf(")\n");
-}
-
-void printBoolArray(bool* a, int size, const char* name) {
-	if (!a) {
-		printf("error");
-		return;
-	}
-	printf("%s: (", name);
-	int i;
-	for (i = 0; i < size; i++) {
-		if (i == size - 1)
-			printf("%d", a[i]);
-		else
-			printf("%d, ", a[i]);
-	}
-	printf(")\n");
-}
-
 SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
 
@@ -396,10 +325,6 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 		free(kd);
 		return NULL;
 	}
-//	int **M = (int**) malloc(dims * sizeof(int*) + dims * size * sizeof(int));
-//	int *offset = M[dims];
-//	for (axis = 0; axis < dims; axis++, offset += size)
-//		M[axis] = offset;
 
 	for (axis = 0; axis < dims; axis++) {
 		if (sortByAxis(M[axis], arr, size, axis, attr, log_msg)) {
@@ -433,9 +358,6 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 	int splitSize = (int) (ceil(half) + 0.5);
 	if (!splitSize)
 		return 0;
-
-	//printf("Split Dimension = %d\n", coor);
-	//printf("splitSize = %d\n", splitSize);
 	SPKDArray KD1 = NULL, KD2 = NULL;
 	KD1 = (SPKDArray) malloc(sizeof(*KD1));
 	KD2 = (SPKDArray) malloc(sizeof(*KD2));
@@ -484,23 +406,13 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 			map1[i] = -1;
 		}
 	}
-	//printIntArray(map1, n, "map1");
-	//printIntArray(map2, n, "map2");
 
 	/***** ALLOCATION *****/
 	A1 = calloc2dInt(kd->rows, splitSize);
-//	A1 = (int**) malloc(kd->rows * sizeof(int*) + kd->rows * splitSize * sizeof(int));
-//	int *offset = A1[kd->rows];
-//	for (i = 0; i < kd->rows; i++, offset += splitSize)
-//		A1[i] = offset;
 	KD1->mat = A1;
 	KD1->rows = kd->rows;
 	KD1->cols = splitSize;
 	A2 = calloc2dInt(kd->rows, n - splitSize);
-//	A2 = (int**) malloc(kd->rows * sizeof(int*) + kd->rows * (n - splitSize) * sizeof(int));
-//	offset = A2[kd->rows];
-//	for (i = 0; i < kd->rows; i++, offset += (n - splitSize))
-//		A2[i] = offset;
 	KD2->mat = A2;
 	KD2->rows = kd->rows;
 	KD2->cols = n - splitSize;
@@ -523,13 +435,11 @@ int spKDArraySplit(SPKDArray kd, int coor, SPKDArray* KDpntr1,
 				A2[i][k2++] = map2[cell];
 		}
 	}
-	//printf("\n");
 	*KDpntr1 = KD1;
 	*KDpntr2 = KD2;
 
 	free(X);
 	free(map1);
 	free(map2);
-	//return the median
 	return kd->mat[coor][splitSize];
 }
