@@ -3,10 +3,6 @@
 #include <string.h>
 #include "SPExtractor.h"
 
-/******************************************************************************************************/
-/*************************************** Import from Files ********************************************/
-/******************************************************************************************************/
-
 /**
  * This function reads the next entire line from file stream, allocates enough space to store the text
  * (including the null character, not including the new line) and storing it in *lineptr.
@@ -32,15 +28,12 @@ int SPgetLine(char** linePtr, FILE* feats) {
 
 	/* Initializations */
 	char *chk;
-	char line[MAX_FEATS_LINE]; //More than enough to hold the line
+	char line[MAX_FEATS_LINE];
 	int size;
 
 	/* Get the line */
 	chk = fgets(line, MAX_FEATS_LINE, feats);
 	if (!chk) {
-		/* Getting here only if there is a read error
-		 * or end of file reached - not supposed to get here because
-		 * EOF is checked as while condition in @extractSingleImage */
 		printWarning(READ_ERR)
 		return ERROR;
 	}
@@ -207,7 +200,6 @@ double* getDataFromLine(char* line, int dim, int lineNumber) {
 			free(ret);
 			return NULL;
 		}
-
 		ret[count++] = singleNumber;
 		c++;
 		lineCnt++;
@@ -280,7 +272,6 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 		printError(FEATS_SUFFIX);
 	}
 	sprintf(ptr, FEATS_EXT);
-	/*********************************/
 
 	/** Try to open the feats file **/
 	feats = fopen(filepath, "r");
@@ -308,15 +299,15 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 
 	countOfFeatures = 0;
 	dim = spConfigGetPCADim(config, conf_msg);
-	pntsArray = (SPPoint*) calloc(*numOfFeatures, sizeof(*pntsArray)); //Returned array
+	pntsArray = (SPPoint*) calloc(*numOfFeatures, sizeof(*pntsArray));
 
 	/** Iterating through lines 3 and above of the feats file **/
 	while (!feof(feats)) {
 
 		data = NULL;
-		lineChk = SPgetLine(&line, feats);		//The line itself
+		lineChk = SPgetLine(&line, feats);
 
-		if (lineChk == -1) {	//some kind of error while getting line
+		if (lineChk == -1) {
 			//Error message printed inside
 			errorReturn()
 		}
@@ -348,7 +339,6 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 			spPointArrayDestroy(pntsArray, *numOfFeatures);
 			errorReturn()
 		}
-		/************/
 
 		/** inserting point to returned array **/
 		pntsArray[countOfFeatures++] = currentPoint;
@@ -450,7 +440,6 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 		free(imagesFeatures);
 		return NULL;
 	}
-	/***********************/
 
 	int currentFeature = -1;
 	for (int img = 0; img < imgCount; img++) {
@@ -468,10 +457,6 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 
 	return allFeatures;
 }
-
-/******************************************************************************************************/
-/**************************************** Export to Files *********************************************/
-/******************************************************************************************************/
 
 int exportImageToFile(SPPoint* pointArray, int size, int image_index,
 		SPConfig config) {
