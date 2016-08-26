@@ -15,15 +15,6 @@ struct kd_tree_node_t {
 	SPPoint data;
 };
 
-/**
- * 	Compares two doubles.
- *
- *  @param a   	first double
- *  @param b	second double
- *  @return
- *  true if |a-b| < 0.000001   (number of decimal points stored in .feats file)
- *  false otherwise
- */
 bool doubleEquals(double a, double b) {
 	if (fabs(a - b) < EPS)
 		return true;
@@ -181,14 +172,6 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 		SP_CONFIG_MSG* conf_msg, SP_LOGGER_MSG* log_msg,
 		int splitIncrementalDim) {
 
-	SP_LOGGER_LEVEL lvl;
-	int printChk = (spLoggerGetLevel(&lvl) == SP_LOGGER_SUCCESS
-			&& lvl == SP_LOGGER_DEBUG_INFO_WARNING_ERROR_LEVEL);
-	if (printChk) {
-		printKDArrayMatrix(kdarray);
-		printKDPointArray(kdarray);
-		printf("cols = %d\n", getKDCols(kdarray));
-	}
 	if (!kdarray || !config || !conf_msg || !log_msg
 			|| splitIncrementalDim < 0) {
 		InvalidError()
@@ -210,7 +193,6 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	/* Chooseing split dimension based on config */
 	switch (method) {
 	case MAX_SPREAD:
-//		printf("maxspread\n");
 		dim = getMaxSpreadDimension(kdarray);
 		if (dim == -1) {
 			InvalidError()
@@ -224,7 +206,7 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 
 		dim = splitIncrementalDim % totalDims;
 		break;
-	default:			//method = UNDEFINED - not supposed to get here
+	default:
 		InvalidError()
 		return NULL;
 	}
@@ -238,18 +220,12 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	}
 
 	/* Left Recursion */
-	if (printChk)
-		printf("\n******LEFT:*******\n");
-
 	nodeLeft = spKDTreeCreateRecursion(KDpntr1, config, conf_msg, log_msg,
 			splitIncrementalDim + 1);
 	SPKDArrayDestroy(KDpntr1);
 	returnIfConfigMsg(NULL)
 
 	/* Right Recursion */
-	if (printChk)
-		printf("\n******RIGHT:*******\n");
-
 	nodeRight = spKDTreeCreateRecursion(KDpntr2, config, conf_msg, log_msg,
 			splitIncrementalDim + 1);
 	SPKDArrayDestroy(KDpntr2);
