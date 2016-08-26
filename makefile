@@ -2,7 +2,7 @@ CC = gcc
 CPP = g++
 #put your object files here
 OBJS = main.o SPImageProc.o SPPoint.o SPConfig.o SPLogger.o SPBPriorityQueue.o \
-SPList.o SPListElement.o KDArray.o KDTree.o SPExtractor.o SPKNNSearch.o
+SPList.o SPListElement.o KDArray.o KDTree.o SPExtractor.o SPKNNSearch.o SPMainAux.o
 #The executabel filename
 EXEC = SPCBIR
 INCLUDEPATH=/usr/local/lib/opencv-3.1.0/include/
@@ -55,6 +55,9 @@ SPExtractor.o: SPExtractor.c SPExtractor.h SPPoint.h SPConfig.h SPLogger.h
 
 SPKNNSearch.o: SPKNNSearch.c macros.h KDTree.h KDArray.h SPPoint.h \
 SPConfig.h SPLogger.h SPBPriorityQueue.h SPListElement.h
+
+SPMainAux.o: SPMainAux.c SPMainAux.h KDTree.h KDArray.h SPPoint.h \
+ SPConfig.h SPLogger.h macros.h SPExtractor.h
 
 clean:
 	rm -f $(OBJS) $(EXEC)
