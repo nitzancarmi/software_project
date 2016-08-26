@@ -18,9 +18,6 @@ struct sp_config_t {
 	int spNumOfFeatures;
 
 	bool spExtractionMode;
-	bool wasExtractionModeSet; //No other way to know if spExtractionMode was set, because initial value is false
-							   //which can be set as false, but the default value is true.
-
 	int spNumOfSimilarImages;
 	splitMethod spKDTreeSplitMethod;
 	int spKNN;
@@ -84,7 +81,6 @@ void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 	*valueReturn = value;
 
 	/* check that value is not only spaces */
-
 	for (unsigned int i = 0; i < strlen(value); i++) {
 		if (!isspace(*(value + i))) {
 			*msg = SP_CONFIG_SUCCESS;
@@ -205,15 +201,12 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 		int val = findValueInSet(boolean, value, 2);
 		if (val == 0) {
 			attr->spExtractionMode = true;
-			attr->wasExtractionModeSet = true;
 			return SP_CONFIG_SUCCESS;
 		}
 		if (val == 1) {
 			attr->spExtractionMode = false;
-			attr->wasExtractionModeSet = true;
 			return SP_CONFIG_SUCCESS;
 		}
-		attr->wasExtractionModeSet = false;
 		printf(CONSTRAINT, filename, line);
 		return SP_CONFIG_INVALID_STRING;
 	}
@@ -382,7 +375,6 @@ SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 	checkAndAssign(spKDTreeSplitMethod, MAX_SPREAD);
 	checkAndAssign(spKNN, 1);
 	checkAndAssign(spLoggerLevel, 3);
-	//no need to check for spMinimalGui, becuase default value is false (0)
 
 	/** Special variables **/
 	if (!attr->spPCAFilename) {
@@ -399,37 +391,10 @@ SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 		}
 		strcpy(attr->spLoggerFilename, STD);
 	}
-	if (!attr->wasExtractionModeSet)	//using the special variable
+	if (attr->spExtractionMode < 0)
 		checkAndAssign(spExtractionMode, true);
 	return SP_CONFIG_SUCCESS;
 
-}
-
-void printAttributes(SPConfig attr) { //TODO   /** DELETE **/
-	fprintf(stdout, "=== Attributes: ===\n");
-	fprintf(stdout, "%s\t= %s\n", "spImagesDirectory", attr->spImagesDirectory);
-	fprintf(stdout, "%s\t\t= %s\n", "spImagesPrefix", attr->spImagesPrefix);
-	fprintf(stdout, "%s\t\t= %s\n", "spImagesSuffix", attr->spImagesSuffix);
-	fprintf(stdout, "%s\t\t= %d\n", "spNumOfImages", attr->spNumOfImages);
-	fprintf(stdout, "%s\t\t= %d\n", "spPCADimension", attr->spPCADimension);
-	fprintf(stdout, "%s\t\t= %s\n", "spPCAFilename", attr->spPCAFilename);
-	fprintf(stdout, "%s\t\t= %d\n", "spNumOfFeatures", attr->spNumOfFeatures);
-	fprintf(stdout, "%s\t= %s\n", "spExtractionMode",
-			attr->spExtractionMode ? "true" : "false");
-	fprintf(stdout, "%s\t= %d\n", "spNumOfSimilarImages",
-			attr->spNumOfSimilarImages);
-
-	fprintf(stdout, "%s\t= %s\n", "spKDTreeSplitMethod",
-			(attr->spKDTreeSplitMethod == MAX_SPREAD) ?
-					"MAX_SPREAD" :
-					((attr->spKDTreeSplitMethod == RANDOM) ?
-							"RANDOM" : "INCREMENTAL"));
-	fprintf(stdout, "%s\t\t\t= %d\n", "spKNN", attr->spKNN);
-	fprintf(stdout, "%s\t\t= %s\n", "spMinimalGUI",
-			attr->spMinimalGUI ? "true" : "false");
-	fprintf(stdout, "%s\t\t= %d\n", "spLoggerLevel", attr->spLoggerLevel);
-	fprintf(stdout, "%s\t= %s\n", "spLoggerFilename", attr->spLoggerFilename);
-	fprintf(stdout, "===================\n\n");
 }
 
 SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
@@ -472,8 +437,9 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 		fseek(config, SEEK_END, 0); 	//so would not get into while at all
 	}
 
-	/* NULLization of attributes - so can be checked if was initialized or not*/
+	/* dummy initialization of attributes - so can be checked later whether variables are initialized or not*/
 	memset(attr, 0, sizeof(*attr));
+        attr->spExtractionMode = -1;
 
 	while (fgets(line, MAX_LENGTH, config) != NULL) {
 		lineNum++;
@@ -495,14 +461,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 			continue;
 
 		} else {
-
-			/* structure of line is OK (HAVENT checked existence of vars or constraints yet) */
-
-			/* Line assignment - check if var exists and assign value to it.
-			 * If has some kind of error - terminate.
-			 */
 			*msg = assignVarValue(attr, var, value, lineNum, filename);
-
 			if (*msg != SP_CONFIG_SUCCESS) {
 				gotError = true;
 				break;

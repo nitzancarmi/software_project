@@ -11,13 +11,9 @@
 #include "SPLogger.h"
 #include "macros.h"
 
-/*******************/
-/**    CLASSES    **/
-/*******************/
-
-
-/**
- * A data-structure which is used for configuring the system.
+ /** SPConfig:
+ *   ---------
+ * A data-structure which is used for maintaining configuration parameters.
  */
 
 typedef enum sp_config_msg_t {
@@ -36,14 +32,9 @@ typedef enum sp_config_msg_t {
 
 typedef struct sp_config_t* SPConfig;
 
-
 typedef enum split_method_t {
 	UNDEFINED = -1, RANDOM = 1, MAX_SPREAD, INCREMENTAL		//so it would not be confused with 0,1,2
-
 } splitMethod;
-
-
-
 
 /**
  * Creates a new system configuration struct. The configuration struct
@@ -192,8 +183,6 @@ int spConfigGetPCADim(const SPConfig config, SP_CONFIG_MSG* msg);
  */
 splitMethod spConfigGetSplitMethod(const SPConfig config, SP_CONFIG_MSG* msg);
 
-
-
 /**
  * Given an index 'index' the function stores in imagePath the full path of the
  * ith image.
@@ -232,15 +221,24 @@ SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
  * Thus the address given by pcaPath must contain enough space to
  * store the resulting string.
  *
- * @param imagePath - an address to store the result in, it must contain enough space.
+ * @param pcaPath - an address to store the result in, it must contain enough space.
  * @param config - the configuration structure
  * @return
- *  - SP_CONFIG_INVALID_ARGUMENT - if imagePath == NULL or config == NULL
+ *  - SP_CONFIG_INVALID_ARGUMENT - if pcaPath == NULL or config == NULL
  *  - SP_CONFIG_SUCCESS - in case of success
  */
 SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config);
 
-//TODO DOCO
+/**
+ * The function stores in loggerPath the full path of the logget output file, 
+ * as describes in confiuration file.
+ *
+ * @param loggerPath - an address to store the result in.
+ * @param config - the configuration structure
+ * @return
+ *  - SP_CONFIG_INVALID_ARGUMENT - if loggerPath == NULL or config == NULL
+ *  - SP_CONFIG_SUCCESS - in case of success
+ */
 SP_CONFIG_MSG spConfigGetSPLoggerFilename(char* loggerPath, const SPConfig config);
 
 /**
@@ -249,7 +247,4 @@ SP_CONFIG_MSG spConfigGetSPLoggerFilename(char* loggerPath, const SPConfig confi
  */
 void spConfigDestroy(SPConfig config);
 
-
-
-void printAttributes(SPConfig attr);			//TODO    DELETEEEE
-#endif /* SPCONFIG_H_ */
+#endif
