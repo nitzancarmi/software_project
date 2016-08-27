@@ -37,6 +37,10 @@ int SPgetLine(char** linePtr, FILE* feats) {
 		printWarning(READ_ERR)
 		return ERROR;
 	}
+	if(*line == '\n'){
+		printWarning(SPACE_ERR)
+		return ERROR;
+	}
 	/* size of actual line copied */
 	size = strlen(line);
 
@@ -75,16 +79,17 @@ int SPgetLine(char** linePtr, FILE* feats) {
  * otherwise the converted integer
  */
 int getIntFromLine(FILE* feats) {
-
-	int imageIndex;
-	char *line = NULL, *tmp, *ptrChk; //tail pointer for strtol
+	declareLogMsg();
+	int integer;
+	char *line = NULL,
+	*tmp, *ptrChk; //tail pointer for strtol
 
 	/* get the line. if error - message prints inside */
 	if (SPgetLine(&line, feats) == ERROR)
 		return ERROR;
 
 	/* attempt to parse an int from the line */
-	imageIndex = strtol(line, &ptrChk, 0);
+	integer = strtol(line, &ptrChk, 0);
 
 	/* check if any characters left after the number */
 	if (ptrChk != NULL && *ptrChk != '\0') {
@@ -94,7 +99,6 @@ int getIntFromLine(FILE* feats) {
 
 			/* allow only space characters after the number */
 			if (!isspace(*tmp)) {
-				declareLogMsg();
 				printWarning(CHAR_ERR)
 				free(line);
 				return ERROR;
@@ -102,9 +106,14 @@ int getIntFromLine(FILE* feats) {
 
 		}
 	}
+	if (integer < 0) {
+		printWarning(INDX_ERR)
+		free(line);
+		return ERROR;
+	}
 	/* no need for line anymore */
 	free(line);
-	return imageIndex;
+	return integer;
 }
 
 /**
@@ -156,6 +165,7 @@ double* getDataFromLine(char* line, int dim, int lineNumber) {
 	while (lineCnt != lineLength && *c != '\0' && *c != EOF) { //EOF not supposed to happen, sanity check
 
 		if (isspace(*c)) {
+			c++;
 			lineCnt++;
 			continue;
 		}
@@ -179,7 +189,6 @@ double* getDataFromLine(char* line, int dim, int lineNumber) {
 			lineCnt++;
 		}
 		tail = NULL;
-
 		/* i - basically strlen */
 		buffer[i] = '\0';
 
@@ -284,7 +293,7 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 	imageIndex = getIntFromLine(feats);
 
 	/* compare with the file name - if not equal or negative skip file */
-	if (imageIndex != imgIndex) {
+	if (imageIndex >= 0 && imageIndex != imgIndex) {
 		warningWithArgs(INDEX_ERR, imageIndex, filepath)
 		return NULL;
 	} else if (imageIndex < 0) {
@@ -308,6 +317,7 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 		lineChk = SPgetLine(&line, feats);
 
 		if (lineChk == -1) {
+
 			//Error message printed inside
 			errorReturn()
 		}
@@ -324,7 +334,8 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 		free(data);
 		data = NULL;
 		/*** ERRORS ***/
-		if (!currentPoint || countOfFeatures > *numOfFeatures) {
+		if (!currentPoint || countOfFeatures == *numOfFeatures) {
+
 			if (!currentPoint) { //error creating the point
 				MallocError()
 				free(data);
@@ -333,26 +344,27 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 				 * this is a warning, skipping to next file
 				 * while ignoring this one **/
 				spPointDestroy(currentPoint);
-				warningWithArgs(FEATS_QNTTY, countOfFeatures, *numOfFeatures);
+				warningWithArgs(FEATS_QNTTY_MORE, *numOfFeatures);
 			}
 			/** freeing the resources that were ignored **/
-			spPointArrayDestroy(pntsArray, *numOfFeatures);
+			spPointArrayDestroy(pntsArray, countOfFeatures);
 			errorReturn()
 		}
 
 		/** inserting point to returned array **/
-		pntsArray[countOfFeatures++] = currentPoint;
+		if (countOfFeatures < *numOfFeatures)
+			pntsArray[countOfFeatures++] = currentPoint;
 		free(line);
 		line = NULL;
 	}
+
 	/** now can be less than within in the file. again - warning and skipping **/
 	if (countOfFeatures != *numOfFeatures) {
-		warningWithArgs(FEATS_QNTTY, countOfFeatures, *numOfFeatures);
-		spPointArrayDestroy(pntsArray, *numOfFeatures);
+		warningWithArgs(FEATS_QNTTY_LESS, countOfFeatures, *numOfFeatures);
+		spPointArrayDestroy(pntsArray, countOfFeatures);
 		free(pntsArray);
 		errorReturn()
 	}
-
 	return pntsArray;
 }
 
@@ -388,7 +400,7 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 
 	int imgCount = 0;
 	for (int img = 0; img < numOfImages; img++) {
-		featAddr = &numOfFeatures[img];
+		featAddr = &numOfFeatures[imgCount];
 
 		/* Extract features of single image from the appropriate file*/
 		singleImageFeatures = extractSingleImage(img, featAddr, config);
@@ -397,7 +409,7 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 			/* If some kind of error occourred (all printed and explained inside -
 			 * than skip the invalid file.
 			 */
-			*featAddr = 0; //so that it wont be summed
+			numOfFeatures[img] = 0; //so that it wont be summed
 			continue;
 		} else {
 			/** Insert the image's features to its row in the matrix **/
@@ -415,6 +427,7 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 		/** Some of the images features were not imported
 		 * Only warning - not finishing program **/
 		printWarning(SOME_FEATS);
+
 	}
 
 	/** Overall number of features added **/
@@ -449,7 +462,7 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 			//insertion to returned array
 			allFeatures[++currentFeature] = imagesFeatures[img][feat];
 		}
-		free(imagesFeatures[img]);	//freeing only the pointers to the points array, not the points themselves
+		free(imagesFeatures[img]); //freeing only the pointers to the points array, not the points themselves
 	}
 
 	free(numOfFeatures);

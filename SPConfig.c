@@ -392,7 +392,7 @@ SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 		strcpy(attr->spLoggerFilename, STD);
 	}
 	if (attr->spExtractionMode < 0)
-		checkAndAssign(spExtractionMode, true);
+		attr->spExtractionMode = true;
 	return SP_CONFIG_SUCCESS;
 
 }

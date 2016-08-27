@@ -151,7 +151,7 @@ int getKDRows(SPKDArray kd) {
 }
 
 /*
- * Returns a copy of a point array (with copies of each point).g
+ * Returns a copy of a point array (with copies of each point)
  *
  * @param arr 		the relevant point array
  * @param size		size of the array arr
@@ -177,6 +177,7 @@ SPPoint* copyPointArray(SPPoint* arr, int size) {
 	for (i = 0; i < size; i++) {
 		ret[i] = spPointCopy(arr[i]);
 
+
 		/* frees in case of inner malloc fail */
 		if (!ret[i]) {
 			MallocError()
@@ -189,6 +190,7 @@ SPPoint* copyPointArray(SPPoint* arr, int size) {
 		}
 
 	}
+
 	return ret;
 }
 
@@ -311,6 +313,7 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 
 	/*copy array into struct*/
 	kd->pointArray = copyPointArray(arr, size);
+
 	if (!kd->pointArray) {
 		MallocError()
 		SPKDArrayDestroy(kd);
@@ -333,6 +336,7 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 		}
 
 	}
+
 	kd->mat = M;
 	return kd;
 }

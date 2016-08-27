@@ -33,20 +33,26 @@ int main(int argc, char* argv[]) {
 		return ERROR;
 
 	/*** Logger and ImageProc ***/
-	if (initializeSPLogger(config, &log_msg)) {
+	if (initializeSPLogger(config, &log_msg) || !(pc = new ImageProc(config))) {
 		clearAll()
 		return ERROR;
 	}
 
-	pc = new ImageProc(config);
-
 	/*********   Extraction Mode    ************/
 	if (spConfigIsExtractionMode(config, &conf_msg)) {
+
 		for (index = 0; index < numOfImages; index++) {
+
 			path[1024] = {'\0'};
 			spConfigGetImagePath(path, config, index); //No need to read conf_msg, controlling all inputs myself
-			pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
+			checkifImgExists()
 
+			pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
+			if(!pointArray){
+				//Error prints inside
+				clearAll()
+				return ERROR;
+			}
 			/** Features Extraction **/
 			if (exportImageToFile(pointArray, numOfFeats, index, config)) {
 

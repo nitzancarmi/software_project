@@ -127,21 +127,24 @@
 /************************ SPExtractor ***********************/
 /************************************************************/
 
-#define MAX_FEATS_LINE	50000
-#define READ_ERR 		"Error while reading the file. SKIPPING FILE"
-#define CHAR_ERR		"Invalid characters found on file. SKIPPING FILE"
-#define FEAT_ERR		"%s\n feature = %d, line = %d, char = %c <%d>\nline is:\n%s"
-#define FEAT_ERR2		"Invalid characters found on file. SKIPPING FILE\n\tfeature = %d, line = %d, char = %c <%d>\n\tline is:\n%s"
-#define FEAT_SIZE_ERR	"Current feature size is %d features while spCADimension = %d. SKIPPING FILE"
-#define FEAT_SMALL 		"Feature size is smaller than spCADimension. SKIPPING FILE"
-#define errorReturn()	*numOfFeatures = -1; fclose(feats);	return NULL;
-#define FEATS_EXT 		".feats"
-#define FILE_ERR		"File \"%s\" cannot be opened. SKIPPING FILE"
-#define INDEX_ERR		"Image index inside file (%d) doesn't match filename index - \"%s\". SKIPPING FILE"
-#define FEATS_QNTTY		"Features file %d features, while %d was the quantity defined. SKIPPING FILE"
-#define FEATS_SUFFIX	"Error with the configuration:\nPath of .feats file cannot be retrieved"
-#define NO_FEATS_IMPRT	"No image features were imported"
-#define SOME_FEATS		"Some of the images features were not imported"
+#define MAX_FEATS_LINE		50000
+#define READ_ERR 			"Error while reading the feats file. SKIPPING FILE"
+#define CHAR_ERR			"Invalid characters found on file. SKIPPING FILE"
+#define SPACE_ERR			"Empty lines are not permitted in the .feats file. SKIPPING FILE"
+#define INDX_ERR			"Image index and/or number of features written in the .feats file cannot be negative. SKIPPING FILE"
+#define FEAT_ERR			"%s\n feature = %d, line = %d, char = %c <%d>\nline is:\n%s"
+#define FEAT_ERR2			"Invalid characters found on file. SKIPPING FILE\n\tfeature = %d, line = %d, char = %c <%d>\n\tline is:\n%s"
+#define FEAT_SIZE_ERR		"Current feature size is %d features while spCADimension = %d. SKIPPING FILE"
+#define FEAT_SMALL 			"Feature size is smaller than spCADimension. SKIPPING FILE"
+#define errorReturn()		*numOfFeatures = -1; fclose(feats);	return NULL;
+#define FEATS_EXT 			".feats"
+#define FILE_ERR			"File \"%s\" cannot be opened. SKIPPING FILE"
+#define INDEX_ERR			"Image index inside file (%d) doesn't match filename index - \"%s\". SKIPPING FILE"
+#define FEATS_QNTTY_LESS	"Features file has %d features, less than %d, the quantity defined at the 2nd line. SKIPPING FILE"
+#define FEATS_QNTTY_MORE	"Features file has more than %d features, the quantity defined at the 2nd line. SKIPPING FILE"
+#define FEATS_SUFFIX		"Error with the configuration:\nPath of .feats file cannot be retrieved"
+#define NO_FEATS_IMPRT		"No image features were imported"
+#define SOME_FEATS			"Some of the images features were not imported"
 
 /*****************************************************/
 /************************ Main ***********************/
@@ -152,18 +155,21 @@
 #define LOGGERnMSG 		"SPLogger Error. Message Type: %d"
 #define FINISH_PRG 		"Program Finished Successfully"
 
+#define NO_FILE			"Image file \"%s\" doesn't exist"
 #define PLS_ENTER		"Please enter an image path:\n"
 #define INV_PATH		"Invalid path to image. Please try again;\n"
 #define BST_CND			"Best candidates for - %s - are:\n"
 #define EXIT			"Exiting...\n"
 
+#define checkifImgExists()	if(access(path, F_OK) == -1){ \
+								char err[1024] = {'\0'}; \
+								sprintf(err,NO_FILE,path); \
+								if((log_msg = spLoggerPrintError(err,__FILE__,__func__,__LINE__))	\
+									!= SP_LOGGER_SUCCESS){	\
+										errorWithLogger();	\
+								}	\
+								clearAll() \
+								return ERROR;	\
+							}
 #endif /* MACROS_H_ */
-
-
-
-
-
-
-
-
 
