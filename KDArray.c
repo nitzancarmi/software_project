@@ -222,13 +222,14 @@ int pointComparator(const void *p, const void *q) {
 /**
  * sort array of points with respect to given axis
  * 
+ * @pre   pts array contains points of the same dimension
  * @param ret - int array to be updated with the sorted indices
  * @param pts - opint array to be sorted
  * @param axis - axis to sort by
  * @param config - configuration struct
  * @param log_msg - logger message to be updated
  * @post ret contains the indices of the points sorted with respect to the given axis coordinate
- *  @return 0 for success, 1 otherwise
+ * @return 0 for success, 1 otherwise
  */
 int sortByAxis(int *ret, const SPPoint* pts, int size, int axis,
 		const SPConfig config, SP_LOGGER_MSG* log_msg) {

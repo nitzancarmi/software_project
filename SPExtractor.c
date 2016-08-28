@@ -249,7 +249,7 @@ double* getDataFromLine(char* line, int dim, int lineNumber) {
  * 		- Reading Error
  * 		- image index written in the file (first line) doesn't match argument imgIndex
  * 		- The file doesn't contain the same amount of features as written on the second line of the file exactly
- * 0 for successful operation
+ * Otherwise, a SPPoint array that contains all the features of the image.
  */
 SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 	declareLogMsg();
