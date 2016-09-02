@@ -12,6 +12,8 @@
  *  @param kdtree   	The KD-Tree to be searched on.
  *  @param point		Query for the search
  *  @param bpq			The SPBPQueue to be updated after the search of
+ *
+ * @return None
  */
 void knnRecursive(SPKDTreeNode kd, SPPoint feat, SPBPQueue bpq) {
 	if (!kd)
@@ -98,8 +100,8 @@ int* findKNearestNeighbors(SPKDTreeNode kdtree, SPPoint feat, SPConfig config) {
 		tmp = spBPQueuePeek(bpq);
 		ret[i] = spListElementGetIndex(tmp);
 		spListElementDestroy(tmp); //gets copied for the peek
-		tmp = NULL;				   //sanity problem prevention
-		spBPQueueDequeue(bpq);	   //remove element from the bpq
+		tmp = NULL; 
+		spBPQueueDequeue(bpq);
 	}
 	spBPQueueDestroy(bpq);
 
@@ -128,7 +130,6 @@ int* getClosestImages(SPKDTreeNode kdtree, SPConfig config, SPPoint* q_features,
 	for (i = 0; i < q_numOfFeats; i++) {
 		knn = findKNearestNeighbors(kdtree, q_features[i], config);
 		if (!knn) {
-			//printed inside
 			return NULL;
 		}
 
