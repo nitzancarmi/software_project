@@ -105,7 +105,7 @@ int spPointGetIndex(SPPoint point) {
 
 double spPointGetAxisCoor(SPPoint point, int axis) {
 
-	assert(axis >= 0);										//CHECK
+	assert(axis >= 0);
 
 	assert(point!=NULL);
 	assert(axis < point->dim);
@@ -120,12 +120,12 @@ double spPointL2SquaredDistance(SPPoint p, SPPoint q) {
 	assert(q!=NULL);
 	assert(p->dim == q->dim);
 
-	register double res = 0, localdist = 0;	//Going to be used A LOT in the program
+	register double res = 0, localdist = 0;
 	register int j, dim = p->dim;
 
 	//O(dim)
 	for (j = 0; j < dim; j++) {
-		localdist = (p->data[j] - q->data[j]);		//Optimization not using function
+		localdist = (p->data[j] - q->data[j]);
 		localdist *= localdist;
 		res += localdist;
 	}

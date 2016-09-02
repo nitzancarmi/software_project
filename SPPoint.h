@@ -1,8 +1,6 @@
 #ifndef SPPOINT_H_
 #define SPPOINT_H_
 
-
-
 /**
  * SPPoint Summary
  * Encapsulates a point with variable length dimension. The coordinates
@@ -70,6 +68,10 @@ SPPoint spPointCopy(SPPoint source);
 /**
  * Free all memory allocation associated with point,
  * if point is NULL nothing happens.
+ *
+ * @param point - the point to be destroyed
+ *
+ * @return None
  */
 void spPointDestroy(SPPoint point);
 
@@ -118,10 +120,14 @@ double spPointGetAxisCoor(SPPoint point, int axis);
  */
 double spPointL2SquaredDistance(SPPoint p, SPPoint q);
 
-
-void spPointArrayDestroy(SPPoint* points, int size); //TODO DOCO
-
-
-
-
+/**
+ * Free all memory allocation associated with point array,
+ * if point array is NULL nothing happens.
+ *
+ * @param points - the point array to be destroyed
+ * @param size - size of point arrray
+ *
+ * @return None
+ */
+void spPointArrayDestroy(SPPoint* points, int size); 
 #endif /* SPPOINT_H_ */
