@@ -25,11 +25,11 @@ int main(int argc, char* argv[]) {
 	char q_path[1024], path[1024];
 	int q_numOfFeats = 0, rc, numOfSimilarImages = 0, numOfFeats = -1;
 	int *similar_images = NULL;
-	int index, numOfImages = 0;
+	int index;
 	fflush(stdout);
 
 	/***create config file***/
-	if(argParse(argc, argv, &config, &conf_msg,&numOfImages))
+	if(argParse(argc, argv, &config, &conf_msg))
 		return ERROR;
 
 	/*** Logger and ImageProc ***/
@@ -40,9 +40,7 @@ int main(int argc, char* argv[]) {
 
 	/*********   Extraction Mode    ************/
 	if (spConfigIsExtractionMode(config, &conf_msg)) {
-
-		for (index = 0; index < numOfImages; index++) {
-
+		for (index = 0; index < spConfigGetNumOfImages(config, &conf_msg); index++) {
 			path[1024] = {'\0'};
 			spConfigGetImagePath(path, config, index); //No need to read conf_msg, controlling all inputs myself
 			checkifImgExists()

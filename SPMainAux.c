@@ -1,34 +1,49 @@
 #include "SPMainAux.h"
 
-int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg,
-		int* numOfImagesPtr) {
+/**
+ * print Usage in case of invalid arguments insertion
+ */
+void Usage() {
+    printf("\nUsage: ./SPCBIR [OPTION]...\n");
+    printf("find the k most similar images to a given query image,\n\
+as described at given configuration file\n");
+    printf("\nWith no FILE - uses default spcbir.config file\n\n");
+    printf("\t-c,\t\tConfiguration File\n");
+    printf("\nExamples:\n");
+    printf("./SPCBIR\n");
+    printf("./SPCBIR -c filename.config\n");
+    
+       
+}
+int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg) {
 	SPConfig config;
 	switch (argc) {
 	case 1:
+        //default config file
 		config = spConfigCreate("spcbir.config", conf_msg);
 		if (!config)
 			return 1;
 		break;
 
 	case 3:
-
+        //user defined config file 
 		if (strcmp(argv[1], "-c")) {
 			printf(INVALID_COMLINE);
+                        Usage();
 			return 1;
 		}
 		config = spConfigCreate(argv[2], conf_msg);
 		if (!config)
 			return 1;
-
 		break;
 
 	default:
 		config = NULL;
 		printf(INVALID_COMLINE);
-		break;
+                Usage();
+		return 1;
 	}
 	*_config = config;
-	*numOfImagesPtr = spConfigGetNumOfImages(config, conf_msg);
 	return OK;
 }
 
@@ -58,7 +73,6 @@ int Setup(SPConfig config, SPKDTreeNode* kdtree, SP_LOGGER_MSG* log_msg,
 
 void cleanGlobalResources(SPConfig config, SPKDTreeNode kdtree,
 		int* similar_images) {
-	spLoggerPrintInfo("Removing SPLogger and SPConfig");
 	spLoggerDestroy();
 	if (config)
 		spConfigDestroy(config);
