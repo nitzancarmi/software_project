@@ -62,4 +62,14 @@ bool initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg);
 */
 int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg);
 
+/**
+ * This function checks if a path exists and describes a valid file.
+ *
+ * @param path - path to the file to be checked
+ *
+ * @return true if path exists and describes a valid file.
+ * false otherwise.
+ */
+bool isValidFile(char* path);
+
 #endif /* SPMAINAUX_H_ */

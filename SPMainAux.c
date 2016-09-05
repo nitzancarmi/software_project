@@ -1,17 +1,19 @@
 #include "SPMainAux.h"
+#include <sys/stat.h>
+#include <unistd.h>
 
 int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg) {
 	SPConfig config;
 	switch (argc) {
 	case 1:
-        //default config file
+		//default config file
 		config = spConfigCreate(DEFAULT_CONFIG, conf_msg);
 		if (!config)
 			return 1;
 		break;
 
 	case 3:
-        //user defined config file 
+		//user defined config file
 		if (strcmp(argv[1], C_ARG)) {
 			printf(INVALID_COMLINE);
 			return 1;
@@ -85,4 +87,14 @@ bool initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg) {
 		return true;
 	}
 	return false;
+}
+
+bool isValidFile(char* path) {
+	struct stat s;
+	stat(path,&s);
+	//		 path exists			path describes a file
+	if (access(path, F_OK)== -1 || !(s.st_mode & S_IFREG)) {
+		return false;
+	}
+	return true;
 }

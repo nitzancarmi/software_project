@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 		//check validity of output
 		if (!strcmp(q_path,CLS_QRY))
 			break;
-		if (access(q_path, F_OK) == -1) {
+		if (!isValidFile(q_path)) {
 			printf(INV_PATH);
 			continue;
 		}
