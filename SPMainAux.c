@@ -93,7 +93,7 @@ bool isValidFile(char* path) {
 	struct stat s;
 	stat(path,&s);
 	//		 path exists			path describes a file
-	if (access(path, F_OK)== -1 || !(s.st_mode & S_IFREG)) {
+	if (access(path, F_OK)== -1 || !S_ISREG(s.st_mode)) {
 		return false;
 	}
 	return true;
