@@ -37,7 +37,7 @@ int SPgetLine(char** linePtr, FILE* feats) {
 		printWarning(READ_ERR)
 		return ERROR;
 	}
-	if(*line == '\n'){
+	if (*line == '\n') {
 		printWarning(SPACE_ERR)
 		return ERROR;
 	}
@@ -262,9 +262,9 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 	char *ptr,
 	*line = NULL, filepath[1024] = { '\0' };
 	FILE* feats;
-	int imageIndex, countOfFeatures, dim, lineChk;
+	int imageIndex, countOfFeatures = 0, dim, lineChk;
 	double* data;
-	SPPoint currentPoint, *pntsArray;
+	SPPoint currentPoint, *pntsArray = NULL;
 
 	/*** Change filepath to .feats ***/
 	SP_CONFIG_MSG _conf_msg = spConfigGetImagePath(filepath, config, imgIndex),
@@ -306,9 +306,12 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 		errorReturn()
 	}
 
-	countOfFeatures = 0;
 	dim = spConfigGetPCADim(config, conf_msg);
 	pntsArray = (SPPoint*) calloc(*numOfFeatures, sizeof(*pntsArray));
+	if (!pntsArray) {
+		MallocError()
+		errorReturn()
+	}
 
 	/** Iterating through lines 3 and above of the feats file **/
 	while (!feof(feats)) {
@@ -317,15 +320,14 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 		lineChk = SPgetLine(&line, feats);
 
 		if (lineChk == -1) {
-
-			//Error message printed inside
+			//Error message printed inside SPgetLine
 			errorReturn()
 		}
 
 		/** Get double array from lines 3 and above **/
 		data = getDataFromLine(line, dim, countOfFeatures + 3);
 		if (data == NULL) {
-			//Error message printed inside
+			//Error message printed inside getDataFromLine
 			errorReturn()
 		}
 
@@ -347,7 +349,6 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 				warningWithArgs(FEATS_QNTTY_MORE, *numOfFeatures);
 			}
 			/** freeing the resources that were ignored **/
-			spPointArrayDestroy(pntsArray, countOfFeatures);
 			errorReturn()
 		}
 
@@ -362,7 +363,6 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 	if (countOfFeatures != *numOfFeatures) {
 		warningWithArgs(FEATS_QNTTY_LESS, countOfFeatures, *numOfFeatures);
 		spPointArrayDestroy(pntsArray, countOfFeatures);
-		free(pntsArray);
 		errorReturn()
 	}
 	return pntsArray;

@@ -139,7 +139,10 @@
 #define FEAT_ERR2			"Invalid characters found on file. SKIPPING FILE\n\tfeature = %d, line = %d, char = %c <%d>\n\tline is:\n%s"
 #define FEAT_SIZE_ERR		"Current feature size is %d features while spCADimension = %d. SKIPPING FILE"
 #define FEAT_SMALL 			"Feature size is smaller than spCADimension. SKIPPING FILE"
-#define errorReturn()		*numOfFeatures = -1; fclose(feats);	return NULL;
+#define errorReturn()		spPointArrayDestroy(pntsArray, countOfFeatures); \
+							*numOfFeatures = -1; \
+							fclose(feats);	\
+							return NULL;
 #define FEATS_EXT 			".feats"
 #define FILE_ERR			"File \"%s\" cannot be opened. SKIPPING FILE"
 #define INDEX_ERR			"Image index inside file (%d) doesn't match filename index - \"%s\". SKIPPING FILE"
