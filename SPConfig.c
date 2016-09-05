@@ -27,11 +27,12 @@ struct sp_config_t {
 };
 /*************************/
 
+//TODO DOCO
 void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 		char** varReturn, char** valueReturn) {
 	if (!line || !msg || !isCommentBlank || !varReturn || !valueReturn)
 		return;
-
+	char *var, *value, *tmp, *save;
 	/* pass over spaces to next character*/
 	ignoreSpaces(line)
 
@@ -43,7 +44,8 @@ void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 	}
 
 	/* save current position on line */
-	char *var = line, *value = line, *tmp;
+	var = line;
+	value = line;
 
 	/* go to '=' position of value */
 	while (*value != '=' && *value != '\0') {
@@ -68,15 +70,22 @@ void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 	ignoreSpaces(value)
 
 	tmp = var;
-	while (!isspace(*tmp))
+	while (!isspace(*tmp) && *tmp!='\0')
 		tmp++;
 	*tmp = '\0';
 
 	tmp = value;
-	while (!isspace(*tmp))
+	while (!isspace(*tmp) && *tmp!='\0')
 		tmp++;
-	*tmp = '\0';
-
+	if (*tmp != '\0') {
+		save = tmp;
+		ignoreSpaces(tmp)
+		if (*tmp != '\0') { //space chars found inside string and not at the end
+			*msg = SP_CONFIG_INVALID_STRING;
+			return;
+		}
+		*save = '\0'; //if spaces are at the end of the value, end value on the first space
+	}
 	*varReturn = var;
 	*valueReturn = value;
 
@@ -91,6 +100,8 @@ void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 
 }
 
+//TODO DOCO
+
 int updateValueInRange(char* value, int min, int max) {
 	int num;
 	char* tmp = value;
@@ -104,6 +115,8 @@ int updateValueInRange(char* value, int min, int max) {
 	return (num < min || num > max) ? 0 : num;
 }
 
+//TODO DOCO
+
 int findValueInSet(const char *set[], char* value, int size) {
 	int i;
 	for (i = 0; i < size; i++) {
@@ -112,6 +125,8 @@ int findValueInSet(const char *set[], char* value, int size) {
 	}
 	return -1;
 }
+
+//TODO DOCO
 
 SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 		const char* filename) {
@@ -439,7 +454,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
 	/* dummy initialization of attributes - so can be checked later whether variables are initialized or not*/
 	memset(attr, 0, sizeof(*attr));
-        attr->spExtractionMode = -1;
+	attr->spExtractionMode = -1;
 
 	while (fgets(line, MAX_LENGTH, config) != NULL) {
 		lineNum++;

@@ -1,35 +1,19 @@
 #include "SPMainAux.h"
 
-/**
- * print Usage in case of invalid arguments insertion
- */
-void Usage() {
-    printf("\nUsage: ./SPCBIR [OPTION]...\n");
-    printf("find the k most similar images to a given query image,\n\
-as described at given configuration file\n");
-    printf("\nWith no FILE - uses default spcbir.config file\n\n");
-    printf("\t-c,\t\tConfiguration File\n");
-    printf("\nExamples:\n");
-    printf("./SPCBIR\n");
-    printf("./SPCBIR -c filename.config\n");
-    
-       
-}
 int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg) {
 	SPConfig config;
 	switch (argc) {
 	case 1:
         //default config file
-		config = spConfigCreate("spcbir.config", conf_msg);
+		config = spConfigCreate(DEFAULT_CONFIG, conf_msg);
 		if (!config)
 			return 1;
 		break;
 
 	case 3:
         //user defined config file 
-		if (strcmp(argv[1], "-c")) {
+		if (strcmp(argv[1], C_ARG)) {
 			printf(INVALID_COMLINE);
-                        Usage();
 			return 1;
 		}
 		config = spConfigCreate(argv[2], conf_msg);
@@ -40,7 +24,6 @@ int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg)
 	default:
 		config = NULL;
 		printf(INVALID_COMLINE);
-                Usage();
 		return 1;
 	}
 	*_config = config;

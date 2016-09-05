@@ -29,6 +29,9 @@
 #define DEFAULT_CONFIG				"spcbir.config"
 #define PCAYML						"pca.yml"
 #define STD							"stdout"
+#define	C_ARG						"-c"
+#define CLS_QRY						"<>"
+#define STR_LINE					"%s\n"
 
 #define	IMGDIR						"spImagesDirectory"
 #define IMGPRE						"spImagesPrefix"

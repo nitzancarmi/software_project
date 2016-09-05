@@ -86,7 +86,7 @@ int main(int argc, char* argv[]) {
 		q_path[strlen(q_path) - 1] = '\0'; //q_path will always include at lease '/n'
 
 		//check validity of output
-		if (!strcmp(q_path,"<>"))
+		if (!strcmp(q_path,CLS_QRY))
 			break;
 		if (access(q_path, F_OK) == -1) {
 			printf(INV_PATH);
@@ -118,7 +118,7 @@ int main(int argc, char* argv[]) {
 			if (gui)
 				pc->showImage(tmp_path);
 			else
-				printf("%s\n", tmp_path);
+				printf(STR_LINE, tmp_path);
 		}
 
 		//re-initializing query-related resources
