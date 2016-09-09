@@ -27,7 +27,26 @@ struct sp_config_t {
 };
 /*************************/
 
-//TODO DOCO
+/**
+ * checks a single line in the configuration file 
+ * and extract its variable and value
+ * 
+ * @param line - line to be checked upon
+ * @param msg - config message to be updated in case of
+ *              an error
+ * @param isCommentBlank - flag to signal calling function
+ *                         whether the line should be ignored.
+ * @param varReturn - a string that should be updated with the
+ *                    name of the variable
+ * @param valueReturn - a string that should be updated with the
+ *                      value assigned in the line
+ *
+ * @return
+ *  - msg updated with the line reading status
+ *    SP_CONFIG_SUCCESS - for success
+ *    SP_CONFIG_INVALID_STRING - for failure
+ *  - on success - the varReturn and valueReturn are updated correctly 
+ */
 void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 		char** varReturn, char** valueReturn) {
 	if (!line || !msg || !isCommentBlank || !varReturn || !valueReturn)
@@ -100,8 +119,15 @@ void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 
 }
 
-//TODO DOCO
-
+/**
+ * updates an integer value for config parameter
+ *
+ * @param value - the value to be updated
+ * @param min - minimum border value
+ * @param max - maximum border value
+ *
+ * @return 0 for success, 1 otherwise
+ */
 int updateValueInRange(char* value, int min, int max) {
 	int num;
 	char* tmp = value;
@@ -115,8 +141,16 @@ int updateValueInRange(char* value, int min, int max) {
 	return (num < min || num > max) ? 0 : num;
 }
 
-//TODO DOCO
-
+/**
+ * finds a string value for config parameter in a set
+ * possible values
+ *
+ * @param set - set of possible values
+ * @param value - value to ce checked whether in the set or not
+ * @param size - size of the set
+ *
+ * @return index of value in set for success, -1 otherwise
+ */
 int findValueInSet(const char *set[], char* value, int size) {
 	int i;
 	for (i = 0; i < size; i++) {
@@ -126,8 +160,18 @@ int findValueInSet(const char *set[], char* value, int size) {
 	return -1;
 }
 
-//TODO DOCO
-
+/**
+ * assigns a value into a variable in configuration struct 
+ *
+ * @param attr - configuration struce to be updated
+ * @param var - name of field in the struct to be updated
+ * @param value - value to be assigned into struct
+ * @param line - line number in config file
+ * @param filename - filename of the config file
+ *
+ * @return SP_CONFIG_SUCCESS for SUCCESS
+           SP_CONFIG_INVALID_STRING/INTEGER for failure
+ */
 SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 		const char* filename) {
 	/*spImagesDirectory*/
