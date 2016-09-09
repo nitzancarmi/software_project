@@ -53,20 +53,18 @@ int main(int argc, char* argv[]) {
 			}
 			/** Features Extraction **/
 			if (exportImageToFile(pointArray, numOfFeats, index, config)) {
-
 				/* Writing to File Error */
-				spPointArrayDestroy(pointArray, numOfFeats);
+			        spPointArrayDestroy(pointArray, numOfFeats);
 				clearAll()
 				return ERROR;
 			}
-
+			spPointArrayDestroy(pointArray, numOfFeats);
 		}
 	}
 	/*******************************************/
 
 	rc = Setup(config, &kdtree, &log_msg, &conf_msg);
 	if (rc) {
-		//TODO logger msg
 		clearAll()
 		if (pc)
 			delete pc;
@@ -110,23 +108,26 @@ int main(int argc, char* argv[]) {
 
 		//show closest images on screen
 		bool gui = spConfigMinimalGui(config, &conf_msg);
+                char* tmp_path;
 		if (!gui)
 			printf(BST_CND, q_path);
 		for (int img = 0; img < numOfSimilarImages; img++) {
-			char tmp_path[1024] = { '\0' };
+                        tmp_path = (char*)calloc(1024, sizeof(char));
 			spConfigGetImagePath(tmp_path, config, similar_images[img]);
-			if (gui)
+			if (gui) {
 				pc->showImage(tmp_path);
-			else
+			} else {
 				printf(STR_LINE, tmp_path);
+                        }
+                        free(tmp_path);
+                        tmp_path = NULL;
 		}
-
 		//re-initializing query-related resources
-		cleanTempResources(&q_features, q_numOfFeats, q_path);
+		cleanTempResources(&q_features, q_numOfFeats, q_path, &similar_images);
 	}
 
 	printf(EXIT);
-	cleanTempResources(&q_features, q_numOfFeats, q_path);
+	cleanTempResources(&q_features, q_numOfFeats, q_path, &similar_images);
 	clearAll()
 	if (pc)
 		delete pc;

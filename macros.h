@@ -156,7 +156,7 @@
 /************************ Main ***********************/
 /*****************************************************/
 
-#define clearAll()		cleanGlobalResources(config, kdtree, similar_images);
+#define clearAll()		cleanGlobalResources(config, kdtree);
 #define FIRST_MSG 		"SPConfig file imported.\nLogger opened."
 #define LOGGERnMSG 		"SPLogger Error. Message Type: %d"
 #define FINISH_PRG 		"Program Finished Successfully"

@@ -22,12 +22,10 @@ int Setup(SPConfig config, SPKDTreeNode* kdtree, SP_LOGGER_MSG* log_msg,
  * 
  * @param config - configuration struct
  * @param kdtree - built kdtree based on given path to images folder
- * @param similar_images - array of indices for the closest images
  *
  * @return 0 for success, 1 for Error
  */
-void cleanGlobalResources(SPConfig config, SPKDTreeNode kdtree,
-		int* similar_images);
+void cleanGlobalResources(SPConfig config, SPKDTreeNode kdtree);
 
 /**
  * frees all query related resources
@@ -35,10 +33,11 @@ void cleanGlobalResources(SPConfig config, SPKDTreeNode kdtree,
  * @param q_features - point array, used as representation of the query image
  * @param q_numOfFeats - point array size
  * @param q_path - path to the given query image
+ * @param similar_images - array of indices for the closest images
  *
  * @return None
  */
-void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path);
+void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path, int** similar_images);
 
 /**
  * starts a static logger to be later used in the program

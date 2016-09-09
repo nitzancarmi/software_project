@@ -56,21 +56,21 @@ int Setup(SPConfig config, SPKDTreeNode* kdtree, SP_LOGGER_MSG* log_msg,
 	return *kdtree ? 0 : 1;
 }
 
-void cleanGlobalResources(SPConfig config, SPKDTreeNode kdtree,
-		int* similar_images) {
+void cleanGlobalResources(SPConfig config, SPKDTreeNode kdtree) {
 	spLoggerDestroy();
 	if (config)
 		spConfigDestroy(config);
 
 	if (kdtree)
 		spKDTreeDestroy(kdtree);
-	free(similar_images);
 }
 
-void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path) {
+void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path, int** similar_images) {
 	spPointArrayDestroy(*q_features, q_numOfFeats);
 	memset(&q_path[0], '\0', strlen(q_path));
 	*q_features = NULL;
+        free(*similar_images);
+        *similar_images = NULL;
 }
 
 bool initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg) {
