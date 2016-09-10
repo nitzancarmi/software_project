@@ -242,6 +242,20 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config);
 SP_CONFIG_MSG spConfigGetSPLoggerFilename(char* loggerPath, const SPConfig config);
 
 /**
+ * Returns the logger level defined in the configuration object and file.g
+ *
+ * @param config - the configuration structure
+ * @assert msg != NULL
+ * @param msg - pointer in which the msg returned by the function is stored
+ *
+ * @return positive integer in success, negative integer otherwise.
+ *
+ * - SP_CONFIG_INVALID_ARGUMENT - if config == NULL
+ * - SP_CONFIG_SUCCESS - in case of success
+ */
+SP_CONFIG_MSG spConfigGetSPLoggerLevel(const SPConfig config, SP_CONFIG_MSG* msg);
+
+/**
  * Frees all memory resources associate with config. 
  * If config == NULL nothig is done.
  */

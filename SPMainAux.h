@@ -47,7 +47,7 @@ void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path, in
  *
  * @return true iff success
 */
-bool initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg);
+bool initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg);
 
 /**
  * parse the command line arguments, or return an error in case of

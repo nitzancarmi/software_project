@@ -18,6 +18,7 @@
 void knnRecursive(SPKDTreeNode kd, SPPoint feat, SPBPQueue bpq) {
 	if (!kd)
 		return;
+	//From here, kd is not NULL so no need to check output of inner functions
 
 	SPListElement elem = NULL;
 	bool left = false, equal, lessOrEqual;
@@ -35,7 +36,7 @@ void knnRecursive(SPKDTreeNode kd, SPPoint feat, SPBPQueue bpq) {
 		return;
 	}
 
-	val = getVal(kd);							// median of the current node
+	val = getVal(kd);							// median of the current node, also kd is not NULL here
 	p_dim = spPointGetAxisCoor(feat, getDim(kd));	// P[curr.dim]
 
 	/** check if val <= p_dim **/

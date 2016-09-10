@@ -29,24 +29,26 @@ int main(int argc, char* argv[]) {
 	fflush(stdout);
 
 	/***create config file***/
-	if(argParse(argc, argv, &config, &conf_msg))
+	if (argParse(argc, argv, &config, &conf_msg))
 		return ERROR;
 
 	/*** Logger and ImageProc ***/
-	if (initializeSPLogger(config, &log_msg) || !(pc = new ImageProc(config))) {
+	if (initializeSPLogger(config, &log_msg, &conf_msg)
+			|| !(pc = new ImageProc(config))) {
 		clearAll()
 		return ERROR;
 	}
 
 	/*********   Extraction Mode    ************/
 	if (spConfigIsExtractionMode(config, &conf_msg)) {
-		for (index = 0; index < spConfigGetNumOfImages(config, &conf_msg); index++) {
+		for (index = 0; index < spConfigGetNumOfImages(config, &conf_msg);
+				index++) {
 			path[1024] = {'\0'};
 			spConfigGetImagePath(path, config, index); //No need to read conf_msg, controlling all inputs myself
 			checkifImgExists()
 
 			pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
-			if(!pointArray){
+			if(!pointArray) {
 				//Error prints inside
 				clearAll()
 				return ERROR;
@@ -54,7 +56,7 @@ int main(int argc, char* argv[]) {
 			/** Features Extraction **/
 			if (exportImageToFile(pointArray, numOfFeats, index, config)) {
 				/* Writing to File Error */
-			        spPointArrayDestroy(pointArray, numOfFeats);
+				spPointArrayDestroy(pointArray, numOfFeats);
 				clearAll()
 				return ERROR;
 			}
@@ -63,6 +65,7 @@ int main(int argc, char* argv[]) {
 	}
 	/*******************************************/
 
+	/* Getting SPKDTree from the images' features in the config file */
 	rc = Setup(config, &kdtree, &log_msg, &conf_msg);
 	if (rc) {
 		clearAll()
@@ -84,7 +87,7 @@ int main(int argc, char* argv[]) {
 		q_path[strlen(q_path) - 1] = '\0'; //q_path will always include at lease '/n'
 
 		//check validity of output
-		if (!strcmp(q_path,CLS_QRY))
+		if (!strcmp(q_path, CLS_QRY))
 			break;
 		if (!isValidFile(q_path)) {
 			printf(INV_PATH);
@@ -108,28 +111,34 @@ int main(int argc, char* argv[]) {
 
 		//show closest images on screen
 		bool gui = spConfigMinimalGui(config, &conf_msg);
-                char* tmp_path;
+		char* tmp_path;
+
 		if (!gui)
 			printf(BST_CND, q_path);
+
 		for (int img = 0; img < numOfSimilarImages; img++) {
-                        tmp_path = (char*)calloc(1024, sizeof(char));
+			tmp_path = (char*) calloc(1024, sizeof(char));
 			spConfigGetImagePath(tmp_path, config, similar_images[img]);
-			if (gui) {
+
+			if (gui)
 				pc->showImage(tmp_path);
-			} else {
+			else
 				printf(STR_LINE, tmp_path);
-                        }
-                        free(tmp_path);
-                        tmp_path = NULL;
+
+			free(tmp_path);
+			tmp_path = NULL;
 		}
 		//re-initializing query-related resources
 		cleanTempResources(&q_features, q_numOfFeats, q_path, &similar_images);
 	}
 
 	printf(EXIT);
+
+	/* Cleaning resources */
 	cleanTempResources(&q_features, q_numOfFeats, q_path, &similar_images);
 	clearAll()
 	if (pc)
 		delete pc;
+
 	return OK;
 }

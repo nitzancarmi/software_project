@@ -2,7 +2,7 @@
 #include "macros.h"
 #include <math.h>
 
-/*** Struct defintion for spKDArray ***/
+/*** Struct definition for spKDArray ***/
 struct kd_array_t {
 
 	SPPoint* pointArray;
@@ -12,7 +12,7 @@ struct kd_array_t {
 };
 /****************************/
 
-/** Private struct for comfrotably sorting the kd-array's matrix during creation **/
+/** Private struct for comfortably sorting the kd-array's matrix during creation **/
 struct pointAxis_t {
 	SPPoint pnt;
 	int axis;
@@ -101,7 +101,7 @@ int** calloc2dInt(int rows, int cols) {
 
 	for (int k = 0; k < rows; ++k) {
 		/** Iterate through all rows, each row pointer of the main array
-		 *  will now point to the right row, allowing enough space to remain to accomulate
+		 *  will now point to the right row, allowing enough space to remain to accumulate
 		 *  all the rows beforehand.
 		 */
 		rowptr[k] = buf + k * cols;

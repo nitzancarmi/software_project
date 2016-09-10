@@ -82,9 +82,11 @@ void getMinMaxOfCoordinate(SPPoint* ptarr, int numOfPts, int coor, double* max,
  *  The max spread dimension otherwise
  */
 int getMaxSpreadDimension(SPKDArray arr) {
-	if (!arr)
+	if (!arr){
+		declareLogMsg();
+		InvalidError()
 		return -1;
-
+	}
 	/*Initializaion*/
 	SPPoint* ptarr = getKDPointArray(arr);
 	if (!ptarr)
@@ -151,7 +153,6 @@ SPKDTreeNode nodeAllocation(int dim, int val, SPKDTreeNode* left,
  *  Actual implementation of the recursive creation of a KDTree based on KDArray.
  *  was created as a separate function for comfortability to get splitIncrementalDim.
  *  @see spKDTreeCreate in header.
- *  Prints the values of the splitted arrays if logger level is Debug.
  *
  *  @param KDArray   				The KD-Array from which the KD-Tree will be constructed.
  *  @param config					Configuration object that contains information about the function execution
@@ -192,6 +193,7 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 
 	/* Chooseing split dimension based on config */
 	switch (method) {
+
 	case MAX_SPREAD:
 		dim = getMaxSpreadDimension(kdarray);
 		if (dim == -1) {
@@ -199,13 +201,15 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 			return NULL;
 		}
 		break;
+
 	case RANDOM:
 		dim = randomInRange(0, totalDims);
 		break;
-	case INCREMENTAL:
 
+	case INCREMENTAL:
 		dim = splitIncrementalDim % totalDims;
 		break;
+
 	default:
 		InvalidError()
 		return NULL;

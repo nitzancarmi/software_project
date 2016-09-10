@@ -634,6 +634,11 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	return SP_CONFIG_SUCCESS;
 }
 
+SP_CONFIG_MSG spConfigGetSPLoggerLevel(const SPConfig config, SP_CONFIG_MSG* msg) {
+	getter(spLoggerLevel);
+}
+
+
 SP_CONFIG_MSG spConfigGetSPLoggerFilename(char* loggerPath,
 		const SPConfig config) {
 	if (!loggerPath || !config)
