@@ -157,11 +157,7 @@ SPKDTreeNode nodeAllocation(int dim, int val, SPKDTreeNode* left,
  *  @param KDArray   				The KD-Array from which the KD-Tree will be constructed.
  *  @param config					Configuration object that contains information about the function execution
  *  								(e.g. splitMethod)
- *  @param conf_msg					Pointer to config_msg that can be accessed after execution to know if an error
- *  								has occurred when config was accessed.
- *  @param log_msg					Pointer to log_msg that can be accessed after execution to know if an error
- *  								has occurred when SPLogger was used.
- *	@param splitIncrementalDim		Current incremental dimension
+ *  @param splitIncrementalDim		Current incremental dimension
  *  @return
  *  A new SPKDTreeNode in case of a success.
  *  NULL in case one of the following occurred:
@@ -169,27 +165,25 @@ SPKDTreeNode nodeAllocation(int dim, int val, SPKDTreeNode* left,
  *  	- Memory allocation failure
  *  	- SPConfig access error
  */
-SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
-		SP_CONFIG_MSG* conf_msg, SP_LOGGER_MSG* log_msg,
-		int splitIncrementalDim) {
+SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config, 
+                    SP_CONFIG_MSG *conf_msg, SP_LOGGER_MSG *log_msg, int splitIncrementalDim) {
 
-	if (!kdarray || !config || !conf_msg || !log_msg
-			|| splitIncrementalDim < 0) {
+	if (!kdarray || !config	|| splitIncrementalDim < 0 || 
+            *log_msg != SP_LOGGER_SUCCESS || *conf_msg != SP_CONFIG_SUCCESS) {
 		InvalidError()
 		return NULL;
 	}
 	SPKDTreeNode nodeLeft = NULL, nodeRight = NULL;
 	SPKDArray KDpntr1 = NULL, KDpntr2 = NULL;
-	if (getKDCols(kdarray) == 1) {
-		SPPoint pnt = getKDOnlyPoint(kdarray);
-		return nodeAllocation(-1, -1, NULL, NULL, &pnt);
-	}
-
-	returnIfConfigMsg(NULL)
 	splitMethod method = spConfigGetSplitMethod(config, conf_msg);
 	returnIfConfigMsg(NULL)
 	int dim, totalDims = spConfigGetPCADim(config, conf_msg);
 	returnIfConfigMsg(NULL)
+
+	if (getKDCols(kdarray) == 1) {
+		SPPoint pnt = getKDOnlyPoint(kdarray);
+		return nodeAllocation(-1, -1, NULL, NULL, &pnt);
+	}
 
 	/* Chooseing split dimension based on config */
 	switch (method) {
@@ -220,7 +214,6 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	if ((split = spKDArraySplit(kdarray, dim, &KDpntr1, &KDpntr2, log_msg,
 			conf_msg)) == -1) {
 		return NULL;
-
 	}
 
 	/* Left Recursion */
@@ -237,21 +230,21 @@ SPKDTreeNode spKDTreeCreateRecursion(SPKDArray kdarray, SPConfig config,
 	return nodeAllocation(dim, split, &nodeLeft, &nodeRight, NULL);
 }
 
-SPKDTreeNode spKDTreeCreate(SPKDArray kdarray, SPConfig config,
-		SP_CONFIG_MSG* conf_msg, SP_LOGGER_MSG* log_msg) {
+SPKDTreeNode spKDTreeCreate(SPKDArray kdarray, SPConfig config) {
 
+        declareLogMsg();
+        declareConfMsg();
+        printInfo("Entering Recursive creation of the KD Tree");
 	return spKDTreeCreateRecursion(kdarray, config, conf_msg, log_msg, 0);
 }
 
 void spKDTreeDestroy(SPKDTreeNode kdtree) {
 	if (!kdtree)
 		return;
-
 	spPointDestroy(kdtree->data);
 	spKDTreeDestroy(kdtree->left);
 	spKDTreeDestroy(kdtree->right);
 	free(kdtree);
-
 }
 
 bool isLeaf(SPKDTreeNode node) {

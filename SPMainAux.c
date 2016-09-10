@@ -33,30 +33,32 @@ int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg)
 	return OK;
 }
 
-int Setup(SPConfig config, SPKDTreeNode* kdtree, SP_LOGGER_MSG* log_msg,
-		SP_CONFIG_MSG* conf_msg) {
+int Setup(SPConfig config, SPKDTreeNode* kdtree) {
 
 	int all_points_size = -1;
+        declareLogMsg();
 
 	/* Create a large SPPoint array from all the extractable features from
 	 * all the .feat files in the defined directory */
-	SPPoint* all_points = extractImagesFeatures(&all_points_size, config,
-			log_msg, conf_msg);
-	if (!all_points)
+        printInfo("Start Building a KD Tree");
+        printInfo("Importing Image features from files");
+	SPPoint* all_points = extractImagesFeatures(&all_points_size, config);
+	if (!all_points) {
+                printError("Failed Extracting Features from image files");
 		return 1;
+        }
 
-	/* Create a SPKDArray from the SPPoints extracted */
-	SPKDArray kdarray = spKDArrayCreate(config, all_points, all_points_size,
-			log_msg, conf_msg);
+        printInfo("Constructing KD Array out of the features");
+	SPKDArray kdarray = spKDArrayCreate(config, all_points, all_points_size);
 	if (!kdarray) {
+                printError("Failed Constructing KD Array");
 		spPointArrayDestroy(all_points, all_points_size);
 		return 1;
 	}
 
 	/* Create an SPKDTree from the SPKDArray */
-	*kdtree = spKDTreeCreate(kdarray, config, conf_msg, log_msg);
-
-	/* Free unnecesary objects */
+        printInfo("Constructing KD Tree using the KD Array");
+	*kdtree = spKDTreeCreate(kdarray, config);
 	spPointArrayDestroy(all_points, all_points_size);
 	SPKDArrayDestroy(kdarray);
 
@@ -64,17 +66,22 @@ int Setup(SPConfig config, SPKDTreeNode* kdtree, SP_LOGGER_MSG* log_msg,
 }
 
 void cleanGlobalResources(SPConfig config, SPKDTreeNode kdtree) {
-	spLoggerDestroy();
-	if (config)
+        declareLogMsg();
+	if (config) {
+                printInfo("Destroying Configuration parameters struct");
 		spConfigDestroy(config);
-
-	if (kdtree)
+        }
+	if (kdtree) {
+                printInfo("Destroying KD-Tree");
 		spKDTreeDestroy(kdtree);
+        }
+        printInfo("Destroying Logger");
+	spLoggerDestroy();
 }
 
-void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path,
-		int** similar_images) {
-
+void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path, int** similar_images) {
+        declareLogMsg();
+        printInfo("Cleaning query-oriented resources");
 	spPointArrayDestroy(*q_features, q_numOfFeats);
 	memset(&q_path[0], '\0', strlen(q_path)); //Prepare q_path for the next query
 	*q_features = NULL;
@@ -82,27 +89,22 @@ void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path,
 	*similar_images = NULL;
 }
 
-bool initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg) {
-
+int initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg) {
+        declareConfMsg();
 	char loggerPath[1024] = { '\0' };
-	spConfigGetSPLoggerFilename(loggerPath, config);
-
+	if(spConfigGetSPLoggerFilename(loggerPath, config) != SP_CONFIG_SUCCESS)
+            return 1;
 	/* Create the logger based on filename and level got in configuration file */
 	*log_msg = spLoggerCreate(!strcmp(loggerPath, STD) ? NULL : loggerPath,
 			spConfigGetSPLoggerLevel(config,conf_msg));
-
-	if (*log_msg != SP_LOGGER_SUCCESS || *conf_msg != SP_CONFIG_SUCCESS) {
-		return true;
-	}
-
-	*log_msg = spLoggerPrintDebug(FIRST_MSG, __FILE__, __func__, __LINE__);
-
 	if (*log_msg != SP_LOGGER_SUCCESS) {
 		printf(LOGGERnMSG, *log_msg);
-		return true;
+		return 1;
 	}
-
-	return false;
+        char msg[1024] = {'\0'};
+        sprintf(msg, "Logger opened successfully in file: %s", loggerPath);
+        printInfo(msg); 
+	return 0;
 }
 
 bool isValidFile(char* path) {

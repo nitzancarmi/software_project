@@ -24,19 +24,14 @@ typedef struct kd_array_t* SPKDArray;
  *  					(e.g. spCADimension)
  *  @param pointsArray  The SPPoints array from which the KD-Array will be constructed.
  *  @param array_size	Size of pointsArray.
- *  @param conf_msg		Pointer to config_msg that can be accessed after execution to know if an error
- *  					has occurred when config was accessed.
- *  @param log_msg		Pointer to log_msg that can be accessed after execution to know if an error
- *  					has occurred when SPLogger was used.
  *  @return
  *  A new SPKDArray in case of a success.
  *  NULL in case one of the following occurred:
- *  	- pointsArray == NULL || config == NULL || conf_msg == NULL || log_msg == NULL
+ *  	- pointsArray == NULL || config == NULL
  *  	- Memory allocation failure
  *  	- SPConfig access error
  */
-SPKDArray spKDArrayCreate(SPConfig config, SPPoint* pointsArray, int array_size,
-		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg);
+SPKDArray spKDArrayCreate(SPConfig config, SPPoint* pointsArray, int array_size);
 
 /* Returns two kd-arrays (kdLeft,kdRight) such that the first /ceil[n/2] are in left, rest in right */
 

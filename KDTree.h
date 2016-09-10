@@ -14,18 +14,14 @@ typedef struct kd_tree_node_t* SPKDTreeNode;
  *  @param KDArray   	The KD-Array from which the KD-Tree will be constructed.
  *  @param config		Configuration object that contains information about the function execution
  *  					(e.g. splitMethod)
- *  @param conf_msg		Pointer to config_msg that can be accessed after execution to know if an error
- *  					has occurred when config was accessed.
- *  @param log_msg		Pointer to log_msg that can be accessed after execution to know if an error
- *  					has occurred when SPLogger was used.
  *  @return
  *  A new SPKDTreeNode in case of a success.
  *  NULL in case one of the following occurred:
- *  	- kdarray == NULL || config == NULL || conf_msg == NULL || log_msg == NULL
+ *  	- kdarray == NULL || config == NULL
  *  	- Memory allocation failure
  *  	- SPConfig access error
  */
-SPKDTreeNode spKDTreeCreate(SPKDArray KDArray,const SPConfig config,SP_CONFIG_MSG* conf_msg, SP_LOGGER_MSG* log_msg);
+SPKDTreeNode spKDTreeCreate(SPKDArray KDArray,const SPConfig config);
 
 /**
  * spKDTreeDestroy: Deallocates an existing KDTreeNode and all its descendants.

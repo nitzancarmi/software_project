@@ -2,7 +2,7 @@ Linux instructions:
 -------------------
 1. put all files in the project root folder
 2. run command:
-   python ./SPCBIR test.py -c test1.config
+   python test.py ./SPCBIR -c test1.config
 
 NOTE: the program should take around 2-3 minutes to complete
 

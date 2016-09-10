@@ -29,7 +29,7 @@ SPImageProc.o: SPImageProc.cpp SPImageProc.h SPConfig.h SPLogger.h SPPoint.h
 SPPoint.o: SPPoint.c SPPoint.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
 
-SPConfig.o: SPConfig.c SPConfig.h SPLogger.h
+SPConfig.o: SPConfig.c SPConfig.h SPLogger.h macros.h
 	$(CC) $(C_COMP_FLAG) -c $*.c
  
 SPLogger.o: SPLogger.c SPLogger.h

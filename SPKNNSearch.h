@@ -35,6 +35,6 @@ int* findKNearestNeighbors(SPKDTreeNode kdtree, SPPoint point, SPConfig config);
  *         in case of an error, return NULL (with updated logger/config error message)
  */ 
 int* getClosestImages(SPKDTreeNode kdtree, SPConfig config, SPPoint* q_features,
-		int q_numOfFeats, SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg);
+		int q_numOfFeats);
 
 #endif /* SPKNNSEARCH_H_ */

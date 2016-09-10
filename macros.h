@@ -61,10 +61,19 @@
 									!= SP_LOGGER_SUCCESS){	\
 										errorWithLogger();}
 
-
 #define printWarning(msg)		if((*log_msg = spLoggerPrintWarning(msg,__FILE__,__func__,__LINE__))	\
 									!= SP_LOGGER_SUCCESS){	\
 										errorWithLogger();}
+
+#define printInfo(msg)		        if((*log_msg = spLoggerPrintInfo(msg))	\
+									!= SP_LOGGER_SUCCESS){	\
+										errorWithLogger();}
+
+#define printDebug(msg)	         	if((*log_msg = spLoggerPrintDebug(msg,__FILE__,__func__,__LINE__))	\
+									!= SP_LOGGER_SUCCESS){	\
+										errorWithLogger();}
+#define printFinishProgram(rc)          sprintf(msg, "Program finished. Status: %s", rc ? "FAIL" : "SUCCESS"); \
+                                             printInfo(msg)
 
 
 #define InvalidError() printError(INVALID)
@@ -85,6 +94,7 @@
 								}
 
 #define declareLogMsg() SP_LOGGER_MSG _log_msg = SP_LOGGER_SUCCESS, *log_msg = &_log_msg
+#define declareConfMsg() SP_CONFIG_MSG _conf_msg = SP_CONFIG_SUCCESS, *conf_msg = &_conf_msg
 
 /**************************************************************/
 /************************ 	SPConfig    ***********************/
@@ -157,7 +167,6 @@
 /*****************************************************/
 
 #define clearAll()		cleanGlobalResources(config, kdtree);
-#define FIRST_MSG 		"SPConfig file imported.\nLogger opened."
 #define LOGGERnMSG 		"SPLogger Error. Message Type: %d"
 #define FINISH_PRG 		"Program Finished Successfully"
 
@@ -170,7 +179,7 @@
 #define checkifImgExists()	if(access(path, F_OK) == -1){ \
 								char err[1024] = {'\0'}; \
 								sprintf(err,NO_FILE,path); \
-								if((log_msg = spLoggerPrintError(err,__FILE__,__func__,__LINE__))	\
+								if((*log_msg = spLoggerPrintError(err,__FILE__,__func__,__LINE__))	\
 									!= SP_LOGGER_SUCCESS){	\
 										errorWithLogger();	\
 								}	\

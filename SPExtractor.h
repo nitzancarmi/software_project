@@ -85,7 +85,6 @@ int exportImageToFile(SPPoint* pointArray, int pointArray_size, int image_index,
  *
  * The allocated SPPoint array on success
  */
-SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
-		SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg);
+SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config);
 
 #endif /* SPEXTRACTOR_H_ */

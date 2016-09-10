@@ -12,11 +12,8 @@
  *
  * @param config - configuration file
  * @param kdtree - uninitialized pointer for a kdtree (to be initialized inside)
- * @param log_msg - logger message to be updated (if needed)
- * @param conf_msg - config message to be updated (if needed)
  */
-int Setup(SPConfig config, SPKDTreeNode* kdtree, SP_LOGGER_MSG* log_msg,
-		SP_CONFIG_MSG* conf_msg);
+int Setup(SPConfig config, SPKDTreeNode* kdtree);
 /**
  * frees the resources created at the setup stage
  * 
@@ -45,9 +42,9 @@ void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path, in
  * @param config = configuration file, containing the image path
  * @param log_msg = logger message to be updated during runtime
  *
- * @return true iff success
+ * @return 0 iff success
 */
-bool initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg);
+int initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg);
 
 /**
  * parse the command line arguments, or return an error in case of

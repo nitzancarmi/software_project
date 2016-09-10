@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include "macros.h"
 
 //File open mode
 #define SP_LOGGER_OPEN_MODE "w"
@@ -55,7 +56,6 @@ SP_LOGGER_MSG spLoggerCreate(const char* filename, SP_LOGGER_LEVEL level) {
 			logger = NULL;
 			return SP_LOGGER_CANNOT_OPEN_FILE;
 		}
-
 		logger->isStdOut = false;
 	}
 	return SP_LOGGER_SUCCESS;
@@ -63,10 +63,13 @@ SP_LOGGER_MSG spLoggerCreate(const char* filename, SP_LOGGER_LEVEL level) {
 
 
 void spLoggerDestroy() {
+        declareLogMsg();
 	if (!logger) {
+                printError("Failed destroying logger. no active logger found");
 		return;
 	}
 	if (!logger->isStdOut) { //Close file only if not stdout
+                printInfo("Destroying logger");
 		fclose(logger->outputChannel);
 	}
 	free(logger); //free allocation

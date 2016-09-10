@@ -368,15 +368,22 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 	return pntsArray;
 }
 
-SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
-		SP_LOGGER_MSG* log_msg, SP_CONFIG_MSG* conf_msg) {
+SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config) {
 	SPPoint* singleImageFeatures = NULL;
 	int* featAddr;
+        declareLogMsg();
+        declareConfMsg();
 
-	if (!config || !log_msg || !conf_msg)
+	if (!config) {
+                printError("No Configuration File");
 		return NULL;
+        }
 
 	int numOfImages = spConfigGetNumOfImages(config, conf_msg);
+        if(*conf_msg != SP_CONFIG_SUCCESS || numOfImages < 0) {
+                printError("Failed getting NumOfImages from configuration struct");
+                return NULL;
+        }
 
 	/** First maintain a SPPoint matrix -
 	 * each row is for a single image (every SPPoint is a feature of the said image)
@@ -387,29 +394,25 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 	 * */
 
 	int* numOfFeatures = (int*) calloc(numOfImages, sizeof(int)); //array to hold num of features for each img
-
 	SPPoint** imagesFeatures = (SPPoint**) calloc(numOfImages,	//matrix to hold
 			sizeof(SPPoint*));
-
 	if (!numOfFeatures || !imagesFeatures) {
 		MallocError()
 		free(numOfFeatures);
 		free(imagesFeatures);
 		return NULL;
 	}
-
 	int imgCount = 0;
+        char msg[1024] = {'\0'};
 	for (int img = 0; img < numOfImages; img++) {
 		featAddr = &numOfFeatures[imgCount];
-
+                sprintf(msg, "Extracting image number %d", img);
+                printInfo(msg);
 		/* Extract features of single image from the appropriate file*/
 		singleImageFeatures = extractSingleImage(img, featAddr, config);
-
 		if (singleImageFeatures == NULL) {
-			/* If some kind of error occourred (all printed and explained inside -
-			 * than skip the invalid file.
-			 */
-			numOfFeatures[img] = 0; //so that it wont be summed
+			printWarning("Extraction Failed. Skipping image...");
+			numOfFeatures[img] = 0;
 			continue;
 		} else {
 			/** Insert the image's features to its row in the matrix **/
@@ -427,7 +430,6 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 		/** Some of the images features were not imported
 		 * Only warning - not finishing program **/
 		printWarning(SOME_FEATS);
-
 	}
 
 	/** Overall number of features added **/
@@ -441,14 +443,10 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 	 *  array, to be inserted to a kdarray **/
 	SPPoint* allFeatures = (SPPoint*) calloc(totalNumOfFeatures,
 			sizeof(*allFeatures));
-
-	/** allocation error **/
 	if (!allFeatures) {
 		MallocError()
-
-		for (int img = imgCount - 1; img >= 0; img--) {
+		for (int img = imgCount - 1; img >= 0; img--)
 			spPointArrayDestroy(imagesFeatures[img], numOfFeatures[img]);
-		}
 		free(numOfFeatures);
 		free(imagesFeatures);
 		return NULL;
@@ -456,18 +454,14 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config,
 
 	int currentFeature = -1;
 	for (int img = 0; img < imgCount; img++) {
-
 		int features = numOfFeatures[img];
-		for (int feat = 0; feat < features; feat++) {
-			//insertion to returned array
+		for (int feat = 0; feat < features; feat++)
 			allFeatures[++currentFeature] = imagesFeatures[img][feat];
-		}
 		free(imagesFeatures[img]); //freeing only the pointers to the points array, not the points themselves
 	}
 
 	free(numOfFeatures);
 	free(imagesFeatures); //only pointer to matrix need to be freed - features themselves still being used later
-
 	return allFeatures;
 }
 
@@ -502,9 +496,9 @@ int exportImageToFile(SPPoint* pointArray, int size, int image_index,
 		printError(FEATS_SUFFIX);
 	}
 	sprintf(ptr, ".feats");
-	/*********************************/
 
 	/** Open feats file **/
+        printDebug("Creating .feats file for image");
 	FILE *output = fopen(filepath, "w");
 	if (!output) {
 		printError(FEATS_FILE)

@@ -288,40 +288,37 @@ void SPKDArrayDestroy(SPKDArray kd) {
 	free(kd);
 }
 
-SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
-		SP_LOGGER_MSG *log_msg, SP_CONFIG_MSG *conf_msg) {
-
+SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size) {
+        declareLogMsg();
+        declareConfMsg();
 	if (!arr || size < 1) {
 		InvalidError()
 		return NULL;
 	}
+
 	/*create new struct SPKDArray*/
 	SPKDArray kd = (SPKDArray) malloc(sizeof(*kd));
-
 	if (!kd) {
 		MallocError()
 		return NULL;
 	}
-
 	int dims = spConfigGetPCADim(attr, conf_msg);
-
-	if (dims < 1) {
+	if (dims < 1 || *conf_msg != SP_CONFIG_SUCCESS) {
+                printError("Error in getting PCA Dimensions");
 		SPKDArrayDestroy(kd);
-		returnIfConfigMsg(NULL);
+                return NULL;
 	}
+
 	kd->cols = size;
 	kd->rows = dims;
-
-	/*copy array into struct*/
 	kd->pointArray = copyPointArray(arr, size);
-
 	if (!kd->pointArray) {
 		MallocError()
 		SPKDArrayDestroy(kd);
 		return NULL;
 	}
-	/*create initialized matrix of size dims X size */
 
+	/*create initialized matrix of size dims X size */
 	int axis;
 	int **M = calloc2dInt(dims, size);
 	if (!M) {
@@ -335,7 +332,6 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size,
 			SPKDArrayDestroy(kd);
 			return NULL;
 		}
-
 	}
 
 	kd->mat = M;
