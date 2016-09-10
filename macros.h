@@ -12,8 +12,8 @@
 #define ERROR -1
 #define COMMENT_BLANK 2
 
-#define DEFAULT_CANT_OPEN 			"The default configuration file spcbir.config couldn’t be open\n"
-#define CANT_OPEN					"The configuration file %s couldn’t be ope\n"
+#define DEFAULT_CANT_OPEN 			"The default configuration file spcbir.config couldn't be open\n"
+#define CANT_OPEN					"The configuration file %s couldn't be open\n"
 #define MEMORY_FAIL1 				"Memory Allocation Failure - createAttributes\n"
 #define UNDECLARED 					"Configuartion file must contain all of the following declerations:\n"\
 									" - spImagesDirectory\n"\
