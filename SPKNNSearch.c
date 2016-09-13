@@ -3,7 +3,6 @@
 #include "SPBPriorityQueue.h"
 #include "math.h"
 
-
 /**
  * 	This function is the recursive function for the actual KNN search.
  * 	It searches for all the neighbors of the SPPoint feat in the KD-Tree kd,
@@ -36,7 +35,7 @@ void knnRecursive(SPKDTreeNode kd, SPPoint feat, SPBPQueue bpq) {
 		return;
 	}
 
-	val = getVal(kd);							// median of the current node, also kd is not NULL here
+	val = getVal(kd);	// median of the current node, also kd is not NULL here
 	p_dim = spPointGetAxisCoor(feat, getDim(kd));	// P[curr.dim]
 
 	/** check if val <= p_dim **/
@@ -101,7 +100,7 @@ int* findKNearestNeighbors(SPKDTreeNode kdtree, SPPoint feat, SPConfig config) {
 		tmp = spBPQueuePeek(bpq);
 		ret[i] = spListElementGetIndex(tmp);
 		spListElementDestroy(tmp); //gets copied for the peek
-		tmp = NULL; 
+		tmp = NULL;
 		spBPQueueDequeue(bpq);
 	}
 	spBPQueueDestroy(bpq);
@@ -109,15 +108,17 @@ int* findKNearestNeighbors(SPKDTreeNode kdtree, SPPoint feat, SPConfig config) {
 	return ret;
 }
 
-int* getClosestImages(SPKDTreeNode kdtree, SPConfig config, SPPoint* q_features, int q_numOfFeats) {
-        declareLogMsg();
-        declareConfMsg();
-	if(!kdtree || !config || !q_features || q_numOfFeats<0){
+int* getClosestImages(SPKDTreeNode kdtree, SPConfig config, SPPoint* q_features,
+		int q_numOfFeats) {
+	declareLogMsg();
+	declareConfMsg();
+	if(!kdtree || !config || !q_features || q_numOfFeats<0) {
 		InvalidError()
 		return NULL;
 	}
 	int* knn = NULL;
-	int i, j;
+	int i,
+	j;
 	int knn_size = spConfigGetKNN(config, conf_msg);
 	int numOfImages = spConfigGetNumOfImages(config, conf_msg);
 	int numOfSimilarImages = spConfigGetNumOfSimilarImages(config, conf_msg);
@@ -129,11 +130,11 @@ int* getClosestImages(SPKDTreeNode kdtree, SPConfig config, SPPoint* q_features,
 	}
 
 	//for each point in the query image, find k-nearest neighbors
-        printInfo("Finding nearest neighbors to each feature");
+	printInfo(KNN_DO);
 	for (i = 0; i < q_numOfFeats; i++) {
 		knn = findKNearestNeighbors(kdtree, q_features[i], config);
 		if (!knn) {
-                        printError("Failed in finding nearest neighbors for features");
+			printError(KNN_FAIL);
 			return NULL;
 		}
 
@@ -146,7 +147,7 @@ int* getClosestImages(SPKDTreeNode kdtree, SPConfig config, SPPoint* q_features,
 
 	//return the k nearest images based on img_near_cnt array
 	// assumes numOfSimilarImages << n
-        printInfo("Calculating the global closest images (most frequent appearances in closest per feature)");
+	printInfo(CLOS_IMGS);
 	for (i = 0; i < numOfSimilarImages; i++) {
 		similar_images[i] = 0;
 		for (j = 0; j < numOfImages; j++) {

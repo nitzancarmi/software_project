@@ -89,12 +89,12 @@ void checkLine(char* line, SP_CONFIG_MSG* msg, int* isCommentBlank,
 	ignoreSpaces(value)
 
 	tmp = var;
-	while (!isspace(*tmp) && *tmp!='\0')
+	while (!isspace(*tmp) && *tmp != '\0')
 		tmp++;
 	*tmp = '\0';
 
 	tmp = value;
-	while (!isspace(*tmp) && *tmp!='\0')
+	while (!isspace(*tmp) && *tmp != '\0')
 		tmp++;
 	if (*tmp != '\0') {
 		save = tmp;
@@ -170,28 +170,28 @@ int findValueInSet(const char *set[], char* value, int size) {
  * @param filename - filename of the config file
  *
  * @return SP_CONFIG_SUCCESS for SUCCESS
-           SP_CONFIG_INVALID_STRING/INTEGER for failure
+ SP_CONFIG_INVALID_STRING/INTEGER for failure
  */
 SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 		const char* filename) {
 	/*spImagesDirectory*/
 	/*Constraint: None*/
-	if (!strcmp(var, "spImagesDirectory")) {
+	if (!strcmp(var, IMGDIR)) {
 		assignString(attr->spImagesDirectory, value);
 		return SP_CONFIG_SUCCESS;
 	}
 
 	/*spImagesPrefix*/
 	/*Constraint: None*/
-	if (!strcmp(var, "spImagesPrefix")) {
+	if (!strcmp(var, IMGPRE)) {
 		assignString(attr->spImagesPrefix, value);
 		return SP_CONFIG_SUCCESS;
 	}
 
 	/*spImagesSuffix*/
 	/*Constraint: one of the following: .jpg, .png, .bmp, .gif */
-	if (!strcmp(var, "spImagesSuffix")) {
-		const char *suffixes[] = { ".jpg", ".png", ".bmp", ".gif" };
+	if (!strcmp(var, IMGSUF)) {
+		const char *suffixes[] = { POSSIBLE_SUFFIEXS };
 		int val = findValueInSet(suffixes, value, 4);
 
 		if (val != -1) {
@@ -206,7 +206,7 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 
 	/*spNumOfImages*/
 	/*Constraint: positive integers only*/
-	if (!strcmp(var, "spNumOfImages")) {
+	if (!strcmp(var, IMGNUM)) {
 		int val = updateValueInRange(value, 1, INT_MAX);
 		if (val) {
 			attr->spNumOfImages = val;
@@ -220,7 +220,7 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 
 	/*spPCADimension*/
 	/*Constraint: integers in range [10,28]*/
-	if (!strcmp(var, "spPCADimension")) {
+	if (!strcmp(var, IMGCAD)) {
 		int val = updateValueInRange(value, 10, 28);
 		if (val) {
 			attr->spPCADimension = val;
@@ -234,14 +234,14 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 
 	/*spPCAFilename*/
 	/*Constraint: None*/
-	if (!strcmp(var, "spPCAFilename")) {
+	if (!strcmp(var, IMGPCA)) {
 		assignString(attr->spPCAFilename, value);
 		return SP_CONFIG_SUCCESS;
 	}
 
 	/*spNumOfFeatures*/
 	/*Constraint: positive integers only*/
-	if (!strcmp(var, "spNumOfFeatures")) {
+	if (!strcmp(var, IMGNOF)) {
 		int val = updateValueInRange(value, 1, INT_MAX);
 		if (val) {
 			attr->spNumOfFeatures = val;
@@ -255,8 +255,8 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 
 	/*spExtractionMode*/
 	/*Constraint: one of the following: {true, false}*/
-	if (!strcmp(var, "spExtractionMode")) {
-		const char *boolean[] = { "true", "false" };
+	if (!strcmp(var, IMGEXM)) {
+		const char *boolean[] = { TRUE_STR, FALSE_STR };
 		int val = findValueInSet(boolean, value, 2);
 		if (val == 0) {
 			attr->spExtractionMode = true;
@@ -272,8 +272,8 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 
 	/*spNumOfSimilarImages*/
 	/*Constraint: positive integers only*/
-	if (!strcmp(var, "spNumOfSimilarImages")) {
-		int val = updateValueInRange(value, 1, INT_MAX);
+	if (!strcmp(var, IMGNOS)) {
+		int val = updateValueInRange(value, POS_FIRST_VAL, INT_MAX);
 		if (val) {
 			attr->spNumOfSimilarImages = val;
 			return SP_CONFIG_SUCCESS;
@@ -286,8 +286,8 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 
 	/*spKDTreeSplitMethod*/
 	/*Constraint: one of the following :RANDOM, MAX_SPREAD,INCREMENTAL*/
-	if (!strcmp(var, "spKDTreeSplitMethod")) {
-		const char *options[] = { "RANDOM", "MAX_SPREAD", "INCREMENTAL" };
+	if (!strcmp(var, IMGSPM)) {
+		const char *options[] = { SPLIT_METHODS };
 		int val = findValueInSet(options, value, 3);
 		switch (val) {
 		case 0:
@@ -309,7 +309,7 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 
 	/*spKNN*/
 	/*Constraint: positive integers only*/
-	if (!strcmp(var, "spKNN")) {
+	if (!strcmp(var, IMGKNN)) {
 		int val = updateValueInRange(value, 1, INT_MAX);
 		if (val) {
 			attr->spKNN = val;
@@ -323,8 +323,8 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 
 	/*spMinimalGUI*/
 	/*Constraint: one of the following: true, false*/
-	if (!strcmp(var, "spMinimalGUI")) {
-		const char *boolean[] = { "true", "false" };
+	if (!strcmp(var, IMGMNG)) {
+		const char *boolean[] = { TRUE_STR, FALSE_STR };
 		int val = findValueInSet(boolean, value, 2);
 		if (val == 0) {
 			attr->spMinimalGUI = true;
@@ -342,8 +342,9 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 
 	/*spLoggerLevel*/
 	/*Constaint: integers in range [1,4]*/
-	if (!strcmp(var, "spLoggerLevel")) {
-		int val = updateValueInRange(value, 1, 4);
+	if (!strcmp(var, IMGLGL)) {
+		int val = updateValueInRange(value, SP_LOGGER_ERROR_LEVEL,
+				SP_LOGGER_DEBUG_INFO_WARNING_ERROR_LEVEL);
 		if (val) {
 			attr->spLoggerLevel = val;
 			return SP_CONFIG_SUCCESS;
@@ -356,7 +357,7 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 
 	/*spLoggerFilename*/
 	/*Constraint: None*/
-	if (!strcmp(var, "spLoggerFilename")) {
+	if (!strcmp(var, IMGLGF)) {
 		assignString(attr->spLoggerFilename, value);
 		return SP_CONFIG_SUCCESS;
 	}
@@ -428,23 +429,23 @@ void printMissing(FILE* config, const char* filename, const char* parameter) {
 SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 
 	/** Integer variables, using macro **/
-	checkAndAssign(spPCADimension, 20);
-	checkAndAssign(spNumOfFeatures, 100);
-	checkAndAssign(spNumOfSimilarImages, 1);
+	checkAndAssign(spPCADimension, CAD_DEFAULT);
+	checkAndAssign(spNumOfFeatures, FEATS_DEFAULT);
+	checkAndAssign(spNumOfSimilarImages, POS_FIRST_VAL);
 	checkAndAssign(spKDTreeSplitMethod, MAX_SPREAD);
-	checkAndAssign(spKNN, 1);
-	checkAndAssign(spLoggerLevel, 3);
+	checkAndAssign(spKNN, KNN_DEFAULT);
+	checkAndAssign(spLoggerLevel, SP_LOGGER_INFO_WARNING_ERROR_LEVEL);
 
 	/** Special variables **/
 	if (!attr->spPCAFilename) {
-		attr->spPCAFilename = (char*) malloc(8);
+		attr->spPCAFilename = (char*) malloc(PCA_SIZE);
 		if (!attr->spPCAFilename) {
 			return SP_CONFIG_ALLOC_FAIL;
 		}
 		strcpy(attr->spPCAFilename, PCAYML);
 	}
 	if (!attr->spLoggerFilename) {
-		attr->spLoggerFilename = (char*) malloc(7);
+		attr->spLoggerFilename = (char*) malloc(LOGFILE_SIZE);
 		if (!attr->spLoggerFilename) {
 			return SP_CONFIG_ALLOC_FAIL;
 		}
@@ -467,7 +468,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	SPConfig attr = NULL;
 	bool gotError = false;
 
-	FILE* config = fopen(filename, "r");
+	FILE* config = fopen(filename, READ_MODE);
 
 	/* if file cannot be opened
 	 * nothing got allocated yet, can finish without freeing */
@@ -498,7 +499,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 
 	/* dummy initialization of attributes - so can be checked later whether variables are initialized or not*/
 	memset(attr, 0, sizeof(*attr));
-	attr->spExtractionMode = -1;
+	attr->spExtractionMode = ERROR;
 
 	while (fgets(line, MAX_LENGTH, config) != NULL) {
 		lineNum++;
@@ -619,7 +620,7 @@ SP_CONFIG_MSG spConfigGetImagePath(char* imagePath, const SPConfig config,
 	if (index >= config->spNumOfImages || index < 0)
 		return SP_CONFIG_INDEX_OUT_OF_RANGE;
 
-	sprintf(imagePath, "%s%s%d%s", config->spImagesDirectory,
+	sprintf(imagePath, PATH_FRMT_STR, config->spImagesDirectory,
 			config->spImagesPrefix, index, config->spImagesSuffix);
 
 	return SP_CONFIG_SUCCESS;
@@ -629,22 +630,22 @@ SP_CONFIG_MSG spConfigGetPCAPath(char* pcaPath, const SPConfig config) {
 	if (!pcaPath || !config)
 		return SP_CONFIG_INVALID_ARGUMENT;
 
-	sprintf(pcaPath, "%s%s", config->spImagesDirectory, config->spPCAFilename);
+	sprintf(pcaPath, TWO_STR, config->spImagesDirectory, config->spPCAFilename);
 
 	return SP_CONFIG_SUCCESS;
 }
 
-SP_CONFIG_MSG spConfigGetSPLoggerLevel(const SPConfig config, SP_CONFIG_MSG* msg) {
+SP_CONFIG_MSG spConfigGetSPLoggerLevel(const SPConfig config,
+		SP_CONFIG_MSG* msg) {
 	getter(spLoggerLevel);
 }
-
 
 SP_CONFIG_MSG spConfigGetSPLoggerFilename(char* loggerPath,
 		const SPConfig config) {
 	if (!loggerPath || !config)
 		return SP_CONFIG_INVALID_ARGUMENT;
 
-	sprintf(loggerPath, "%s", config->spLoggerFilename);
+	sprintf(loggerPath, STR, config->spLoggerFilename);
 
 	return SP_CONFIG_SUCCESS;
 }

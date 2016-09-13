@@ -10,24 +10,24 @@ int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg)
 		//default config file
 		config = spConfigCreate(DEFAULT_CONFIG, conf_msg);
 		if (!config)
-			return 1;
+			return ERR;
 		break;
 
 	case 3:
 		//user defined config file
 		if (strcmp(argv[1], C_ARG)) {	//if second arguemnt is not "-c"
 			printf(INVALID_COMLINE);
-			return 1;
+			return ERR;
 		}
 		config = spConfigCreate(argv[2], conf_msg);	//create config file from the third
 		if (!config)
-			return 1;
+			return ERR;
 		break;
 
 	default:	//any other state is not permitted
 		config = NULL;
 		printf(INVALID_COMLINE);
-		return 1;
+		return ERR;
 	}
 	*_config = config;
 	return OK;
@@ -36,52 +36,53 @@ int argParse(int argc, char* argv[], SPConfig* _config, SP_CONFIG_MSG* conf_msg)
 int Setup(SPConfig config, SPKDTreeNode* kdtree) {
 
 	int all_points_size = -1;
-        declareLogMsg();
+	declareLogMsg();
 
 	/* Create a large SPPoint array from all the extractable features from
 	 * all the .feat files in the defined directory */
-        printInfo("Start Building a KD Tree");
-        printInfo("Importing Image features from files");
+	printInfo(MAIN1);
+	printInfo(MAIN2);
 	SPPoint* all_points = extractImagesFeatures(&all_points_size, config);
 	if (!all_points) {
-                printError("Failed Extracting Features from image files");
-		return 1;
-        }
+		printError(MAINFAIL1);
+		return ERR;
+	}
 
-        printInfo("Constructing KD Array out of the features");
+	printInfo(MAIN3);
 	SPKDArray kdarray = spKDArrayCreate(config, all_points, all_points_size);
 	if (!kdarray) {
-                printError("Failed Constructing KD Array");
+		printError(MAINFAIL2);
 		spPointArrayDestroy(all_points, all_points_size);
-		return 1;
+		return ERR;
 	}
 
 	/* Create an SPKDTree from the SPKDArray */
-        printInfo("Constructing KD Tree using the KD Array");
+	printInfo(MAIN4);
 	*kdtree = spKDTreeCreate(kdarray, config);
 	spPointArrayDestroy(all_points, all_points_size);
 	SPKDArrayDestroy(kdarray);
 
-	return *kdtree ? 0 : 1;
+	return *kdtree ? OK : ERR;
 }
 
 void cleanGlobalResources(SPConfig config, SPKDTreeNode kdtree) {
-        declareLogMsg();
+	declareLogMsg();
 	if (config) {
-                printInfo("Destroying Configuration parameters struct");
+		printInfo(MAIN5);
 		spConfigDestroy(config);
-        }
+	}
 	if (kdtree) {
-                printInfo("Destroying KD-Tree");
+		printInfo(MAIN6);
 		spKDTreeDestroy(kdtree);
-        }
-        printInfo("Destroying Logger");
+	}
+	printInfo(MAIN7);
 	spLoggerDestroy();
 }
 
-void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path, int** similar_images) {
-        declareLogMsg();
-        printInfo("Cleaning query-oriented resources");
+void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path,
+		int** similar_images) {
+	declareLogMsg();
+	printInfo(MAIN8);
 	spPointArrayDestroy(*q_features, q_numOfFeats);
 	memset(&q_path[0], '\0', strlen(q_path)); //Prepare q_path for the next query
 	*q_features = NULL;
@@ -90,21 +91,19 @@ void cleanTempResources(SPPoint** q_features, int q_numOfFeats, char* q_path, in
 }
 
 int initializeSPLogger(SPConfig config, SP_LOGGER_MSG* log_msg) {
-        declareConfMsg();
-	char loggerPath[1024] = { '\0' };
-	if(spConfigGetSPLoggerFilename(loggerPath, config) != SP_CONFIG_SUCCESS)
-            return 1;
+	declareConfMsg();
+	char loggerPath[MAX_LENGTH] = { '\0' };
+	if (spConfigGetSPLoggerFilename(loggerPath, config) != SP_CONFIG_SUCCESS)
+		return ERR;
 	/* Create the logger based on filename and level got in configuration file */
 	*log_msg = spLoggerCreate(!strcmp(loggerPath, STD) ? NULL : loggerPath,
-			spConfigGetSPLoggerLevel(config,conf_msg));
+			spConfigGetSPLoggerLevel(config, conf_msg));
 	if (*log_msg != SP_LOGGER_SUCCESS) {
 		printf(LOGGERnMSG, *log_msg);
-		return 1;
+		return ERR;
 	}
-        char msg[1024] = {'\0'};
-        sprintf(msg, "Logger opened successfully in file: %s", loggerPath);
-        printInfo(msg); 
-	return 0;
+	infoWithArgs(LOG_OPEN,loggerPath);
+	return OK;
 }
 
 bool isValidFile(char* path) {

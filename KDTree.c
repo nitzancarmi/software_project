@@ -234,7 +234,7 @@ SPKDTreeNode spKDTreeCreate(SPKDArray kdarray, SPConfig config) {
 
         declareLogMsg();
         declareConfMsg();
-        printInfo("Entering Recursive creation of the KD Tree");
+        printInfo(KDT_START);
 	return spKDTreeCreateRecursion(kdarray, config, conf_msg, log_msg, 0);
 }
 

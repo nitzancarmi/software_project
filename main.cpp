@@ -20,17 +20,17 @@ int main(int argc, char* argv[]) {
 	ImageProc* pc = NULL;
 	SPKDTreeNode kdtree = NULL;
 	SPPoint* pointArray = NULL, *q_features = NULL;
-	char q_path[1024], path[1024];
-        char msg[1024] = {'\0'};
+	char q_path[MAX_LENGTH], path[MAX_LENGTH];
+	char msg[MAX_LENGTH] = { '\0' };
 	int q_numOfFeats = 0, rc, numOfSimilarImages = 0, numOfFeats = -1;
 	int *similar_images = NULL;
 	int index;
-        declareLogMsg();
-        declareConfMsg();
+	declareLogMsg();
+	declareConfMsg();
 	fflush(stdout);
 
 	/***create config file***/
-	if(argParse(argc, argv, &config, conf_msg))
+	if (argParse(argc, argv, &config, conf_msg))
 		return ERROR;
 
 	/*** Logger and ImageProc ***/
@@ -41,43 +41,46 @@ int main(int argc, char* argv[]) {
 
 	/*********   Extraction Mode    ************/
 	if (spConfigIsExtractionMode(config, conf_msg)) {
-                printInfo("Starting Extraction Mode");
-		for (index = 0; index < spConfigGetNumOfImages(config, conf_msg); index++) {
-                        sprintf(msg, "Extracting image in index %d", index);
-                        printInfo(msg);
-			path[1024] = {'\0'};
+		printInfo(EXTRCT_MODE);
+		for (index = 0; index < spConfigGetNumOfImages(config, conf_msg);
+				index++) {
+
+			infoWithArgs(EXTRCT_IMG_NUM, index);
+
+			path[MAX_LENGTH] = {'\0'};
 			spConfigGetImagePath(path, config, index); //No need to read conf_msg, controlling all inputs myself
 			checkifImgExists()
 
-                        printInfo("Extracting features from image");
+			printInfo(EXTRCT_FROM_IMG);
 			pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
-			if(!pointArray){
+			if (!pointArray) {
 				clearAll()
-                                if(pc)
-                                    delete pc;
+				if (pc)
+					delete pc;
 				return ERROR;
 			}
-                        printInfo("Exporting image features into a file");
+
+			printInfo(EXPORT_TO_FILE);
+
 			rc = exportImageToFile(pointArray, numOfFeats, index, config);
 			spPointArrayDestroy(pointArray, numOfFeats);
-                        if (rc) {
+			if (rc) {
 				/* Writing to File Error */
 				clearAll()
-                                if(pc)
-                                    delete pc;
+				if (pc)
+					delete pc;
 				return ERROR;
 			}
 		}
+	} else {
+		printInfo(EXTRCT_SKIP);
 	}
-        else {
-                printInfo("Skipping Extraction Mode");
-        }
 	/*******************************************/
 
-        printInfo("Creating Global Resources");
+	printInfo(GLOBAL_RES);
 	rc = Setup(config, &kdtree);
 	if (rc) {
-                printFinishProgram(rc);
+		printFinishProgram(rc);
 		clearAll()
 		if (pc)
 			delete pc;
@@ -85,67 +88,67 @@ int main(int argc, char* argv[]) {
 	}
 
 	/**** execute queries ****/
-	q_path[1024] = {'\0'};
+	q_path[MAX_LENGTH] = {'\0'};
 	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, conf_msg);
-        if (*conf_msg != SP_CONFIG_SUCCESS) {
-            loggerWithArgs(CONFIG_MSG_ERR,conf_msg);
-            printFinishProgram(1);
-            clearAll()
-            if (pc)
-                delete pc;
-            return ERROR;
-        }
-        printInfo("Start getting queries from user");
+	if (*conf_msg != SP_CONFIG_SUCCESS) {
+		loggerWithArgs(CONFIG_MSG_ERR, conf_msg);
+		printFinishProgram(1);
+		clearAll()
+		if (pc)
+			delete pc;
+		return ERROR;
+	}
+	printInfo(USR_QRY);
 	while (1) {
 
 		//get image path from user
 		printf(PLS_ENTER);
 		fflush(stdout);
-		fgets(q_path, 1024, stdin);
+		fgets(q_path, MAX_LENGTH, stdin);
 		q_path[strlen(q_path) - 1] = '\0'; //q_path will always include at least '/n'
 
 		//check validity of output
-		if (!strcmp(q_path,CLS_QRY)){
-                        printInfo("Got Exiting Signal ('<>')");
-                        rc = 0;
+		if (!strcmp(q_path, CLS_QRY)) {
+			printInfo(EXIT_SNGL);
+			rc = 0;
 			break;
-                }
+		}
 		if (!isValidFile(q_path)) {
 			printf(INV_PATH);
 			continue;
 		}
-                sprintf(msg, "Got query image path: %s", q_path);
-                printInfo(msg);
+		sprintf(msg, QRY_PATH_GOT, q_path);
+		printInfo(msg);
 
 		//getting query image features
-                printInfo("Getting features for query image");
+		printInfo(QRY_GET);
 		q_features = pc->getImageFeatures(q_path, 0, &q_numOfFeats);
 		if (!q_features || !(*q_features)) {
-                        printError("Failed in getting features for query image");
-                        rc = 1;
-                        break;
+			printError(QRY_FEAT_ERR);
+			rc = ERR;
+			break;
 		}
-                sprintf(msg, "extracted %d features from image %s", q_numOfFeats, q_path);
-                printInfo(msg);
+		infoWithArgs(IMG_EXTRCT, q_numOfFeats);
 
 		//find closest images to query image
-                printInfo("Searching for the closest images in database for the query image");
-		similar_images = getClosestImages(kdtree, config, q_features, q_numOfFeats);
+		printInfo(CLS_SRCH);
+		similar_images = getClosestImages(kdtree, config, q_features,
+				q_numOfFeats);
 		if (!similar_images) {
-                        printError("Failed in searching for closest images");
-                        rc = 1;
+			printError(SRCH_FAIL);
+			rc = ERR;
 			break;
 		}
 
 		//show closest images on screen
-                printInfo("Showing results:");
+		printInfo(RSLTS);
 		bool gui = spConfigMinimalGui(config, conf_msg);
-                char* tmp_path;
+		char* tmp_path;
 		if (!gui)
 			printf(BST_CND, q_path);
 
 		for (int img = 0; img < numOfSimilarImages; img++) {
-			tmp_path = (char*) calloc(1024, sizeof(char));
+			tmp_path = (char*) calloc(MAX_LENGTH, sizeof(char));
 			spConfigGetImagePath(tmp_path, config, similar_images[img]);
 
 			if (gui)
@@ -164,7 +167,7 @@ int main(int argc, char* argv[]) {
 
 	/* Cleaning resources */
 	cleanTempResources(&q_features, q_numOfFeats, q_path, &similar_images);
-        printFinishProgram(rc);
+	printFinishProgram(rc);
 	clearAll()
 	if (pc)
 		delete pc;

@@ -4,21 +4,6 @@
 #include <stdbool.h>
 #include "macros.h"
 
-//File open mode
-#define SP_LOGGER_OPEN_MODE "w"
-
-#define OC logger->outputChannel
-
-#define OUTPUT() 		fprintf(OC,"- file: %s\n- function: %s\n- line: %d\n- message: %s\n",file,function,line,msg)
-
-#define CheckWF(cond) 	if(cond<0){	return SP_LOGGER_WRITE_FAIL; }
-
-#define NULLChecks() 	if (logger == NULL) {	\
-						return SP_LOGGER_UNDIFINED;	\
-					}	\
-					if (msg == NULL) {	\
-						return SP_LOGGER_INVAlID_ARGUMENT;	}
-
 // Global variable holding the logger
 SPLogger logger = NULL;
 
@@ -61,15 +46,14 @@ SP_LOGGER_MSG spLoggerCreate(const char* filename, SP_LOGGER_LEVEL level) {
 	return SP_LOGGER_SUCCESS;
 }
 
-
 void spLoggerDestroy() {
-        declareLogMsg();
+	declareLogMsg();
 	if (!logger) {
-                printError("Failed destroying logger. no active logger found");
+		printError(DST_FAIL);
 		return;
 	}
 	if (!logger->isStdOut) { //Close file only if not stdout
-                printInfo("Destroying logger");
+		printInfo(DST_LOGGER);
 		fclose(logger->outputChannel);
 	}
 	free(logger); //free allocation
@@ -86,7 +70,7 @@ SP_LOGGER_MSG spLoggerPrintGeneral(const char* msg, const char* file,
 		return SP_LOGGER_INVAlID_ARGUMENT;
 	}
 
-	CheckWF(fprintf(OC, "---%s---\n", level))
+	CheckWF(fprintf(OC, LOG_TITLE, level))
 
 	CheckWF(OUTPUT())
 
@@ -96,7 +80,7 @@ SP_LOGGER_MSG spLoggerPrintGeneral(const char* msg, const char* file,
 SP_LOGGER_MSG spLoggerPrintError(const char* msg, const char* file,
 		const char* function, const int line) {
 
-	return spLoggerPrintGeneral(msg, file, function, line, "ERROR");
+	return spLoggerPrintGeneral(msg, file, function, line, ERROR_LOGGER);
 
 }
 
@@ -104,7 +88,7 @@ SP_LOGGER_MSG spLoggerPrintWarning(const char* msg, const char* file,
 		const char* function, const int line) {
 
 	if (logger->level > SP_LOGGER_ERROR_LEVEL) {
-		return spLoggerPrintGeneral(msg, file, function, line, "WARNING");
+		return spLoggerPrintGeneral(msg, file, function, line, WARNING);
 	}
 
 	return SP_LOGGER_SUCCESS;
@@ -115,8 +99,8 @@ SP_LOGGER_MSG spLoggerPrintInfo(const char* msg) {
 	if (logger->level >= SP_LOGGER_INFO_WARNING_ERROR_LEVEL) {
 		NULLChecks()
 
-		CheckWF(fprintf(OC, "---%s---\n", "INFO"))
-		CheckWF(fprintf(OC,"- message: %s\n",msg))
+		CheckWF(fprintf(OC, LOG_TITLE, INFO))
+		CheckWF(fprintf(OC,LOGR_MSG,msg))
 	}
 	return SP_LOGGER_SUCCESS;
 }
@@ -125,7 +109,7 @@ SP_LOGGER_MSG spLoggerPrintDebug(const char* msg, const char* file,
 		const char* function, const int line) {
 
 	if (logger->level == SP_LOGGER_DEBUG_INFO_WARNING_ERROR_LEVEL) {
-		return spLoggerPrintGeneral(msg, file, function, line, "DEBUG");
+		return spLoggerPrintGeneral(msg, file, function, line, DEBUG);
 	}
 
 	return SP_LOGGER_SUCCESS;
@@ -134,18 +118,16 @@ SP_LOGGER_MSG spLoggerPrintMsg(const char* msg) {
 
 	NULLChecks()
 
-	CheckWF(fprintf(OC,"%s",msg))
+	CheckWF(fprintf(OC,STR,msg))
 
 	return SP_LOGGER_SUCCESS;
 }
 
-SP_LOGGER_MSG spLoggerGetLevel(SP_LOGGER_LEVEL* levelAddress){
-	if(!logger)
+SP_LOGGER_MSG spLoggerGetLevel(SP_LOGGER_LEVEL* levelAddress) {
+	if (!logger)
 		return SP_LOGGER_UNDIFINED;
 
 	*levelAddress = logger->level;
 	return SP_LOGGER_SUCCESS;
 }
-
-
 

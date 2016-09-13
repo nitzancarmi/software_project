@@ -304,7 +304,7 @@ SPKDArray spKDArrayCreate(SPConfig attr, SPPoint *arr, int size) {
 	}
 	int dims = spConfigGetPCADim(attr, conf_msg);
 	if (dims < 1 || *conf_msg != SP_CONFIG_SUCCESS) {
-                printError("Error in getting PCA Dimensions");
+                printError(PCA_ERR);
 		SPKDArrayDestroy(kd);
                 return NULL;
 	}
