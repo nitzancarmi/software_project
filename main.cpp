@@ -53,16 +53,20 @@ int main(int argc, char* argv[]) {
 			pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
 			if(!pointArray){
 				clearAll()
+                                if(pc)
+                                    delete pc;
 				return ERROR;
 			}
-                        printDebug("Exporting image features into a file");
-			if (exportImageToFile(pointArray, numOfFeats, index, config)) {
-				/* Writing to File Error */
-				spPointArrayDestroy(pointArray, numOfFeats);
-				clearAll()
-				return ERROR;
-			}
+                        printInfo("Exporting image features into a file");
+			rc = exportImageToFile(pointArray, numOfFeats, index, config);
 			spPointArrayDestroy(pointArray, numOfFeats);
+                        if (rc) {
+				/* Writing to File Error */
+				clearAll()
+                                if(pc)
+                                    delete pc;
+				return ERROR;
+			}
 		}
 	}
         else {
@@ -73,11 +77,11 @@ int main(int argc, char* argv[]) {
         printInfo("Creating Global Resources");
 	rc = Setup(config, &kdtree);
 	if (rc) {
+                printFinishProgram(rc);
 		clearAll()
 		if (pc)
 			delete pc;
-                printFinishProgram(rc);
-		return ERROR;
+		return rc;
 	}
 
 	/**** execute queries ****/
@@ -85,10 +89,10 @@ int main(int argc, char* argv[]) {
 	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, conf_msg);
         if (*conf_msg != SP_CONFIG_SUCCESS) {
             loggerWithArgs(CONFIG_MSG_ERR,conf_msg);
+            printFinishProgram(1);
             clearAll()
             if (pc)
                 delete pc;
-            printFinishProgram(1);
             return ERROR;
         }
         printInfo("Start getting queries from user");

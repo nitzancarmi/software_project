@@ -326,6 +326,7 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 
 		/** Get double array from lines 3 and above **/
 		data = getDataFromLine(line, dim, countOfFeatures + 3);
+                free(line);
 		if (data == NULL) {
 			//Error message printed inside getDataFromLine
 			errorReturn()
@@ -334,13 +335,11 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 		/** Create a point from the data extracted from the line **/
 		currentPoint = spPointCreate(data, dim, imageIndex);
 		free(data);
-		data = NULL;
 		/*** ERRORS ***/
 		if (!currentPoint || countOfFeatures == *numOfFeatures) {
 
 			if (!currentPoint) { //error creating the point
 				MallocError()
-				free(data);
 			} else {
 				/** Got more features than written in the file -
 				 * this is a warning, skipping to next file
@@ -362,7 +361,6 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 	/** now can be less than within in the file. again - warning and skipping **/
 	if (countOfFeatures != *numOfFeatures) {
 		warningWithArgs(FEATS_QNTTY_LESS, countOfFeatures, *numOfFeatures);
-		spPointArrayDestroy(pntsArray, countOfFeatures);
 		errorReturn()
 	}
 	return pntsArray;
@@ -412,6 +410,7 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config) {
 		singleImageFeatures = extractSingleImage(img, featAddr, config);
 		if (singleImageFeatures == NULL) {
 			printWarning("Extraction Failed. Skipping image...");
+                        free(singleImageFeatures);
 			numOfFeatures[img] = 0;
 			continue;
 		} else {
