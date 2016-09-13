@@ -234,7 +234,7 @@ double* getDataFromLine(char* line, int dim, int lineNumber) {
  * @see exportImageToFile
  * @see extractImagesFeatures for list of constraints of the file.
  *
- * If any error occurred, *numOfFeatures gets the value of -1.
+ * If any error occurred, *numOfFeatures gets the value of 0.
  *
  * @param imgIndex 	 		 Index of the relevant image
  * @param numOfFeatures	 	 Address of the array size
@@ -326,9 +326,11 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 
 		/** Get double array from lines 3 and above **/
 		data = getDataFromLine(line, dim, countOfFeatures + 3);
-		free(line);
+
 		if (data == NULL) {
 			//Error message printed inside getDataFromLine
+			free(line);
+			line = NULL;
 			errorReturn()
 		}
 
@@ -348,6 +350,8 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 				warningWithArgs(FEATS_QNTTY_MORE, *numOfFeatures);
 			}
 			/** freeing the resources that were ignored **/
+			free(line);
+			line = NULL;
 			errorReturn()
 		}
 
@@ -361,6 +365,8 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 	/** now can be less than within in the file. again - warning and skipping **/
 	if (countOfFeatures != *numOfFeatures) {
 		warningWithArgs(FEATS_QNTTY_LESS, countOfFeatures, *numOfFeatures);
+		free(line);
+		line = NULL;
 		errorReturn()
 	}
 	return pntsArray;
@@ -448,14 +454,13 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config) {
 		return NULL;
 	}
 
-	int currentFeature = -1;
+	int currentFeature = 0;
 	for (int img = 0; img < imgCount; img++) {
 		int features = numOfFeatures[img];
-		for (int feat = 0; feat < features; feat++)
-			allFeatures[++currentFeature] = imagesFeatures[img][feat];
+		for (int feat = 0; feat < features; feat++){
+			allFeatures[currentFeature++] = imagesFeatures[img][feat];}
 		free(imagesFeatures[img]); //freeing only the pointers to the points array, not the points themselves
 	}
-
 	free(numOfFeatures);
 	free(imagesFeatures); //only pointer to matrix need to be freed - features themselves still being used later
 	return allFeatures;
@@ -467,13 +472,13 @@ int exportImageToFile(SPPoint* pointArray, int size, int image_index,
 
 	if(!pointArray || size<1 || image_index <0 || !config) {
 		InvalidError();
-		return 1;
+		return ERR;
 	}
 
 	/** init **/
 	SP_CONFIG_MSG _conf_msg = SP_CONFIG_SUCCESS,
 	*conf_msg = &_conf_msg;
-	int rc = 0, i, j, dims;
+	int rc = OK, i, j, dims;
 	char endChar, filepath[MAX_LENGTH] = { '\0' };
 	SPPoint curr;
 
@@ -498,16 +503,16 @@ int exportImageToFile(SPPoint* pointArray, int size, int image_index,
 	FILE *output = fopen(filepath, WRITE_MODE);
 	if (!output) {
 		printError(FEATS_FILE)
-		return 1;
+		return ERR;
 	}
 
 	/* Writes image index at 1st line,
 	 * No. of points at the 2nd line*/
 	rc = fprintf(output, INTS_FEATS_FILE, image_index, size);
-	if (rc < 1) {
+	if (rc < ERR) {
 		printError(FEATS_PRNT)
 		fclose(output);
-		return 1;
+		return ERR;
 	}
 
 	/*writes double array inside points*/
@@ -535,10 +540,10 @@ int exportImageToFile(SPPoint* pointArray, int size, int image_index,
 			}
 
 			/** file write error **/
-			if (rc < 1) {
+			if (rc < ERR) {
 				printError(FEATS_PRNT)
 				fclose(output);
-				return 1;
+				return ERR;
 			}
 		}
 	}

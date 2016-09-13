@@ -51,6 +51,7 @@ int main(int argc, char* argv[]) {
 			spConfigGetImagePath(path, config, index); //No need to read conf_msg, controlling all inputs myself
 			checkifImgExists()
 
+			/* Getting features of each photo */
 			printInfo(EXTRCT_FROM_IMG);
 			pointArray = pc->getImageFeatures(path, 0, &numOfFeats);
 			if (!pointArray) {
@@ -62,6 +63,7 @@ int main(int argc, char* argv[]) {
 
 			printInfo(EXPORT_TO_FILE);
 
+			/* exporting to .feats file */
 			rc = exportImageToFile(pointArray, numOfFeats, index, config);
 			spPointArrayDestroy(pointArray, numOfFeats);
 			if (rc) {
@@ -91,8 +93,8 @@ int main(int argc, char* argv[]) {
 	q_path[MAX_LENGTH] = {'\0'};
 	numOfSimilarImages = spConfigGetNumOfSimilarImages(config, conf_msg);
 	if (*conf_msg != SP_CONFIG_SUCCESS) {
-		loggerWithArgs(CONFIG_MSG_ERR, conf_msg);
-		printFinishProgram(1);
+		loggerWithArgs(CONFIG_MSG_ERR, *conf_msg);
+		printFinishProgram(ERR);
 		clearAll()
 		if (pc)
 			delete pc;
@@ -107,12 +109,13 @@ int main(int argc, char* argv[]) {
 		fgets(q_path, MAX_LENGTH, stdin);
 		q_path[strlen(q_path) - 1] = '\0'; //q_path will always include at least '/n'
 
-		//check validity of output
+		//check validity of input
 		if (!strcmp(q_path, CLS_QRY)) {
 			printInfo(EXIT_SNGL);
-			rc = 0;
+			rc = OK;
 			break;
 		}
+		//check if the file exists
 		if (!isValidFile(q_path)) {
 			printf(INV_PATH);
 			continue;
@@ -128,7 +131,7 @@ int main(int argc, char* argv[]) {
 			rc = ERR;
 			break;
 		}
-		infoWithArgs(IMG_EXTRCT, q_numOfFeats);
+		infoWithArgs(IMG_EXTRCT, q_numOfFeats,q_path);
 
 		//find closest images to query image
 		printInfo(CLS_SRCH);

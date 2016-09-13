@@ -46,6 +46,8 @@
 #define FALSE_STR					"false"
 #define IMGNOS						"spNumOfSimilarImages"
 #define POS_FIRST_VAL				1
+#define LOG_MIN						1
+#define LOG_MAX						4
 #define IMGSPM						"spKDTreeSplitMethod"
 #define SPLIT_METHODS				"RANDOM", "MAX_SPREAD", "INCREMENTAL"
 #define IMGKNN						"spKNN"
@@ -191,7 +193,7 @@
 #define FEAT_SIZE_ERR		"Current feature size is %d features while spCADimension = %d. SKIPPING FILE"
 #define FEAT_SMALL 			"Feature size is smaller than spCADimension. SKIPPING FILE"
 #define errorReturn()		spPointArrayDestroy(pntsArray, countOfFeatures); \
-							*numOfFeatures = -1; \
+							*numOfFeatures = 0; \
 							fclose(feats);	\
 							return NULL;
 #define FEATS_EXT 			".feats"

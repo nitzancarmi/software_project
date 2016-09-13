@@ -343,10 +343,9 @@ SP_CONFIG_MSG assignVarValue(SPConfig attr, char *var, char *value, int line,
 	/*spLoggerLevel*/
 	/*Constaint: integers in range [1,4]*/
 	if (!strcmp(var, IMGLGL)) {
-		int val = updateValueInRange(value, SP_LOGGER_ERROR_LEVEL,
-				SP_LOGGER_DEBUG_INFO_WARNING_ERROR_LEVEL);
+		int val = updateValueInRange(value, LOG_MIN, LOG_MAX);
 		if (val) {
-			attr->spLoggerLevel = val;
+			attr->spLoggerLevel = val - 1; //enum default first value is 0
 			return SP_CONFIG_SUCCESS;
 		} else {
 			printf(CONSTRAINT, filename, line);
@@ -434,7 +433,6 @@ SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 	checkAndAssign(spNumOfSimilarImages, POS_FIRST_VAL);
 	checkAndAssign(spKDTreeSplitMethod, MAX_SPREAD);
 	checkAndAssign(spKNN, KNN_DEFAULT);
-	checkAndAssign(spLoggerLevel, SP_LOGGER_INFO_WARNING_ERROR_LEVEL);
 
 	/** Special variables **/
 	if (!attr->spPCAFilename) {
@@ -453,6 +451,9 @@ SP_CONFIG_MSG checkForDefaults(SPConfig attr) {
 	}
 	if (attr->spExtractionMode < 0)
 		attr->spExtractionMode = true;
+
+	if (attr->spExtractionMode < 0)
+		attr->spLoggerLevel = SP_LOGGER_INFO_WARNING_ERROR_LEVEL;
 	return SP_CONFIG_SUCCESS;
 
 }
@@ -500,6 +501,7 @@ SPConfig spConfigCreate(const char* filename, SP_CONFIG_MSG* msg) {
 	/* dummy initialization of attributes - so can be checked later whether variables are initialized or not*/
 	memset(attr, 0, sizeof(*attr));
 	attr->spExtractionMode = ERROR;
+	attr->spLoggerLevel = ERROR;
 
 	while (fgets(line, MAX_LENGTH, config) != NULL) {
 		lineNum++;
