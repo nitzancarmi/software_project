@@ -90,8 +90,6 @@ int getIntFromLine(FILE* feats) {
 
 	/* attempt to parse an int from the line */
 	integer = strtol(line, &ptrChk, 0);
-	free(line);
-        line = NULL;
 	/* check if any characters left after the number */
 	if (ptrChk != NULL && *ptrChk != '\0') {
 
@@ -101,6 +99,7 @@ int getIntFromLine(FILE* feats) {
 			/* allow only space characters after the number */
 			if (!isspace(*tmp)) {
 				printWarning(CHAR_ERR)
+	                        free(line);
 				return ERROR;
 			}
 
@@ -108,6 +107,7 @@ int getIntFromLine(FILE* feats) {
 	}
 	if (integer < 0) {
 		printWarning(INDX_ERR)
+	        free(line);
 		return ERROR;
 	}
 	/* no need for line anymore */
@@ -325,10 +325,10 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 
 		/** Get double array from lines 3 and above **/
 		data = getDataFromLine(line, dim, countOfFeatures + 3);
-		free(line);
-                line = NULL;
 		if (data == NULL) {
 			//Error message printed inside getDataFromLine
+		        free(line);
+                        line = NULL;
 			errorReturn()
 		}
 
@@ -348,17 +348,23 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 				warningWithArgs(FEATS_QNTTY_MORE, *numOfFeatures);
 			}
 			/** freeing the resources that were ignored **/
+		        free(line);
+                        line = NULL;
 			errorReturn()
 		}
 
 		/** inserting point to returned array **/
 		if (countOfFeatures < *numOfFeatures)
 			pntsArray[countOfFeatures++] = currentPoint;
+		free(line);
+                line = NULL;
 	}
 
 	/** now can be less than within in the file. again - warning and skipping **/
 	if (countOfFeatures != *numOfFeatures) {
 		warningWithArgs(FEATS_QNTTY_LESS, countOfFeatures, *numOfFeatures);
+		free(line);
+                line = NULL;
 		errorReturn()
 	}
         fclose(feats);
