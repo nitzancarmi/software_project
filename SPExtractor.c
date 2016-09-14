@@ -201,12 +201,10 @@ double* getDataFromLine(char* line, int dim, int lineNumber) {
 				return NULL;
 			}
 		}
-		/* found more numbers than dim - skipping file*/
-		if (count > dim) {
-			warningWithArgs(FEAT_SIZE_ERR, count, dim);
-			free(ret);
-			return NULL;
-		}
+                if(count == dim) { //means we already found dim+1 doubles in line
+                    count++; //to signal count != dim
+                    break;
+                }
 		ret[count++] = singleNumber;
 		c++;
 		lineCnt++;
