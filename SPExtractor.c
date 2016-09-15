@@ -99,7 +99,7 @@ int getIntFromLine(FILE* feats) {
 			/* allow only space characters after the number */
 			if (!isspace(*tmp)) {
 				printWarning(CHAR_ERR)
-	                        free(line);
+				free(line);
 				return ERROR;
 			}
 
@@ -107,10 +107,11 @@ int getIntFromLine(FILE* feats) {
 	}
 	if (integer < 0) {
 		printWarning(INDX_ERR)
-	        free(line);
+		free(line);
 		return ERROR;
 	}
 	/* no need for line anymore */
+	free(line);
 	return integer;
 }
 
@@ -124,6 +125,7 @@ int getIntFromLine(FILE* feats) {
  * @param line			string to be read
  * @param dim			size of the expected array
  * @param lineNumber	number of the line in the file for debugging purposes
+ * @param imageIndex	index of the image for debugging purposes
  *
  * @return
  * NULL for failure if one of the following occurred:
@@ -135,7 +137,7 @@ int getIntFromLine(FILE* feats) {
  * 		- number of doubles converted is different than dim argument
  * a new allocated double array the size of dim, with the converted doubles.
  */
-double* getDataFromLine(char* line, int dim, int lineNumber) {
+double* getDataFromLine(char* line, int dim, int lineNumber, int imageIndex) {
 
 	declareLogMsg();
 
@@ -201,10 +203,10 @@ double* getDataFromLine(char* line, int dim, int lineNumber) {
 				return NULL;
 			}
 		}
-                if(count == dim) { //means we already found dim+1 doubles in line
-                    count++; //to signal count != dim
-                    break;
-                }
+		if (count == dim) { //means we already found dim+1 doubles in line
+			count++; //to signal count != dim
+			break;
+		}
 		ret[count++] = singleNumber;
 		c++;
 		lineCnt++;
@@ -212,7 +214,7 @@ double* getDataFromLine(char* line, int dim, int lineNumber) {
 
 	/* Essentially found less numbers than dim, same error message  - skipping file*/
 	if (count != dim) {
-		warningWithArgs(FEAT_SIZE_ERR, count, dim);
+		warningWithArgs(FEAT_SIZE_ERR, dim, lineNumber, imageIndex);
 		free(ret);
 		return NULL;
 	}
@@ -290,7 +292,7 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 
 	/* compare with the file name - if not equal or negative skip file */
 	if (imageIndex >= 0 && imageIndex != imgIndex) {
-                fclose(feats);
+		fclose(feats);
 		warningWithArgs(INDEX_ERR, imageIndex, filepath)
 		return NULL;
 	} else if (imageIndex < 0) {
@@ -322,11 +324,11 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 		}
 
 		/** Get double array from lines 3 and above **/
-		data = getDataFromLine(line, dim, countOfFeatures + 3);
+		data = getDataFromLine(line, dim, countOfFeatures + 3, imageIndex);
 		if (data == NULL) {
 			//Error message printed inside getDataFromLine
-		        free(line);
-                        line = NULL;
+			free(line);
+			line = NULL;
 			errorReturn()
 		}
 
@@ -346,8 +348,8 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 				warningWithArgs(FEATS_QNTTY_MORE, *numOfFeatures);
 			}
 			/** freeing the resources that were ignored **/
-		        free(line);
-                        line = NULL;
+			free(line);
+			line = NULL;
 			errorReturn()
 		}
 
@@ -355,17 +357,17 @@ SPPoint* extractSingleImage(int imgIndex, int* numOfFeatures, SPConfig config) {
 		if (countOfFeatures < *numOfFeatures)
 			pntsArray[countOfFeatures++] = currentPoint;
 		free(line);
-                line = NULL;
+		line = NULL;
 	}
 
 	/** now can be less than within in the file. again - warning and skipping **/
 	if (countOfFeatures != *numOfFeatures) {
 		warningWithArgs(FEATS_QNTTY_LESS, countOfFeatures, *numOfFeatures);
 		free(line);
-                line = NULL;
+		line = NULL;
 		errorReturn()
 	}
-        fclose(feats);
+	fclose(feats);
 	return pntsArray;
 }
 
@@ -454,8 +456,9 @@ SPPoint* extractImagesFeatures(int* totalNumOfFeaturesPtr, SPConfig config) {
 	int currentFeature = 0;
 	for (int img = 0; img < imgCount; img++) {
 		int features = numOfFeatures[img];
-		for (int feat = 0; feat < features; feat++){
-			allFeatures[currentFeature++] = imagesFeatures[img][feat];}
+		for (int feat = 0; feat < features; feat++) {
+			allFeatures[currentFeature++] = imagesFeatures[img][feat];
+		}
 		free(imagesFeatures[img]); //freeing only the pointers to the points array, not the points themselves
 	}
 	free(numOfFeatures);

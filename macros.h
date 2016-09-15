@@ -6,7 +6,7 @@
 /************************ SPConfig ************************/
 /**********************************************************/
 
-#define MAX_LENGTH 					1024
+#define MAX_LENGTH 					1026
 
 #define OK 							0
 #define ERROR 						-1
@@ -190,7 +190,7 @@
 #define INDX_ERR			"Image index and/or number of features written in the .feats file cannot be negative. SKIPPING FILE"
 #define FEAT_ERR			"%s\n feature = %d, line = %d, char = %c <%d>\nline is:\n%s"
 #define FEAT_ERR2			"Invalid characters found on file. SKIPPING FILE\n\tfeature = %d, line = %d, char = %c <%d>\n\tline is:\n%s"
-#define FEAT_SIZE_ERR		"Current feature size is %d features while spCADimension = %d. SKIPPING FILE"
+#define FEAT_SIZE_ERR		"Current feature size != spCADimension (%d) on line %d. SKIPPING FILE no. %d"
 #define FEAT_SMALL 			"Feature size is smaller than spCADimension. SKIPPING FILE"
 #define errorReturn()		spPointArrayDestroy(pntsArray, countOfFeatures); \
 							*numOfFeatures = 0; \
